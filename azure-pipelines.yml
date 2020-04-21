@@ -30,3 +30,12 @@ steps:
   inputs:
     PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
     artifactName: 'drop'
+
+# Deploy to Functions
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'Pay-As-You-Go(753dc089-5d12-4b87-a9ac-3f58729433b1)'
+    appType: 'functionAppLinux'
+    appName: 'signalapi'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    runtimeStack: 'DOCKER|microsoft/azure-functions-dotnet-core2.0:2.0'
