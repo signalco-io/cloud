@@ -28,9 +28,7 @@ namespace Signal.Api
                 Version = typeof(Ping).Assembly.GetName().Version?.ToString()
             };
 
-            var dataJson = JsonConvert.SerializeObject(data);
-
-            return new OkObjectResult(dataJson );
+            return new OkObjectResult(data );
         }
     }
 }
