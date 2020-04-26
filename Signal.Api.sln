@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Signal.Api", "Signal.Api\Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.AzureDevOps", "Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj", "{8CC80AE9-906E-4533-AB53-1289480789BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.AzureStorage.Tables", "Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj", "{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Core", "Signal.Core\Signal.Core.csproj", "{C5ADB0F8-B739-4191-9933-96A1C96C8369}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{8CC80AE9-906E-4533-AB53-1289480789BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CC80AE9-906E-4533-AB53-1289480789BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CC80AE9-906E-4533-AB53-1289480789BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
