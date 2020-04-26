@@ -1,8 +1,10 @@
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Newtonsoft.Json;
 using Signal.Infrastructure.AzureDevOps;
 using Signal.Infrastructure.AzureStorage.Tables;
 
@@ -36,8 +38,11 @@ namespace Signal.Api
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req)
         {
-            var tableName = req.GetQueryParameterDictionary()["name"];
-            await AzureStorage.CreateTableAsync(tableName);
+            using var streamReader = new StreamReader(req.Body);
+            var messageContent = await streamReader.ReadToEndAsync();
+            var request = JsonConvert.DeserializeAnonymousType(messageContent, new {Name = string.Empty});
+
+            await AzureStorage.CreateTableAsync(request.Name);
             return new OkObjectResult(await AzureStorage.ListTables());
         }
     }
