@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Signal.Infrastructure.ApiAuth.Oidc.Abstractions;
 using Signal.Infrastructure.AzureDevOps;
 using Signal.Infrastructure.AzureStorage.Tables;
 
@@ -18,12 +20,31 @@ namespace Signal.Api
             new OkObjectResult(await Class1.GetProjectsAsync());
     }
 
-    public static class StorageTableList
+    public class StorageTableList
     {
+        private readonly IApiAuthorization _apiAuthorization;
+
+        public StorageTableList(IApiAuthorization apiAuthorization)
+        {
+            _apiAuthorization = apiAuthorization;
+        }
+
         [FunctionName("storage-table-list")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req) =>
-            new OkObjectResult(await AzureStorage.ListTables());
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} received a request.");
+            var authorizationResult = await _apiAuthorization.AuthorizeAsync(req.Headers);
+            if (authorizationResult.Failed)
+            {
+                log.LogWarning(authorizationResult.FailureReason);
+                return new UnauthorizedResult();
+            }
+            log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} request is authorized.");
+
+            return new OkObjectResult(await AzureStorage.ListTables());
+        }
     }
 
     public static class StorageQueueList

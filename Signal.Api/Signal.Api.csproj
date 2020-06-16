@@ -5,6 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.6.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj">
@@ -13,14 +15,18 @@
     <ProjectReference Include="..\Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Signal.Infrastructure.ApiAuth.Oidc\Signal.Infrastructure.ApiAuth.Oidc.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="**/*" />
+    <None Include="**/*" />
+    <None Include="**/*" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="local.settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 </Project>
