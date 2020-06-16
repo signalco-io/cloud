@@ -6,9 +6,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Signal.Core;
 using Signal.Infrastructure.ApiAuth.Oidc.Abstractions;
 using Signal.Infrastructure.AzureDevOps;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api
 {
@@ -23,10 +23,14 @@ namespace Signal.Api
     public class StorageTableList
     {
         private readonly IApiAuthorization _apiAuthorization;
+        private readonly IAzureStorage azureStorage;
 
-        public StorageTableList(IApiAuthorization apiAuthorization)
+        public StorageTableList(
+            IApiAuthorization apiAuthorization,
+            IAzureStorage azureStorage)
         {
-            _apiAuthorization = apiAuthorization;
+            _apiAuthorization = apiAuthorization ?? throw new System.ArgumentNullException(nameof(apiAuthorization));
+            this.azureStorage = azureStorage ?? throw new System.ArgumentNullException(nameof(azureStorage));
         }
 
         [FunctionName("storage-table-list")]
@@ -43,30 +47,44 @@ namespace Signal.Api
             }
             log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} request is authorized.");
 
-            return new OkObjectResult(await AzureStorage.ListTables());
+            return new OkObjectResult(await this.azureStorage.ListTables());
         }
     }
 
-    public static class StorageQueueList
+    public class StorageQueueList
     {
+        private readonly IAzureStorage azureStorage;
+
+        public StorageQueueList(IAzureStorage azureStorage)
+        {
+            this.azureStorage = azureStorage ?? throw new System.ArgumentNullException(nameof(azureStorage));
+        }
+
         [FunctionName("storage-queues-list")]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req) =>
-            new OkObjectResult(await AzureStorage.ListQueues());
+            new OkObjectResult(await this.azureStorage.ListQueues());
     }
 
-    public static class StorageTableCreate
+    public class StorageTableCreate
     {
+        private readonly IAzureStorage azureStorage;
+
+        public StorageTableCreate(IAzureStorage azureStorage)
+        {
+            this.azureStorage = azureStorage ?? throw new System.ArgumentNullException(nameof(azureStorage));
+        }
+
         [FunctionName("storage-table-create")]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req)
         {
             using var streamReader = new StreamReader(req.Body);
             var messageContent = await streamReader.ReadToEndAsync();
             var request = JsonConvert.DeserializeAnonymousType(messageContent, new {Name = string.Empty});
 
-            await AzureStorage.CreateTableAsync(request.Name);
-            return new OkObjectResult(await AzureStorage.ListTables());
+            await this.azureStorage.CreateTableAsync(request.Name);
+            return new OkObjectResult(await this.azureStorage.ListTables());
         }
     }
 }

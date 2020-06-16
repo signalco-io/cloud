@@ -20,6 +20,6 @@ namespace Signal.Infrastructure.ApiAuth.Oidc.Abstractions
         /// <summary>
         /// Requests that the next call to GetConfigurationAsync() obtain new configuration.
         /// </summary>
-        void RequestRefresh();
+        Task RequestRefreshAsync();
     }
 }

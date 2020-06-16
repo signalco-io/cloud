@@ -20,6 +20,9 @@
     <ProjectReference Include="..\Signal.Infrastructure.ApiAuth.Oidc\Signal.Infrastructure.ApiAuth.Oidc.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Signal.Infrastructure.Secrets\Signal.Infrastructure.Secrets.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

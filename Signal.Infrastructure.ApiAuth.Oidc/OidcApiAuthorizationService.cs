@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Signal.Core;
 using Signal.Infrastructure.ApiAuth.Oidc.Abstractions;
 using Signal.Infrastructure.ApiAuth.Oidc.Models;
 
@@ -19,24 +20,37 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         private readonly IJwtSecurityTokenHandlerWrapper _jwtSecurityTokenHandlerWrapper;
 
         private readonly IOidcConfigurationManager _oidcConfigurationManager;
+        private readonly ISecretsProvider secretsProvider;
 
-        private readonly string _issuerUrl = null;
-        private readonly string _audience = null;
+        private string issuer;
+        private string audience;
 
         public OidcApiAuthorizationService(
-            IOptions<OidcApiAuthorizationSettings> apiAuthorizationSettingsOptions,
             IAuthorizationHeaderBearerTokenExtractor authorizationHeaderBearerTokenExractor,
             IJwtSecurityTokenHandlerWrapper jwtSecurityTokenHandlerWrapper,
-            IOidcConfigurationManager oidcConfigurationManager)
+            IOidcConfigurationManager oidcConfigurationManager,
+            ISecretsProvider secretsProvider)
         {
-            _issuerUrl = apiAuthorizationSettingsOptions?.Value?.IssuerUrl;
-            _audience = apiAuthorizationSettingsOptions?.Value?.Audience;
-
             _authorizationHeaderBearerTokenExractor = authorizationHeaderBearerTokenExractor;
-
             _jwtSecurityTokenHandlerWrapper = jwtSecurityTokenHandlerWrapper;
-
             _oidcConfigurationManager = oidcConfigurationManager;
+            this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
+        }
+
+        private async Task<string> IssuerAsync()
+        {
+            if (this.issuer != null) return this.issuer;
+
+            this.issuer = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.IssuerUrl);
+            return this.issuer;
+        }
+
+        private async Task<string> AudienceAsync()
+        {
+            if (this.audience != null) return this.audience;
+
+            this.audience = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.Audience);
+            return this.audience;
         }
 
         /// <summary>
@@ -89,9 +103,9 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     var tokenValidationParameters = new TokenValidationParameters
                     {
                         RequireSignedTokens = true,
-                        ValidAudience = _audience,
+                        ValidAudience = await this.AudienceAsync(),
                         ValidateAudience = true,
-                        ValidIssuer = _issuerUrl,
+                        ValidIssuer = await this.IssuerAsync(),
                         ValidateIssuer = true,
                         ValidateIssuerSigningKey = true,
                         ValidateLifetime = true,
@@ -115,7 +129,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     // Then we retry by asking for the signing keys and validating the token again.
                     // We only retry once.
 
-                    _oidcConfigurationManager.RequestRefresh();
+                    await _oidcConfigurationManager.RequestRefreshAsync();
 
                     validationRetryCount++;
                 }
@@ -134,17 +148,17 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
 
         public async Task<HealthCheckResult> HealthCheckAsync()
         {
-            if (string.IsNullOrWhiteSpace(_audience)
-                || string.IsNullOrWhiteSpace(_issuerUrl))
+            if (string.IsNullOrWhiteSpace(await this.AudienceAsync())
+                || string.IsNullOrWhiteSpace(await this.AudienceAsync()))
             {
                 return new HealthCheckResult(
-                    $"Some or all {nameof(OidcApiAuthorizationSettings)} are missing.");
+                    $"Some or all OpenID connection settings are missing.");
             }
 
             try
             {
                 // Get the singing keys fresh. Not from the cache.
-                _oidcConfigurationManager.RequestRefresh();
+                await _oidcConfigurationManager.RequestRefreshAsync();
 
                 await _oidcConfigurationManager.GetIssuerSigningKeysAsync();
             }

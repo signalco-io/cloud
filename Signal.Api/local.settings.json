@@ -1,9 +1,0 @@
-﻿{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "OidcApiAuthorizationSettings:Audience": "Your-API-Identifier-goes-here",
-    "OidcApiAuthorizationSettings:IssuerUrl": "https://your-authorization-provider-end-point-url/"
-  }
-}
