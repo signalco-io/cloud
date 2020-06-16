@@ -14,22 +14,24 @@ namespace Signal.Api
     {
         [FunctionName("azuredevops-projects-list")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req)
-        {
-            var data = await Class1.GetProjectsAsync();
-
-            return new OkObjectResult(data);
-        }
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req) =>
+            new OkObjectResult(await Class1.GetProjectsAsync());
     }
 
     public static class StorageTableList
     {
         [FunctionName("storage-table-list")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req)
-        {
-            return new OkObjectResult(await AzureStorage.ListTables());
-        }
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req) =>
+            new OkObjectResult(await AzureStorage.ListTables());
+    }
+
+    public static class StorageQueueList
+    {
+        [FunctionName("storage-queues-list")]
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req) =>
+            new OkObjectResult(await AzureStorage.ListQueues());
     }
 
     public static class StorageTableCreate

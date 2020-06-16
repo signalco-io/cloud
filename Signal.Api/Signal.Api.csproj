@@ -4,11 +4,15 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.3" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj" />
-    <ProjectReference Include="..\Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj" />
+    <ProjectReference Include="..\Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
