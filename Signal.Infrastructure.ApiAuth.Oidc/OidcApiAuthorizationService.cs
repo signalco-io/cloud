@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Signal.Core;
@@ -21,7 +22,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
 
         private readonly IOidcConfigurationManager _oidcConfigurationManager;
         private readonly ISecretsProvider secretsProvider;
-
+        private readonly ILogger<OidcApiAuthorizationService> logger;
         private string issuer;
         private string audience;
 
@@ -29,12 +30,14 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
             IAuthorizationHeaderBearerTokenExtractor authorizationHeaderBearerTokenExractor,
             IJwtSecurityTokenHandlerWrapper jwtSecurityTokenHandlerWrapper,
             IOidcConfigurationManager oidcConfigurationManager,
-            ISecretsProvider secretsProvider)
+            ISecretsProvider secretsProvider,
+            ILogger<OidcApiAuthorizationService> logger)
         {
             _authorizationHeaderBearerTokenExractor = authorizationHeaderBearerTokenExractor;
             _jwtSecurityTokenHandlerWrapper = jwtSecurityTokenHandlerWrapper;
             _oidcConfigurationManager = oidcConfigurationManager;
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         private async Task<string> IssuerAsync()
@@ -135,6 +138,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                 }
                 catch (Exception ex)
                 {
+                    this.logger.LogWarning(ex, "JWT token validation failed.");
                     return new ApiAuthorizationResult(
                         $"Authorization Failed. {ex.GetType()} caught while validating JWT token."
                         + $"Message: {ex.Message}");
