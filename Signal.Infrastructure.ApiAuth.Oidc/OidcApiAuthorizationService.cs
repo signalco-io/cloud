@@ -79,9 +79,6 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
 
             int validationRetryCount = 0;
 
-            this.logger.LogInformation("BEARER LENGTH" + authorizationBearerToken.Length);
-            this.logger.LogInformation("BEARER " + authorizationBearerToken);
-
             do
             {
                 IEnumerable<SecurityKey> isserSigningKeys;
@@ -109,13 +106,15 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     {
                         RequireSignedTokens = true,
                         ValidAudience = await this.AudienceAsync(),
-                        ValidateAudience = true,
+                        ValidateAudience = false,
                         ValidIssuer = await this.IssuerAsync(),
                         ValidateIssuer = true,
                         ValidateIssuerSigningKey = true,
                         ValidateLifetime = true,
                         IssuerSigningKeys = isserSigningKeys
                     };
+
+                    this.logger.LogInformation("ValidAudience: " + tokenValidationParameters.ValidAudiences);
 
                     // Throws if the the token cannot be validated.
                     _jwtSecurityTokenHandlerWrapper.ValidateToken(
