@@ -68,8 +68,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         public async Task<ApiAuthorizationResult> AuthorizeAsync(
             IHeaderDictionary httpRequestHeaders)
         {
-            string authorizationBearerToken = _authorizationHeaderBearerTokenExractor.GetToken(
-                httpRequestHeaders);
+            string authorizationBearerToken = _authorizationHeaderBearerTokenExractor.GetToken(httpRequestHeaders);
             if (authorizationBearerToken == null)
             {
                 return new ApiAuthorizationResult(
@@ -79,6 +78,9 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
             bool isTokenValid = false;
 
             int validationRetryCount = 0;
+
+            this.logger.LogInformation("BEARER LENGTH" + authorizationBearerToken.Length);
+            this.logger.LogInformation("BEARER " + authorizationBearerToken);
 
             do
             {

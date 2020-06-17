@@ -39,13 +39,16 @@ namespace Signal.Api
             ILogger log)
         {
             log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} received a request.");
-            var authorizationResult = await _apiAuthorization.AuthorizeAsync(req.Headers);
+
+            var authorizationResult = await this._apiAuthorization.AuthorizeAsync(req.Headers);
             if (authorizationResult.Failed)
             {
                 log.LogWarning(authorizationResult.FailureReason);
                 return new UnauthorizedResult();
             }
+
             log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} request is authorized.");
+
 
             return new OkObjectResult(await this.azureStorage.ListTables());
         }
