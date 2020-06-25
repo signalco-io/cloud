@@ -20,40 +20,6 @@ namespace Signal.Api
             new OkObjectResult(await Class1.GetProjectsAsync());
     }
 
-    public class StorageTableList
-    {
-        private readonly IApiAuthorization _apiAuthorization;
-        private readonly IAzureStorage azureStorage;
-
-        public StorageTableList(
-            IApiAuthorization apiAuthorization,
-            IAzureStorage azureStorage)
-        {
-            _apiAuthorization = apiAuthorization ?? throw new System.ArgumentNullException(nameof(apiAuthorization));
-            this.azureStorage = azureStorage ?? throw new System.ArgumentNullException(nameof(azureStorage));
-        }
-
-        [FunctionName("storage-table-list")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            ILogger log)
-        {
-            log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} received a request.");
-
-            var authorizationResult = await this._apiAuthorization.AuthorizeAsync(req.Headers);
-            if (authorizationResult.Failed)
-            {
-                log.LogWarning(authorizationResult.FailureReason);
-                return new UnauthorizedResult();
-            }
-
-            log.LogWarning($"HTTP trigger function {nameof(StorageTableList)} request is authorized.");
-
-
-            return new OkObjectResult(await this.azureStorage.ListTables());
-        }
-    }
-
     public class StorageQueueList
     {
         private readonly IAzureStorage azureStorage;

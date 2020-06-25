@@ -17,7 +17,7 @@ namespace Signal.Api
             app.UsePathBase("/api");
             app.UseVoyagerExceptionHandler();
             app.UseRouting();
-            //app.UseMiddleware<SampleMiddleware>();
+            //app.UseApiAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapVoyager();
