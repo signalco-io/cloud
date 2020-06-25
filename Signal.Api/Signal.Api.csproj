@@ -9,6 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+    <PackageReference Include="Voyager" Version="0.4.4" />
+    <PackageReference Include="Voyager.Azure.Functions" Version="0.4.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj">
