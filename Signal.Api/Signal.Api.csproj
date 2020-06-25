@@ -31,4 +31,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="System\" />
+    <Folder Include="System\Storage\" />
+    <Folder Include="ApiConfig\" />
+    <Folder Include="System\Health\" />
+    <Folder Include="System\Health\Ping\" />
+    <Folder Include="System\Storage\Queues\" />
+    <Folder Include="System\Storage\Queues\List\" />
+  </ItemGroup>
 </Project>

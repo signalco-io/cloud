@@ -7,8 +7,8 @@ using Signal.Infrastructure.Secrets;
 using Voyager;
 using Voyager.Azure.Functions;
 
-[assembly: FunctionsStartup(typeof(Signal.Api.Startup))]
-namespace Signal.Api
+[assembly: FunctionsStartup(typeof(Signal.Api.ApiConfig.Startup))]
+namespace Signal.Api.ApiConfig
 {
     public class Startup : FunctionsStartup
     {
