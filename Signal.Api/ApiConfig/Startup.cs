@@ -14,7 +14,7 @@ namespace Signal.Api.ApiConfig
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.UsePathBase("/api");
+            app.UsePathBase("/");
             app.UseVoyagerExceptionHandler();
             app.UseRouting();
             app.UseApiAuthorization();
