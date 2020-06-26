@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Signal.Infrastructure.ApiAuth.Oidc;
 using Signal.Infrastructure.AzureStorage.Tables;
 using Signal.Infrastructure.Secrets;
@@ -17,7 +20,8 @@ namespace Signal.Api.ApiConfig
             app.UsePathBase("/");
             app.UseVoyagerExceptionHandler();
             app.UseRouting();
-            app.UseApiAuthorization();
+            //app.UseApiAuthorization();
+            app.UseAuthentication();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapVoyager();
@@ -26,17 +30,30 @@ namespace Signal.Api.ApiConfig
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddApiAuthOidc();
-            builder.Services.AddSecrets();
-            builder.Services.AddStorage();
             builder.AddVoyager(ConfigureServices, Configure);
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddApiAuthOidc();
+            services.AddSecrets();
+            services.AddStorage();
             services.AddVoyager(c =>
             {
                 c.AddAssemblyWith<Startup>();
+            });
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = "dfnoise.eu.auth0.com";
+                options.Audience = "https://api.signal.dfnoise.com";
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
             });
         }
     }
