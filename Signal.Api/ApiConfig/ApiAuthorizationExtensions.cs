@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
-using Signal.Core;
+﻿using Microsoft.AspNetCore.Builder;
 
 namespace Signal.Api.ApiConfig
 {
-    public static class ApiAuthorizationExtensions
+    public static class ApiExtensions
     {
-        public static IApplicationBuilder UseApiAuthorization(
-            this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ApiAuthorizationMiddleware>();
-        }
+        public static IApplicationBuilder UseApiCors(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<ApiCorsMiddleware>();
+
+        public static IApplicationBuilder UseApiAuthorization(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<ApiAuthorizationMiddleware>();
     }
 }
