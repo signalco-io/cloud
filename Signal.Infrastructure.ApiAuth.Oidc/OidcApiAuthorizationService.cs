@@ -106,7 +106,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     {
                         RequireSignedTokens = true,
                         ValidAudience = await this.AudienceAsync(),
-                        ValidateAudience = false,
+                        ValidateAudience = true,
                         ValidIssuer = await this.IssuerAsync(),
                         ValidateIssuer = true,
                         ValidateIssuerSigningKey = true,

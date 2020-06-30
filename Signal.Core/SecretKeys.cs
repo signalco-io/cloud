@@ -6,9 +6,9 @@
 
         public static class OidcApiAuthorizationSettings
         {
-            public const string IssuerUrl = "OidcApiAuthorizationSettings--IssuerUrl";
+            public const string IssuerUrl = "Oidc--IssuerUrl";
 
-            public const string Audience = "OidcApiAuthorizationSettings--Audience";
+            public const string Audience = "Oidc--Audience";
         }
     }
 }
