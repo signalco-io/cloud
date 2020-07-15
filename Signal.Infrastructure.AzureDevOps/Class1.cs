@@ -15,7 +15,7 @@ namespace Signal.Infrastructure.AzureDevOps
         public string Name { get; set; }
     }
 
-    public class Class1
+    public class DevOpsOrganizationService
     {
         private const string azureDevOpsOrganizationUrl = "https://dev.azure.com/dfnoise";
         private const string dfnoiseDevOpsPatFull = "rlajvzgplvt6j74akp2k7m3htvwk2pzrumyohol3x4qqzspdzyfa";
@@ -23,15 +23,24 @@ namespace Signal.Infrastructure.AzureDevOps
         public static async Task<IEnumerable<DevOpsProject>> GetProjectsAsync()
         {
             var projects = await GetContext(azureDevOpsOrganizationUrl, dfnoiseDevOpsPatFull).Connection.GetClient<ProjectHttpClient>().GetProjects();
-            return projects.Select(p => new DevOpsProject {Id = p.Id, Name = p.Name});
+            return projects.Select(p => new DevOpsProject { Id = p.Id, Name = p.Name });
         }
 
         private static DevOpsContext GetContext(string organizationUrl, string pat)
         {
-            var credentials = new VssBasicCredential("", pat);
+            var credentials = new VssBasicCredential("Signal", pat);
             var connection = new VssConnection(new Uri(organizationUrl), credentials);
             return new DevOpsContext(connection);
         }
+    }
+
+    public class DataDevOpsOrganization
+    {
+        public string OrganizationUrl { get; set; }
+
+        public string Pat { get; set; }
+
+        public DateTime CreatedTimeStamp { get; set; }
     }
 
     public class DevOpsContext
