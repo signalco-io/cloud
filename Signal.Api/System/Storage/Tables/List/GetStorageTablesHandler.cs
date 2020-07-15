@@ -21,7 +21,7 @@ namespace Signal.Api.System.Storage.Tables.List
             var items = await this.azureStorage.ListTables();
             return new GetStorageTablesResponse()
             {
-                Items = items
+                Items = items.Items
             };
         }
     }

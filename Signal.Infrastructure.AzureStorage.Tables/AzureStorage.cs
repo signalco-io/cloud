@@ -9,7 +9,6 @@ using Signal.Core;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {
-
     public class AzureStorage : IAzureStorage
     {
         private readonly ISecretsProvider secretsProvider;
@@ -19,21 +18,21 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
 
-        public async Task<IEnumerable<string>> ListTables()
+        public async Task<AzureStorageTablesList> ListTables()
         {
             var tableClient = await GetTableClientAsync();
 
             var tableContinuationToken = new TableContinuationToken();
             var tables = await tableClient.ListTablesSegmentedAsync(tableContinuationToken);
-            return tables.Results.Select(t => t.Uri.ToString());
+            return new AzureStorageTablesList(tables.Results.Select(t => t.Uri.ToString()));
         }
 
-        public async Task<IEnumerable<string>> ListQueues()
+        public async Task<AzureStorageQueuesList> ListQueues()
         {
             var client = await GetQueueClientAsync();
             var queueContinuationToken = new QueueContinuationToken();
             var queues = await client.ListQueuesSegmentedAsync(queueContinuationToken);
-            return queues.Results.Select(q => q.Uri.ToString());
+            return new AzureStorageQueuesList(queues.Results.Select(q => q.Uri.ToString()));
         }
 
         public async Task CreateTableAsync(string name)

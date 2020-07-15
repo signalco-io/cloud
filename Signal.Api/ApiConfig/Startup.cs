@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Signal.Core;
 using Signal.Infrastructure.ApiAuth.Oidc;
 using Signal.Infrastructure.AzureStorage.Tables;
 using Signal.Infrastructure.Secrets;
@@ -59,6 +60,7 @@ namespace Signal.Api.ApiConfig
                 });
             });
             services.AddApiAuthOidc();
+            services.AddCore();
             services.AddSecrets();
             services.AddStorage();
             services.AddVoyager(c =>
