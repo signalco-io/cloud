@@ -32,12 +32,12 @@ namespace Signal.Api.ApiConfig
             app.UsePathBase("/api");
             app.UseVoyagerExceptionHandler();
             app.UseRouting();
-            app.UseApiAuthorization();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "API V1");
             });
+            app.UseApiAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapVoyager();
