@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using Signal.Api.Dtos;
 
 namespace Signal.Api.System.Storage.Queues.List
 {
-    public class StorageQueuesListResponse
+    public class StorageQueuesListResponse : ListResponse<string>
     {
-        public IEnumerable<string> Items { get; set; }
+        public StorageQueuesListResponse(IEnumerable<string> items) : base(items)
+        {
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -51,6 +52,12 @@ namespace Signal.Api.ApiConfig
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(config =>
+            {
+                config.AddMaps(new[] {
+                    typeof(Startup)
+                });
+            });
             services.AddApiAuthOidc();
             services.AddSecrets();
             services.AddStorage();

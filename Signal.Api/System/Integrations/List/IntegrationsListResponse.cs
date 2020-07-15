@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using Signal.Api.Dtos;
 
 namespace Signal.Api.System.Integrations.List
 {
-    public class IntegrationsListResponse
+    public class IntegrationsListResponse : ListResponse<string>
     {
-        public IEnumerable<string> Items { get; set; }
+        public IntegrationsListResponse(IEnumerable<string> items) : base(items)
+        {
+        }
     }
 }
