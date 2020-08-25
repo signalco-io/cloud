@@ -30,19 +30,19 @@ namespace Signal.Infrastructure.AzureDevOps
 
         public static async Task CreateSubscriptionAsync()
         {
-            var context = GetContext(azureDevOpsOrganizationUrl, dfnoiseDevOpsPatFull);
-            var project = await context.Connection
-                .GetClient<ProjectHttpClient>().GetProject("5efbd867-e379-42aa-b5f4-801b5141f4af");
-            var hooks = context.Connection.GetClient<ServiceHooksManagementHttpClient>();
-            await hooks.CreateSubscriptionAsync(new Subscription()
-            {
-                PublisherId = "tfs",
-                EventType = "build.complete",
-                ConsumerId = "azureStorageQueue",
-                ConsumerActionId = "enqueue",
-                ActionDescription = "Account signalstorageaccount, Queue azuredevops"
-            });
-
+            throw new NotImplementedException();
+            // var context = GetContext(azureDevOpsOrganizationUrl, dfnoiseDevOpsPatFull);
+            // var project = await context.Connection
+            //     .GetClient<ProjectHttpClient>().GetProject("5efbd867-e379-42aa-b5f4-801b5141f4af");
+            // var hooks = context.Connection.GetClient<ServiceHooksManagementHttpClient>();
+            // await hooks.CreateSubscriptionAsync(new Subscription()
+            // {
+            //     PublisherId = "tfs",
+            //     EventType = "build.complete",
+            //     ConsumerId = "azureStorageQueue",
+            //     ConsumerActionId = "enqueue",
+            //     ActionDescription = "Account signalstorageaccount, Queue azuredevops"
+            // });
         }
 
         private static DevOpsContext GetContext(string organizationUrl, string pat)
