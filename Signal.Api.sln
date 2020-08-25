@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30001.183
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Signal.Api", "Signal.Api\Signal.Api.csproj", "{4E18437E-EA8F-4A7C-91EA-72AEFC5F802E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Api", "Signal.Api\Signal.Api.csproj", "{4E18437E-EA8F-4A7C-91EA-72AEFC5F802E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.AzureDevOps", "Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj", "{8CC80AE9-906E-4533-AB53-1289480789BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.AzureStorage.Tables", "Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj", "{C8AED97B-6ED0-4C4D-A2EB-A0617FBE7871}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Core", "Signal.Core\Signal.Core.csproj", "{C5ADB0F8-B739-4191-9933-96A1C96C8369}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.ApiAuth.Oidc", "Signal.Infrastructure.ApiAuth.Oidc\Signal.Infrastructure.ApiAuth.Oidc.csproj", "{5F41F2C9-2E06-4E1B-80C2-75937B726001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.Secrets", "Signal.Infrastructure.Secrets\Signal.Infrastructure.Secrets.csproj", "{76ED3111-6F04-4E20-AB2D-895C323E3F5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5ADB0F8-B739-4191-9933-96A1C96C8369}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F41F2C9-2E06-4E1B-80C2-75937B726001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F41F2C9-2E06-4E1B-80C2-75937B726001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F41F2C9-2E06-4E1B-80C2-75937B726001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F41F2C9-2E06-4E1B-80C2-75937B726001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76ED3111-6F04-4E20-AB2D-895C323E3F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76ED3111-6F04-4E20-AB2D-895C323E3F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76ED3111-6F04-4E20-AB2D-895C323E3F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76ED3111-6F04-4E20-AB2D-895C323E3F5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
