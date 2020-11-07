@@ -9,7 +9,7 @@ namespace Signal.Infrastructure.Secrets
 {
     public class SecretsProvider : ISecretsProvider
     {
-        private const string KeyVaultUrl = "https://signalapi.vault.azure.net/";
+        private const string KeyVaultUrl = "https://signal.vault.azure.net/";
 
         public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken)
         {
