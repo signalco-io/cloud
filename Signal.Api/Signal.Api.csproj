@@ -1,11 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
     <Nullable>enable</Nullable>
+    <UserSecretsId>02b74675-b956-448a-bc1c-51361b801ac3</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/753dc089-5d12-4b87-a9ac-3f58729433b1/resourceGroups/signal-api/providers/microsoft.insights/components/signal-api</ApplicationInsightsResourceId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.15.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.2" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Voyager" Version="0.5.8" />
