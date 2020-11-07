@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 
@@ -12,18 +10,16 @@ namespace Signal.Infrastructure.AzureDevOps
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     public class DevOpsOrganizationService
     {
-        private const string azureDevOpsOrganizationUrl = "https://dev.azure.com/dfnoise";
-        private const string dfnoiseDevOpsPatFull = "rlajvzgplvt6j74akp2k7m3htvwk2pzrumyohol3x4qqzspdzyfa";
-
         public static async Task<IEnumerable<DevOpsProject>> GetProjectsAsync()
         {
-            var projects = await GetContext(azureDevOpsOrganizationUrl, dfnoiseDevOpsPatFull).Connection.GetClient<ProjectHttpClient>().GetProjects();
-            return projects.Select(p => new DevOpsProject { Id = p.Id, Name = p.Name });
+            //var projects = await GetContext(AzureDevOpsOrganizationUrl, DfnoiseDevOpsPatFull).Connection.GetClient<ProjectHttpClient>().GetProjects();
+            //return projects.Select(p => new DevOpsProject { Id = p.Id, Name = p.Name });
+            throw new NotImplementedException();
         }
 
         public static async Task CreateSubscriptionAsync()
@@ -53,9 +49,9 @@ namespace Signal.Infrastructure.AzureDevOps
 
     public class DataDevOpsOrganization
     {
-        public string OrganizationUrl { get; set; }
+        public string? OrganizationUrl { get; set; }
 
-        public string Pat { get; set; }
+        public string? Pat { get; set; }
 
         public DateTime CreatedTimeStamp { get; set; }
     }
