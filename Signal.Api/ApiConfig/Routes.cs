@@ -19,7 +19,7 @@ namespace Signal.Api.ApiConfig
         [FunctionName(nameof(FallbackRoute))]
         public Task<IActionResult> FallbackRoute([HttpTrigger(AuthorizationLevel.Anonymous, "get", "put", "delete", "post", "head", "trace", "patch", "connect", "options", Route = "{*path}")] HttpRequest req)
         {
-            return router.Route(req.HttpContext);
+            return this.router.Route(req.HttpContext);
         }
     }
 }

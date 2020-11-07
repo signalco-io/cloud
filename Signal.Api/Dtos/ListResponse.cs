@@ -12,7 +12,7 @@ namespace Signal.Api.Dtos
 
         protected ListResponse(IEnumerable<TItem> items)
         {
-            Items = items ?? throw new global::System.ArgumentNullException(nameof(items));
+            this.Items = items ?? throw new global::System.ArgumentNullException(nameof(items));
         }
     }
 }

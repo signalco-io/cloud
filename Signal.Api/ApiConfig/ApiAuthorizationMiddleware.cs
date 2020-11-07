@@ -21,7 +21,7 @@ namespace Signal.Api.ApiConfig
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var authorizationResult = await apiAuthorization.AuthorizeAsync(context.Request.Headers);
+            var authorizationResult = await this.apiAuthorization.AuthorizeAsync(context.Request.Headers);
             if (authorizationResult.Failed)
             {
                 this.logger.LogWarning(authorizationResult.FailureReason);
