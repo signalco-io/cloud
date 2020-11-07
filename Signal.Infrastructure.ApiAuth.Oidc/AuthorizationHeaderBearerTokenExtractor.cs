@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Signal.Infrastructure.ApiAuth.Oidc.Abstractions;
 
 namespace Signal.Infrastructure.ApiAuth.Oidc
@@ -12,7 +11,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         /// <summary>
         /// Extracts the Bearer token from the Authorization header of the given HTTP request headers.
         /// </summary>
-        /// <param name="headers">
+        /// <param name="httpRequestHeaders">
         /// The headers from an HTTP request.
         /// </param>
         /// <returns>
@@ -20,12 +19,12 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         /// or null if the Authorization header was not found, it is in an invalid format,
         /// or its value is not a Bearer token.
         /// </returns>
-        public string GetToken(IHeaderDictionary httpRequestHeaders)
+        public string? GetToken(IHeaderDictionary httpRequestHeaders)
         {
             // Get a StringValues object that represents the content of the Authorization header found in the given
             // headers.
             // Note that the default for a IHeaderDictionary is a StringValues object with one null string.
-            StringValues rawAuthorizationHeaderValue = httpRequestHeaders
+            var rawAuthorizationHeaderValue = httpRequestHeaders
                 .SingleOrDefault(x => x.Key == "Authorization") // Case sensitive.
                 .Value;
 

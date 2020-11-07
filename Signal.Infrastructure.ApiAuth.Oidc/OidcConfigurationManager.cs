@@ -11,7 +11,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
 {
     public class OidcConfigurationManager : IOidcConfigurationManager
     {
-        private ConfigurationManager<OpenIdConnectConfiguration> _configurationManager;
+        private ConfigurationManager<OpenIdConnectConfiguration>? configurationManager;
         private readonly ISecretsProvider secretsProvider;
 
         /// <summary>
@@ -26,10 +26,10 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
 
         private async Task<ConfigurationManager<OpenIdConnectConfiguration>> ConfigurationManager()
         {
-            if (this._configurationManager != null)
-                return this._configurationManager;
+            if (this.configurationManager != null)
+                return this.configurationManager;
 
-            string issuerUrl = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.IssuerUrl);
+            string issuerUrl = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.IssuerUrl, CancellationToken.None);
 
             var documentRetriever = new HttpDocumentRetriever
             {
@@ -42,13 +42,13 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
             //
             // The configuration is not retrieved from the OpenID Connect provider until the first time
             // the ConfigurationManager.GetConfigurationAsync() is called below.
-            this._configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+            this.configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                 $"{issuerUrl}.well-known/openid-configuration",
                 new OpenIdConnectConfigurationRetriever(),
                 documentRetriever
             );
 
-            return this._configurationManager;
+            return this.configurationManager;
         }
 
         /// <summary>
@@ -62,8 +62,8 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         /// </returns>
         public async Task<IEnumerable<SecurityKey>> GetIssuerSigningKeysAsync()
         {
-            var configurationManager = await this.ConfigurationManager();
-            OpenIdConnectConfiguration configuration = await configurationManager.GetConfigurationAsync(
+            var configurationManagerInstance = await this.ConfigurationManager();
+            OpenIdConnectConfiguration configuration = await configurationManagerInstance.GetConfigurationAsync(
                 CancellationToken.None);
 
             return configuration.SigningKeys;
@@ -80,8 +80,8 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         /// </remarks>
         public async Task RequestRefreshAsync()
         {
-            var configurationManager = await this.ConfigurationManager();
-            configurationManager.RequestRefresh();
+            var configurationManagerInstance = await this.ConfigurationManager();
+            configurationManagerInstance.RequestRefresh();
         }
     }
 }

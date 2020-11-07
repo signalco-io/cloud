@@ -8,7 +8,7 @@ namespace Signal.Api.System.Storage.Queues.List
     public class StorageQueuesListHandler : ServiceHandler<StorageQueuesListRequest, StorageQueuesListResponse, IAzureStorage, AzureStorageQueuesList>
     {
         public StorageQueuesListHandler(IServiceProvider serviceProvider)
-            : base(serviceProvider, (req, service) => service.ListQueues())
+            : base(serviceProvider, (req, service, cancellation) => service.ListQueues(cancellation))
         {
         }
     }

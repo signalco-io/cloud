@@ -7,7 +7,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc.Abstractions
         /// <summary>
         /// Extract the Bearer token from the Authorization header of the given HTTP request headers.
         /// </summary>
-        /// <param name="headers">
+        /// <param name="httpRequestHeaders">
         /// The headers from an HTTP request.
         /// </param>
         /// <returns>
@@ -15,6 +15,6 @@ namespace Signal.Infrastructure.ApiAuth.Oidc.Abstractions
         /// or null if the authorization header was not found
         /// or its value is not a Bearer token.
         /// </returns>
-        string GetToken(IHeaderDictionary httpRequestHeaders);
+        string? GetToken(IHeaderDictionary httpRequestHeaders);
     }
 }

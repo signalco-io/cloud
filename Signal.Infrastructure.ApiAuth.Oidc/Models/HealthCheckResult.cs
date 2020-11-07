@@ -15,13 +15,13 @@
         /// <param name="badHealthMessage">
         /// The message describing the bad health.
         /// </param>
-        public HealthCheckResult(string badHealthMessage)
+        public HealthCheckResult(string? badHealthMessage)
         {
-            BadHealthMessage = badHealthMessage;
+            this.BadHealthMessage = badHealthMessage;
         }
 
-        public bool IsHealthy => BadHealthMessage == null;
+        public bool IsHealthy => this.BadHealthMessage == null;
 
-        public string BadHealthMessage { get; set; }
+        public string? BadHealthMessage { get; set; }
     }
 }

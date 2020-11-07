@@ -8,13 +8,13 @@ namespace Signal.Api.ApiConfig
 {
     public class ApiAuthorizationMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly RequestDelegate next;
         private readonly IApiAuthorization apiAuthorization;
         private readonly ILogger<ApiAuthorizationMiddleware> logger;
 
         public ApiAuthorizationMiddleware(RequestDelegate next, IApiAuthorization apiAuthorization, ILogger<ApiAuthorizationMiddleware> logger)
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
+            this.next = next ?? throw new ArgumentNullException(nameof(next));
             this.apiAuthorization = apiAuthorization ?? throw new ArgumentNullException(nameof(apiAuthorization));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -30,7 +30,7 @@ namespace Signal.Api.ApiConfig
             }
 
             // Call the next delegate/middleware in the pipeline
-            await _next(context);
+            await this.next(context);
         }
     }
 }

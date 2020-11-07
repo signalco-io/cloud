@@ -2,6 +2,6 @@
 {
     public class PingResponse
     {
-        public string Version { get; set; }
+        public string? Version { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
@@ -13,20 +14,20 @@ namespace Signal.Api.Handlers
     {
         private readonly TService service;
         private readonly IMapper mapper;
-        private readonly Func<TRequest, TService, Task<TServiceResult>> serviceCall;
+        private readonly Func<TRequest, TService, CancellationToken, Task<TServiceResult>> serviceCall;
 
-        public ServiceHandler(
+        protected ServiceHandler(
             IServiceProvider serviceProvider,
-            Func<TRequest, TService, Task<TServiceResult>> serviceCall)
+            Func<TRequest, TService, CancellationToken, Task<TServiceResult>> serviceCall)
         {
             this.service = (TService)serviceProvider.GetService(typeof(TService));
             this.mapper = (IMapper)serviceProvider.GetService(typeof(IMapper));
             this.serviceCall = serviceCall ?? throw new ArgumentNullException(nameof(serviceCall));
         }
 
-        public override async Task<ActionResult<TResponse>> HandleRequestAsync(TRequest request)
+        public override async Task<ActionResult<TResponse>> HandleRequestAsync(TRequest request, CancellationToken cancellationToken)
         {
-            var result = await this.serviceCall.Invoke(request, this.service);
+            var result = await this.serviceCall.Invoke(request, this.service, cancellationToken);
             if (result != null)
                 return result.MapTo<TResponse>(this.mapper);
 

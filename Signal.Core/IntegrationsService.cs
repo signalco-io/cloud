@@ -1,13 +1,14 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Signal.Core
 {
     public class IntegrationsService : IIntegrationsService
     {
-        public async Task<IIntegrationsList> ListAsync()
+        public Task<IIntegrationsList> ListAsync(CancellationToken cancellationToken)
         {
-            return new IntegrationsList(new List<string>() { "devops" });
+            return Task.FromResult((IIntegrationsList)new IntegrationsList(new List<string> { "devops" }));
         }
     }
 }

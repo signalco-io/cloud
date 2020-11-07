@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Voyager.Api;
 
 namespace Signal.Api.System.Health.Ping
@@ -8,7 +7,7 @@ namespace Signal.Api.System.Health.Ping
     {
         public override ActionResult<PingResponse> HandleRequest(PingRequest request)
         {
-            return new PingResponse()
+            return new PingResponse
             {
                 Version = typeof(PingRequest).Assembly.GetName().Version?.ToString()
             };

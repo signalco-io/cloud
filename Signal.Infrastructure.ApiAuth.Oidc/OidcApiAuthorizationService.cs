@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Signal.Core;
 using Signal.Infrastructure.ApiAuth.Oidc.Abstractions;
@@ -16,26 +16,24 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
     /// </summary>
     public class OidcApiAuthorizationService : IApiAuthorization
     {
-        private readonly IAuthorizationHeaderBearerTokenExtractor _authorizationHeaderBearerTokenExractor;
-
-        private readonly IJwtSecurityTokenHandlerWrapper _jwtSecurityTokenHandlerWrapper;
-
-        private readonly IOidcConfigurationManager _oidcConfigurationManager;
+        private readonly IAuthorizationHeaderBearerTokenExtractor authorizationHeaderBearerTokenExtractor;
+        private readonly IJwtSecurityTokenHandlerWrapper jwtSecurityTokenHandlerWrapper;
+        private readonly IOidcConfigurationManager oidcConfigurationManager;
         private readonly ISecretsProvider secretsProvider;
         private readonly ILogger<OidcApiAuthorizationService> logger;
-        private string issuer;
-        private string audience;
+        private string? issuer;
+        private string? audience;
 
         public OidcApiAuthorizationService(
-            IAuthorizationHeaderBearerTokenExtractor authorizationHeaderBearerTokenExractor,
+            IAuthorizationHeaderBearerTokenExtractor authorizationHeaderBearerTokenExtractor,
             IJwtSecurityTokenHandlerWrapper jwtSecurityTokenHandlerWrapper,
             IOidcConfigurationManager oidcConfigurationManager,
             ISecretsProvider secretsProvider,
             ILogger<OidcApiAuthorizationService> logger)
         {
-            _authorizationHeaderBearerTokenExractor = authorizationHeaderBearerTokenExractor;
-            _jwtSecurityTokenHandlerWrapper = jwtSecurityTokenHandlerWrapper;
-            _oidcConfigurationManager = oidcConfigurationManager;
+            this.authorizationHeaderBearerTokenExtractor = authorizationHeaderBearerTokenExtractor;
+            this.jwtSecurityTokenHandlerWrapper = jwtSecurityTokenHandlerWrapper;
+            this.oidcConfigurationManager = oidcConfigurationManager;
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -44,7 +42,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         {
             if (this.issuer != null) return this.issuer;
 
-            this.issuer = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.IssuerUrl);
+            this.issuer = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.IssuerUrl, CancellationToken.None);
             return this.issuer;
         }
 
@@ -52,7 +50,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         {
             if (this.audience != null) return this.audience;
 
-            this.audience = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.Audience);
+            this.audience = await this.secretsProvider.GetSecretAsync(SecretKeys.OidcApiAuthorizationSettings.Audience, CancellationToken.None);
             return this.audience;
         }
 
@@ -68,20 +66,20 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
         public async Task<ApiAuthorizationResult> AuthorizeAsync(
             IHeaderDictionary httpRequestHeaders)
         {
-            string authorizationBearerToken = _authorizationHeaderBearerTokenExractor.GetToken(httpRequestHeaders);
+            var authorizationBearerToken = this.authorizationHeaderBearerTokenExtractor.GetToken(httpRequestHeaders);
             if (authorizationBearerToken == null)
             {
                 return new ApiAuthorizationResult(
                     "Authorization header is missing, invalid format, or is not a Bearer token.");
             }
 
-            bool isTokenValid = false;
+            var isTokenValid = false;
 
-            int validationRetryCount = 0;
+            var validationRetryCount = 0;
 
             do
             {
-                IEnumerable<SecurityKey> isserSigningKeys;
+                IEnumerable<SecurityKey> issuerSigningKeys;
                 try
                 {
                     // Get the cached signing keys if they were retrieved previously. 
@@ -89,7 +87,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     // then a fresh set of signing keys are retrieved from the OpenID Connect provider
                     // (issuer) cached and returned.
                     // This method will throw if the configuration cannot be retrieved, instead of returning null.
-                    isserSigningKeys = await _oidcConfigurationManager.GetIssuerSigningKeysAsync();
+                    issuerSigningKeys = await this.oidcConfigurationManager.GetIssuerSigningKeysAsync();
                 }
                 catch (Exception ex)
                 {
@@ -111,13 +109,13 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                         ValidateIssuer = true,
                         ValidateIssuerSigningKey = true,
                         ValidateLifetime = true,
-                        IssuerSigningKeys = isserSigningKeys
+                        IssuerSigningKeys = issuerSigningKeys
                     };
 
                     this.logger.LogInformation("ValidAudience: " + tokenValidationParameters.ValidAudiences);
 
                     // Throws if the the token cannot be validated.
-                    _jwtSecurityTokenHandlerWrapper.ValidateToken(
+                    this.jwtSecurityTokenHandlerWrapper.ValidateToken(
                         authorizationBearerToken,
                         tokenValidationParameters);
 
@@ -133,7 +131,7 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                     // Then we retry by asking for the signing keys and validating the token again.
                     // We only retry once.
 
-                    await _oidcConfigurationManager.RequestRefreshAsync();
+                    await this.oidcConfigurationManager.RequestRefreshAsync();
 
                     validationRetryCount++;
                 }
@@ -157,15 +155,15 @@ namespace Signal.Infrastructure.ApiAuth.Oidc
                 || string.IsNullOrWhiteSpace(await this.AudienceAsync()))
             {
                 return new HealthCheckResult(
-                    $"Some or all OpenID connection settings are missing.");
+                    "Some or all OpenID connection settings are missing.");
             }
 
             try
             {
                 // Get the singing keys fresh. Not from the cache.
-                await _oidcConfigurationManager.RequestRefreshAsync();
+                await this.oidcConfigurationManager.RequestRefreshAsync();
 
-                await _oidcConfigurationManager.GetIssuerSigningKeysAsync();
+                await this.oidcConfigurationManager.GetIssuerSigningKeysAsync();
             }
             catch (Exception ex)
             {

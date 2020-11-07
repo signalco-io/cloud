@@ -18,24 +18,24 @@
         /// <param name="failureReason">
         /// Describes the reason for the authorization failure.
         /// </param>
-        public ApiAuthorizationResult(string failureReason)
+        public ApiAuthorizationResult(string? failureReason)
         {
-            FailureReason = failureReason;
+            this.FailureReason = failureReason;
         }
 
         /// <summary>
         /// True if authorization failed.
         /// </summary>
-        public bool Failed => FailureReason != null;
+        public bool Failed => this.FailureReason != null;
 
         /// <summary>
         /// String describing the reason for the authorization failure.
         /// </summary>
-        public string FailureReason { get; }
+        public string? FailureReason { get; }
 
         /// <summary>
         /// True if authorization was successful.
         /// </summary>
-        public bool Success => !Failed;
+        public bool Success => !this.Failed;
     }
 }

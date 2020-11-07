@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Signal.Core;
@@ -16,10 +17,10 @@ namespace Signal.Api.System.Storage.Tables.List
             this.azureStorage = azureStorage ?? throw new ArgumentNullException(nameof(azureStorage));
         }
 
-        public override async Task<ActionResult<GetStorageTablesResponse>> HandleRequestAsync(GetStorageTablesRequest request)
+        public override async Task<ActionResult<GetStorageTablesResponse>> HandleRequestAsync(GetStorageTablesRequest request, CancellationToken cancellationToken)
         {
-            var items = await this.azureStorage.ListTables();
-            return new GetStorageTablesResponse()
+            var items = await this.azureStorage.ListTables(cancellationToken);
+            return new GetStorageTablesResponse
             {
                 Items = items.Items
             };
