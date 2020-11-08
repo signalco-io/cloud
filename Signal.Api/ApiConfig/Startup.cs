@@ -47,9 +47,7 @@ namespace Signal.Api.ApiConfig
         {
             services.AddAutoMapper(config =>
             {
-                config.AddMaps(new[] {
-                    typeof(Startup)
-                });
+                config.AddMaps(typeof(Startup));
             });
             services.AddApiAuthOidc();
             services.AddCore();
