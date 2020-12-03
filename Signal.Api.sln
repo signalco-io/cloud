@@ -20,7 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Infrastructure.AzureSpeech", "Signal.Infrastructure.AzureSpeech\Signal.Infrastructure.AzureSpeech.csproj", "{80A852F7-1AA6-4C0F-8382-08AED9E3CE51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Signal.Infrastructure.AzureSpeech", "Signal.Infrastructure.AzureSpeech\Signal.Infrastructure.AzureSpeech.csproj", "{80A852F7-1AA6-4C0F-8382-08AED9E3CE51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Signal.Api.Public", "Signal.Api.Public\Signal.Api.Public.csproj", "{94C41557-A004-491A-AF09-53E47DB07E92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{80A852F7-1AA6-4C0F-8382-08AED9E3CE51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80A852F7-1AA6-4C0F-8382-08AED9E3CE51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80A852F7-1AA6-4C0F-8382-08AED9E3CE51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94C41557-A004-491A-AF09-53E47DB07E92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94C41557-A004-491A-AF09-53E47DB07E92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94C41557-A004-491A-AF09-53E47DB07E92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94C41557-A004-491A-AF09-53E47DB07E92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
