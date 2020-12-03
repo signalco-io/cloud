@@ -27,9 +27,16 @@ namespace Signal.Api.Public
             name = name ?? data?.name;
 
             var creds = string.Empty;
-            if (req.Headers.TryGetValue("x-ms-client-principal", out var principal))
-                if (principal.Any())
-                    creds = principal[0];
+            try
+            {
+                if (req.Headers.TryGetValue("x-ms-client-principal", out var principal))
+                    if (principal.Any())
+                        creds = principal[0];
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Failed to retrieve principal");
+            }
 
             string responseMessage = string.IsNullOrEmpty(name)
                 ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
