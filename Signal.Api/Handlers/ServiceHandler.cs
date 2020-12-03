@@ -30,7 +30,7 @@ namespace Signal.Api.Handlers
             var result = await this.serviceCall.Invoke(request, this.service, cancellationToken);
             if (result != null)
                 return result.MapTo<TResponse>(this.mapper);
-
+            
             throw new Exception($"Didn't get response from service {typeof(TService).FullName}.");
         }
     }

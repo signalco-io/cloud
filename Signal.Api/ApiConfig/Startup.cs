@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Signal.Core;
 using Signal.Infrastructure.ApiAuth.Oidc;
+using Signal.Infrastructure.AzureSpeech;
 using Signal.Infrastructure.AzureStorage.Tables;
 using Signal.Infrastructure.Secrets;
 using Voyager;
@@ -53,6 +54,7 @@ namespace Signal.Api.ApiConfig
             services.AddCore();
             services.AddSecrets();
             services.AddStorage();
+            services.AddAzureSpeech();
             services.AddVoyager(c =>
             {
                 c.AddAssemblyWith<Startup>();

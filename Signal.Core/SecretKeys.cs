@@ -10,5 +10,19 @@
 
             public const string Audience = "Oidc--Audience";
         }
+
+        public static class Auth0
+        {
+            public const string AppIdentifier = "Auth0--AppIdentifier";
+
+            public const string Domain = "Auth0--Domain";
+        }
+
+        public static class AzureSpeech
+        {
+            public const string SubscriptionKey = "AzureSpeech--SubscriptionKey";
+
+            public const string Region = "AzureSpeech--Region";
+        }
     }
 }

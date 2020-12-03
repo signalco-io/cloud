@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Signal.Infrastructure.AzureDevOps\Signal.Infrastructure.AzureDevOps.csproj">
       <GlobalPropertiesToRemove />
     </ProjectReference>
+    <ProjectReference Include="..\Signal.Infrastructure.AzureSpeech\Signal.Infrastructure.AzureSpeech.csproj" />
     <ProjectReference Include="..\Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj">
       <GlobalPropertiesToRemove />
     </ProjectReference>
