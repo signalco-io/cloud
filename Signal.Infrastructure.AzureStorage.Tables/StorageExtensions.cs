@@ -5,7 +5,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 {
     public static class StorageExtensions
     {
-        public static void AddStorage(this IServiceCollection services)
+        public static void AddAzureStorage(this IServiceCollection services)
         {
             services.AddTransient<IAzureStorage, AzureStorage>();
         }

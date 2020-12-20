@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
-using Microsoft.WindowsAzure.Storage.Table;
+using Azure.Storage.Queues;
 using Signal.Core;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
@@ -17,47 +16,20 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         {
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
-
-        public async Task<AzureStorageTablesList> ListTables(CancellationToken cancellationToken)
+        
+        public async Task QueueMessageAsync<T>(string queueName, T item, CancellationToken cancellationToken, TimeSpan? delay = null, TimeSpan? ttl = null)
+            where T : IQueueItem
         {
-            var tableClient = await this.GetTableClientAsync(cancellationToken);
-
-            var tableContinuationToken = new TableContinuationToken();
-            var tables = await tableClient.ListTablesSegmentedAsync(tableContinuationToken);
-            return new AzureStorageTablesList(tables.Results.Select(t => t.Uri.ToString()));
+            var itemSerialized = JsonSerializer.Serialize(item);
+            var itemSerializedBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(itemSerialized));
+            var client = await this.GetQueueClientAsync(queueName, cancellationToken).ConfigureAwait(false);
+            await client.SendMessageAsync(BinaryData.FromString(itemSerializedBase64), delay, ttl, cancellationToken);
         }
-
-        public async Task<AzureStorageQueuesList> ListQueues(CancellationToken cancellationToken)
+        
+        private async Task<QueueClient> GetQueueClientAsync(string queueName, CancellationToken cancellationToken)
         {
-            var client = await this.GetQueueClientAsync(cancellationToken);
-            var queueContinuationToken = new QueueContinuationToken();
-            var queues = await client.ListQueuesSegmentedAsync(queueContinuationToken);
-            return new AzureStorageQueuesList(queues.Results.Select(q => q.Uri.ToString()));
+            var connectionString = await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
+            return new QueueClient(connectionString, queueName);
         }
-
-        public async Task CreateTableAsync(string name, CancellationToken cancellationToken)
-        {
-            var tableClient = await this.GetTableClientAsync(cancellationToken);
-            var table = tableClient.GetTableReference(name);
-            await table.CreateIfNotExistsAsync();
-        }
-
-        private async Task<CloudQueueClient> GetQueueClientAsync(CancellationToken cancellationToken)
-        {
-            var storageAccount = await this.GetStorageAccountAsync(cancellationToken);
-            return storageAccount.CreateCloudQueueClient();
-        }
-
-        private async Task<CloudTableClient> GetTableClientAsync(CancellationToken cancellationToken)
-        {
-            var storageAccount = await this.GetStorageAccountAsync(cancellationToken);
-            return storageAccount.CreateCloudTableClient();
-        }
-
-        private async Task<CloudStorageAccount> GetStorageAccountAsync(CancellationToken cancellationToken) => 
-            CloudStorageAccount.Parse(await this.GetStorageConnectionString(cancellationToken));
-
-        private Task<string> GetStorageConnectionString(CancellationToken cancellationToken) =>
-            this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken);
     }
 }
