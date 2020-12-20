@@ -23,7 +23,7 @@ namespace Signal.Infrastructure.Secrets
         {
             try
             {
-                return this.configuration[key];
+                return this.configuration[key] ?? throw new Exception("Not a local secret.");
             }
             catch
             {
