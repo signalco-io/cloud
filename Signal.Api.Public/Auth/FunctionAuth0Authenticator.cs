@@ -29,7 +29,7 @@ namespace Signal.Api.Public
                 return;
 
             var domain = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
-            var audience = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.AppIdentifier, cancellationToken);
+            var audience = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ApiIdentifier, cancellationToken);
             this.authenticator = new Auth0Authenticator(domain, new[] {audience});
         }
         
