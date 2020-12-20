@@ -30,7 +30,6 @@ namespace Signal.Api.Public
 
             var domain = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
             var audience = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.AppIdentifier, cancellationToken);
-            this.logger.LogInformation("Authenticator using domain {Domain}, audience {Audience}", domain, audience);
             this.authenticator = new Auth0Authenticator(domain, new[] {audience});
         }
         
