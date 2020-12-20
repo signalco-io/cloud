@@ -6,7 +6,7 @@
         
         public static class Auth0
         {
-            public const string AppIdentifier = "Auth0--AppIdentifier";
+            public const string ApiIdentifier = "Auth0--ApiIdentifier";
 
             public const string Domain = "Auth0--Domain";
         }
