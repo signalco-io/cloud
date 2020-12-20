@@ -44,11 +44,4 @@ namespace Signal.Core.Beacon
     public interface IBeaconTableEntity : ITableEntity
     {
     }
-
-    public interface ITableEntity
-    {
-        string PartitionKey { get; set; }
-
-        string RowKey { get; set; }
-    }
 }
