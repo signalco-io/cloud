@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace Signal.Api.Public
             {
                 ValidIssuer = $"https://{auth0Domain}/",
                 ValidAudiences = audiences.ToArray(),
-                ValidateIssuerSigningKey = true,
+                ValidateIssuerSigningKey = true
             };
             this.manager = new ConfigurationManager<OpenIdConnectConfiguration>(
                 $"https://{auth0Domain}/.well-known/openid-configuration", 
@@ -49,6 +50,8 @@ namespace Signal.Api.Public
             string token,
             CancellationToken cancellationToken)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
             // Note: ConfigurationManager<T> has an automatic refresh interval of 1 day.
             //   The config is cached in-between refreshes, so this "asynchronous" call actually completes synchronously unless it needs to refresh.
             var config = await this.manager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);

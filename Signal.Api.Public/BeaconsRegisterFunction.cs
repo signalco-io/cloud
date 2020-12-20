@@ -40,8 +40,9 @@ namespace Signal.Api.Public
                 var requestContent = await new StreamReader(req.Body).ReadToEndAsync();
                 if (string.IsNullOrWhiteSpace(requestContent))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Request empty.");
-                
-                var registerRequest = JsonSerializer.Deserialize<BeaconRegisterDto>(requestContent);
+
+                var registerRequest = JsonSerializer.Deserialize<BeaconRegisterDto>(requestContent,
+                    new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
                 
                 if (registerRequest == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Unable to deserialize request.");
