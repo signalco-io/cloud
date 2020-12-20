@@ -3,14 +3,7 @@
     public static class SecretKeys
     {
         public const string StorageAccountConnectionString = "SignalStorageAccountConnectionString";
-
-        public static class OidcApiAuthorizationSettings
-        {
-            public const string IssuerUrl = "Oidc--IssuerUrl";
-
-            public const string Audience = "Oidc--Audience";
-        }
-
+        
         public static class Auth0
         {
             public const string AppIdentifier = "Auth0--AppIdentifier";
