@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +13,19 @@ using Signal.Core;
 
 namespace Signal.Api.Public
 {
+    public class SignalDeviceStatePublishDto
+    {
+        public string? DeviceIdentifier { get; set; }
+        
+        public string? ChannelName { get; set; }
+        
+        public string? ContactName { get; set; }
+        
+        public string? ValueSerialized { get; set; }
+        
+        public DateTime? TimeStamp { get; set; }
+    }
+    
     public class DevicesStatePublishFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
@@ -34,17 +50,22 @@ namespace Signal.Api.Public
             {
                 var user = await this.functionAuthenticator.AuthenticateAsync(req, cancellationToken);
                 
+                var requestContent = await new StreamReader(req.Body).ReadToEndAsync();
+                var request = JsonSerializer.Deserialize<SignalDeviceStatePublishDto>(requestContent);
+                if (request == null)
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Failed to read request data.");
+                
                 // Publish state 
-                await this.storage.QueueMessageAsync(
+                await this.storage.QueueItemAsync(
                     QueueNames.DevicesState,
                     new DeviceStateQueueItem(
                         Guid.NewGuid(),
                         user.UserId,
-                        DateTime.UtcNow,
-                        "test",
-                        "main",
-                        "state",
-                        "true"),
+                        request.TimeStamp ?? DateTime.UtcNow,
+                        request.DeviceIdentifier,
+                        request.ChannelName,
+                        request.ContactName,
+                        request.ValueSerialized),
                     cancellationToken);
 
                 return new OkResult();

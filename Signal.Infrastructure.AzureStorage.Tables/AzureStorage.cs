@@ -20,7 +20,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
         
-        public async Task QueueMessageAsync<T>(string queueName, T item, CancellationToken cancellationToken, TimeSpan? delay = null, TimeSpan? ttl = null)
+        public async Task QueueItemAsync<T>(string queueName, T item, CancellationToken cancellationToken, TimeSpan? delay = null, TimeSpan? ttl = null)
             where T : class, IQueueItem
         {
             var itemSerialized = JsonSerializer.Serialize(item);
@@ -39,21 +39,13 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         private static Dictionary<string, object> ObjectToDictionary<T>(T item) where T : class, Core.ITableEntity, new() => 
             item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
 
-        public async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken)
-        {
-            var connectionString = await this.GetConnectionStringAsync(cancellationToken);
-            return new TableClient(connectionString, tableName);
-        }
+        private async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken) => 
+            new TableClient(await this.GetConnectionStringAsync(cancellationToken), tableName);
 
-        private async Task<QueueClient> GetQueueClientAsync(string queueName, CancellationToken cancellationToken)
-        {
-            var connectionString = await this.GetConnectionStringAsync(cancellationToken);
-            return new QueueClient(connectionString, queueName);
-        }
+        private async Task<QueueClient> GetQueueClientAsync(string queueName, CancellationToken cancellationToken) => 
+            new QueueClient(await this.GetConnectionStringAsync(cancellationToken), queueName);
 
-        private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken)
-        {
-            return await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
-        }
+        private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) => 
+            await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
     }
 }
