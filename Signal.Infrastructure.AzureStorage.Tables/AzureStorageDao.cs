@@ -27,7 +27,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         
         // TODO: De-dup AzureStorage
         private async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken) => 
-            new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), tableName);
+            new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), AzureTableExtensions.EscapeKey(tableName));
 
         // TODO: De-dup AzureStorage
         private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>

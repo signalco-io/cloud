@@ -46,10 +46,10 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
 
         private async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken) => 
-            new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), tableName);
+            new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), AzureTableExtensions.EscapeKey(tableName));
 
         private async Task<QueueClient> GetQueueClientAsync(string queueName, CancellationToken cancellationToken) => 
-            new QueueClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), queueName);
+            new QueueClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), AzureTableExtensions.EscapeKey(queueName));
 
         private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
             await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);

@@ -3,7 +3,7 @@ using Signal.Core;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {
-    internal static class TableEntityExtensions
+    internal static class AzureTableExtensions
     {
         public static TableEntity EscapeKeys(this TableEntity entity)
         {
@@ -33,7 +33,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return entity;
         }
         
-        private static string EscapeKey(string key)
+        public static string EscapeKey(string key)
         {
             return key
                 .Replace("/", "__bs__")
@@ -45,7 +45,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 .Replace("\r", "__cr__");
         }
         
-        private static string UnEscapeKey(string key)
+        public static string UnEscapeKey(string key)
         {
             return key
                 .Replace("__bs__", "/")
