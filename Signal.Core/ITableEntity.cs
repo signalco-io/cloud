@@ -28,7 +28,6 @@ namespace Signal.Core
     public interface IDeviceStateHistoryTableEntity : ITableEntity
     {
         string? ValueSerialized { get; set; }
-        DateTime TimeStamp { get; set; }
     }
     
     public class DeviceStateHistoryTableEntity : IDeviceStateHistoryTableEntity
@@ -36,10 +35,11 @@ namespace Signal.Core
         public DeviceStateHistoryTableEntity(
             string deviceIdentifier,
             string channelName,
-            string contactName)
+            string contactName,
+            DateTime timeStamp)
         {
-            this.PartitionKey = deviceIdentifier;
-            this.RowKey = $"{channelName}-{contactName}";
+            this.PartitionKey = $"{deviceIdentifier}-{channelName}-{contactName}";
+            this.RowKey = timeStamp.ToString("O");
         }
         
         public string PartitionKey { get; set; }
@@ -47,8 +47,6 @@ namespace Signal.Core
         public string RowKey { get; set; }
         
         public string? ValueSerialized { get; set; }
-        
-        public DateTime TimeStamp { get; set; }
     }
     
     public interface IDeviceStateTableEntity : ITableEntity

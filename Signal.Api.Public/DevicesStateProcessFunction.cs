@@ -72,11 +72,13 @@ namespace Signal.Api.Public
                 await this.azureStorage.EnsureTableExistsAsync(historyTableName, cancellationToken);
                 var persistHistoryTask = this.azureStorage.CreateOrUpdateItemAsync(
                     historyTableName,
-                    new DeviceStateHistoryTableEntity(newState.DeviceIdentifier, newState.ChannelName,
-                        newState.ContactName)
+                    new DeviceStateHistoryTableEntity(
+                        newState.DeviceIdentifier, 
+                        newState.ChannelName,
+                        newState.ContactName,
+                        newState.TimeStamp)
                     {
                         ValueSerialized = newState.ValueSerialized,
-                        TimeStamp = newState.TimeStamp
                     },
                     cancellationToken);
 
