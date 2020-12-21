@@ -35,7 +35,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         }
         
         public static string EscapeTableName(string name) => 
-            string.Concat(name.Select(char.IsLetterOrDigit));
+            string.Concat(name.Where(char.IsLetterOrDigit));
 
         public static string EscapeKey(string key) =>
             key
