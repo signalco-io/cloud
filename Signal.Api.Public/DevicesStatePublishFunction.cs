@@ -51,7 +51,8 @@ namespace Signal.Api.Public
                 var user = await this.functionAuthenticator.AuthenticateAsync(req, cancellationToken);
                 
                 var requestContent = await new StreamReader(req.Body).ReadToEndAsync();
-                var request = JsonSerializer.Deserialize<SignalDeviceStatePublishDto>(requestContent);
+                var request = JsonSerializer.Deserialize<SignalDeviceStatePublishDto>(requestContent,
+                    new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
                 if (request == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Failed to read request data.");
                 

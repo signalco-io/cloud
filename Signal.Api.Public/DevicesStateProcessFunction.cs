@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -20,14 +21,23 @@ namespace Signal.Api.Public
             this.azureStorage = azureStorage ?? throw new ArgumentNullException(nameof(azureStorage));
             this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
         }
-        
-        
+
+
         [FunctionName("Devices-ProcessState")]
-        public async Task Run([QueueTrigger(QueueNames.DevicesState, Connection = SecretKeys.StorageAccountConnectionString)] string deviceStateItemSerialized, ILogger log, CancellationToken cancellationToken)
+        public async Task Run(
+            [QueueTrigger(QueueNames.DevicesState, Connection = SecretKeys.StorageAccountConnectionString)]
+            string deviceStateItemSerialized, ILogger log, CancellationToken cancellationToken)
         {
             log.LogDebug("Processing state {State}", deviceStateItemSerialized);
 
             var state = deviceStateItemSerialized.ToQueueItem<DeviceStateQueueItem>();
+            if (state == null ||
+                string.IsNullOrWhiteSpace(state.UserId) ||
+                string.IsNullOrWhiteSpace(state.DeviceIdentifier) ||
+                string.IsNullOrWhiteSpace(state.ChannelName) ||
+                string.IsNullOrWhiteSpace(state.ContactName))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest,
+                    "State, one or more required state properties are null or empty.");
 
             // TODO: Retrieve device configuration (validate user assigned)
             // TODO: Validate device has contact for state
@@ -37,7 +47,7 @@ namespace Signal.Api.Public
             //var currentState = await this.azureStorageDao.GetDeviceStateAsync(
             //    new TableEntityKey(state.UserId, $"{state.DeviceIdentifier}-{state.ChannelName}-{state.ContactName}"),
             //    cancellationToken);
-            
+
             // TODO: Discard if outdated
 
             // TODO: Persist as current state (parallel)
