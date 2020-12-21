@@ -50,7 +50,7 @@ namespace Signal.Api.Public
                     cancellationToken);
 
                 // Ignore outdated states
-                if (newState.TimeStamp < currentState.TimeStamp)
+                if (currentState != null && newState.TimeStamp < currentState.TimeStamp)
                     return;
 
                 // Persist as current state

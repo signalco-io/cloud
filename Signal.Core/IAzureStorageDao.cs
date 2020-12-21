@@ -5,6 +5,6 @@ namespace Signal.Core
 {
     public interface IAzureStorageDao
     {
-        Task<IDeviceStateTableEntity> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken);
+        Task<IDeviceStateTableEntity?> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken);
     }
 }
