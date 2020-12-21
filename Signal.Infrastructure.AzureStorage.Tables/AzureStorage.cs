@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
 using Azure.Storage.Queues;
 using Signal.Core;
 using ITableEntity = Azure.Data.Tables.ITableEntity;
@@ -24,9 +25,12 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         
         public async Task<IDeviceStateTableEntity> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken)
         {
+            var keyEscaped = key.EscapeKeys();
             var client = await this.GetTableClientAsync("devicestates", cancellationToken).ConfigureAwait(false);
-            var response = await client.GetEntityAsync<AzureDeviceStateTableEntity>(key.PartitionKey, key.RowKey, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return response.Value;
+            var response = await client.GetEntityAsync<AzureDeviceStateTableEntity>(keyEscaped.PartitionKey, keyEscaped.RowKey, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var item = response.Value;
+            item.UnEscapeKeys();
+            return item;
         }
         
         // TODO: De-dup AzureStorage
@@ -81,7 +85,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : Core.ITableEntity
         {
             var client = await this.GetTableClientAsync(tableName, cancellationToken);
-            var azureItem = new TableEntity(ObjectToDictionary(item));
+            var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
             await client.UpsertEntityAsync(azureItem, TableUpdateMode.Merge, cancellationToken).ConfigureAwait(false);
         }
 
@@ -96,5 +100,60 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
         private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
             await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
+    }
+    
+    internal static class TableEntityExtensions
+    {
+        public static TableEntity EscapeKeys(this TableEntity entity)
+        {
+            entity.PartitionKey = EscapeKey(entity.PartitionKey);
+            entity.RowKey = EscapeKey(entity.RowKey);
+            return entity;
+        }
+        
+        public static TableEntity UnEscapeKeys(this TableEntity entity)
+        {
+            entity.PartitionKey = UnEscapeKey(entity.PartitionKey);
+            entity.RowKey = UnEscapeKey(entity.RowKey);
+            return entity;
+        }
+        
+        public static ITableEntityKey EscapeKeys(this ITableEntityKey entity)
+        {
+            entity.PartitionKey = EscapeKey(entity.PartitionKey);
+            entity.RowKey = EscapeKey(entity.RowKey);
+            return entity;
+        }
+        
+        public static ITableEntityKey UnEscapeKeys(this ITableEntityKey entity)
+        {
+            entity.PartitionKey = UnEscapeKey(entity.PartitionKey);
+            entity.RowKey = UnEscapeKey(entity.RowKey);
+            return entity;
+        }
+        
+        private static string EscapeKey(string key)
+        {
+            return key
+                .Replace("/", "__bs__")
+                .Replace("\\", "__fs__")
+                .Replace("#", "__hash__")
+                .Replace("?", "__q__")
+                .Replace("\t", "__tab__")
+                .Replace("\n", "__nl__")
+                .Replace("\r", "__cr__");
+        }
+        
+        private static string UnEscapeKey(string key)
+        {
+            return key
+                .Replace("__bs__", "/")
+                .Replace("__fs__", "\\")
+                .Replace("__hash__", "#")
+                .Replace("__q__", "?")
+                .Replace("__tab__", "\t")
+                .Replace("__nl__", "\n")
+                .Replace("__cr__", "\r");
+        }
     }
 }
