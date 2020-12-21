@@ -1,4 +1,5 @@
-﻿using Azure.Data.Tables;
+﻿using System.Linq;
+using Azure.Data.Tables;
 using Signal.Core;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
@@ -33,9 +34,11 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return entity;
         }
         
-        public static string EscapeKey(string key)
-        {
-            return key
+        public static string EscapeTableName(string name) => 
+            string.Concat(name.Select(char.IsLetterOrDigit));
+
+        public static string EscapeKey(string key) =>
+            key
                 .Replace("/", "__bs__")
                 .Replace("\\", "__fs__")
                 .Replace("#", "__hash__")
@@ -43,11 +46,9 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 .Replace("\t", "__tab__")
                 .Replace("\n", "__nl__")
                 .Replace("\r", "__cr__");
-        }
-        
-        public static string UnEscapeKey(string key)
-        {
-            return key
+
+        public static string UnEscapeKey(string key) =>
+            key
                 .Replace("__bs__", "/")
                 .Replace("__fs__", "\\")
                 .Replace("__hash__", "#")
@@ -55,6 +56,5 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 .Replace("__tab__", "\t")
                 .Replace("__nl__", "\n")
                 .Replace("__cr__", "\r");
-        }
     }
 }
