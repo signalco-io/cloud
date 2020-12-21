@@ -51,7 +51,7 @@ namespace Signal.Api.Public
                 
                 // TODO: Check if beacons exists
                 
-                await this.storage.CreateItemAsync("beacons", new BeaconItem
+                await this.storage.CreateOrUpdateItemAsync("beacons", new BeaconItem
                 {
                     PartitionKey = user.UserId,
                     RowKey = registerRequest.BeaconId,

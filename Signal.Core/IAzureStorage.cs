@@ -4,12 +4,17 @@ using System.Threading.Tasks;
 
 namespace Signal.Core
 {
+    public interface IAzureStorageDao
+    {
+        Task<IDeviceStateTableEntity> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken);
+    }
+    
     public interface IAzureStorage
     {
-        Task QueueMessageAsync<T>(string queueName, T item, CancellationToken cancellationToken, TimeSpan? delay = null, TimeSpan? ttl = null)
+        Task QueueItemAsync<T>(string queueName, T item, CancellationToken cancellationToken, TimeSpan? delay = null, TimeSpan? ttl = null)
             where T : class, IQueueItem;
 
-        Task CreateItemAsync<T>(string tableName, T beaconItem, CancellationToken cancellationToken)
-            where T : class, ITableEntity, new();
+        Task CreateOrUpdateItemAsync<T>(string tableName, T beaconItem, CancellationToken cancellationToken)
+            where T : ITableEntity;
     }
 }
