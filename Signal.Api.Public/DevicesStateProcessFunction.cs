@@ -28,41 +28,74 @@ namespace Signal.Api.Public
             [QueueTrigger(QueueNames.DevicesState, Connection = SecretKeys.StorageAccountConnectionString)]
             string deviceStateItemSerialized, ILogger log, CancellationToken cancellationToken)
         {
-            log.LogDebug("Processing state {State}", deviceStateItemSerialized);
-
-            var state = deviceStateItemSerialized.ToQueueItem<DeviceStateQueueItem>();
-            if (state == null ||
-                string.IsNullOrWhiteSpace(state.UserId) ||
-                string.IsNullOrWhiteSpace(state.DeviceIdentifier) ||
-                string.IsNullOrWhiteSpace(state.ChannelName) ||
-                string.IsNullOrWhiteSpace(state.ContactName))
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest,
-                    "State, one or more required state properties are null or empty.");
-
-            // TODO: Retrieve device configuration (validate user assigned)
-            // TODO: Validate device has contact for state
-            // TODO: Assigned to ignores states if not assigned in config
-
-            // Retrieve current state
-            //var currentState = await this.azureStorageDao.GetDeviceStateAsync(
-            //    new TableEntityKey(state.UserId, $"{state.DeviceIdentifier}-{state.ChannelName}-{state.ContactName}"),
-            //    cancellationToken);
-
-            // TODO: Discard if outdated
-
-            // TODO: Persist as current state (parallel)
-            await this.azureStorage.CreateOrUpdateItemAsync("devicestates", new DeviceStateTableEntity()
+            try
             {
-                PartitionKey = state.UserId,
-                RowKey = $"{state.DeviceIdentifier}-{state.ChannelName}-{state.ContactName}",
-                DeviceIdentifier = state.DeviceIdentifier,
-                ChannelName = state.ChannelName,
-                ContactName = state.ContactName,
-                ValueSerialized = state.ValueSerialized
-            }, cancellationToken);
+                var newState = deviceStateItemSerialized.ToQueueItem<DeviceStateQueueItem>();
+                if (newState == null ||
+                    string.IsNullOrWhiteSpace(newState.UserId) ||
+                    string.IsNullOrWhiteSpace(newState.DeviceIdentifier) ||
+                    string.IsNullOrWhiteSpace(newState.ChannelName) ||
+                    string.IsNullOrWhiteSpace(newState.ContactName))
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest,
+                        "State, one or more required state properties are null or empty.");
 
-            // TODO: Persist to history (if tracker for given contact) (parallel)
-            // TODO: Notify listeners (parallel)
+                // TODO: Retrieve device configuration (validate user assigned)
+                // TODO: Validate device has contact for state
+                // TODO: Assign to device's ignore states if not assigned in config (update device for state visibility)
+
+                // Retrieve current state
+                var currentState = await this.azureStorageDao.GetDeviceStateAsync(
+                    new TableEntityKey(newState.UserId,
+                        $"{newState.DeviceIdentifier}-{newState.ChannelName}-{newState.ContactName}"),
+                    cancellationToken);
+
+                // Ignore outdated states
+                if (newState.TimeStamp < currentState.TimeStamp)
+                    return;
+
+                // Persist as current state
+                var updateCurrentStateTask = this.azureStorage.CreateOrUpdateItemAsync("devicestates",
+                    new DeviceStateTableEntity
+                    {
+                        PartitionKey = newState.UserId,
+                        RowKey = $"{newState.DeviceIdentifier}-{newState.ChannelName}-{newState.ContactName}",
+                        DeviceIdentifier = newState.DeviceIdentifier,
+                        ChannelName = newState.ChannelName,
+                        ContactName = newState.ContactName,
+                        ValueSerialized = newState.ValueSerialized,
+                        TimeStamp = newState.TimeStamp
+                    }, cancellationToken);
+
+                // Persist to history 
+                // TODO: persist only if given contact is marked for history tracking
+                var historyTableName = $"devicesstateshistory-{newState.UserId}";
+                await this.azureStorage.EnsureTableExistsAsync(historyTableName, cancellationToken);
+                var persistHistoryTask = this.azureStorage.CreateOrUpdateItemAsync(
+                    historyTableName,
+                    new DeviceStateHistoryTableEntity(newState.DeviceIdentifier, newState.ChannelName,
+                        newState.ContactName)
+                    {
+                        ValueSerialized = newState.ValueSerialized,
+                        TimeStamp = newState.TimeStamp
+                    },
+                    cancellationToken);
+
+                // Wait for current state update before triggering notification
+                await updateCurrentStateTask;
+
+                // TODO: Notify listeners
+                var notifyStateChangeTask = Task.CompletedTask;
+
+                // Wait for all to finish
+                await Task.WhenAll(
+                    notifyStateChangeTask,
+                    persistHistoryTask);
+            }
+            catch(Exception ex)
+            {
+                log.LogError(ex, "Failed to process state.");
+                throw;
+            }
         }
     }
 }

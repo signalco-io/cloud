@@ -1,4 +1,6 @@
-﻿namespace Signal.Core
+﻿using System;
+
+namespace Signal.Core
 {
     public interface ITableEntityKey
     {
@@ -23,6 +25,32 @@
     {
     }
     
+    public interface IDeviceStateHistoryTableEntity : ITableEntity
+    {
+        string? ValueSerialized { get; set; }
+        DateTime TimeStamp { get; set; }
+    }
+    
+    public class DeviceStateHistoryTableEntity : IDeviceStateHistoryTableEntity
+    {
+        public DeviceStateHistoryTableEntity(
+            string deviceIdentifier,
+            string channelName,
+            string contactName)
+        {
+            this.PartitionKey = deviceIdentifier;
+            this.RowKey = $"{channelName}-{contactName}";
+        }
+        
+        public string PartitionKey { get; set; }
+        
+        public string RowKey { get; set; }
+        
+        public string? ValueSerialized { get; set; }
+        
+        public DateTime TimeStamp { get; set; }
+    }
+    
     public interface IDeviceStateTableEntity : ITableEntity
     {
         string DeviceIdentifier { get; set; }
@@ -32,6 +60,7 @@
         string ContactName { get; set; }
         
         string? ValueSerialized { get; set; }
+        DateTime TimeStamp { get; set; }
     }
 
     public class DeviceStateTableEntity : IDeviceStateTableEntity
@@ -42,5 +71,6 @@
         public string ChannelName { get; set; }
         public string ContactName { get; set; }
         public string? ValueSerialized { get; set; }
+        public DateTime TimeStamp { get; set; }
     }
 }
