@@ -78,6 +78,11 @@ namespace Signal.Api.Public
                     StatusCode = (int)ex.Code
                 };
             }
+            catch(Exception ex)
+            {
+                log.LogError(ex, "Failed to publish state.");
+                throw;
+            }
         }
     }
 }
