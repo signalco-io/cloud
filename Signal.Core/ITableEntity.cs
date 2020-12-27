@@ -4,9 +4,9 @@ namespace Signal.Core
 {
     public interface ITableEntityKey
     {
-        string PartitionKey { get; set; }
+        string PartitionKey { get; }
 
-        string RowKey { get; set; }
+        string RowKey { get; }
     }
 
     public class TableEntityKey : ITableEntityKey
@@ -17,8 +17,9 @@ namespace Signal.Core
             this.RowKey = rowKey;
         }
 
-        public string PartitionKey { get; set; }
-        public string RowKey { get; set; }
+        public string PartitionKey { get; }
+        
+        public string RowKey { get; }
     }
     
     public interface ITableEntity : ITableEntityKey
@@ -58,17 +59,24 @@ namespace Signal.Core
         string ContactName { get; set; }
         
         string? ValueSerialized { get; set; }
+        
         DateTime TimeStamp { get; set; }
     }
 
     public class DeviceStateTableEntity : IDeviceStateTableEntity
     {
         public string PartitionKey { get; set; }
+        
         public string RowKey { get; set; }
+        
         public string DeviceIdentifier { get; set; }
+        
         public string ChannelName { get; set; }
+        
         public string ContactName { get; set; }
+        
         public string? ValueSerialized { get; set; }
+        
         public DateTime TimeStamp { get; set; }
     }
 }

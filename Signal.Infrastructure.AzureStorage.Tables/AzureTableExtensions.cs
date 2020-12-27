@@ -20,20 +20,6 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return entity;
         }
         
-        public static ITableEntityKey EscapeKeys(this ITableEntityKey entity)
-        {
-            entity.PartitionKey = EscapeKey(entity.PartitionKey);
-            entity.RowKey = EscapeKey(entity.RowKey);
-            return entity;
-        }
-        
-        public static ITableEntityKey UnEscapeKeys(this ITableEntityKey entity)
-        {
-            entity.PartitionKey = UnEscapeKey(entity.PartitionKey);
-            entity.RowKey = UnEscapeKey(entity.RowKey);
-            return entity;
-        }
-        
         public static string EscapeTableName(string name) => 
             string.Concat(name.Where(char.IsLetterOrDigit));
 

@@ -54,7 +54,7 @@ namespace Signal.Api.Public
                     return;
 
                 // Persist as current state
-                var updateCurrentStateTask = this.azureStorage.CreateOrUpdateItemAsync("devicestates",
+                var updateCurrentStateTask = this.azureStorage.CreateOrUpdateItemAsync(ItemTableNames.DeviceStates,
                     new DeviceStateTableEntity
                     {
                         PartitionKey = newState.UserId,
@@ -68,7 +68,7 @@ namespace Signal.Api.Public
 
                 // Persist to history 
                 // TODO: persist only if given contact is marked for history tracking
-                var historyTableName = $"devicesstateshistory{newState.UserId}";
+                var historyTableName = ItemTableNames.DevicesStatesHistory(newState.UserId);
                 await this.azureStorage.EnsureTableExistsAsync(historyTableName, cancellationToken);
                 var persistHistoryTask = this.azureStorage.CreateOrUpdateItemAsync(
                     historyTableName,

@@ -4,9 +4,15 @@ namespace Signal.Core
 {
     public class BeaconItem : ITableEntity
     {
-        public string PartitionKey { get; set; }
+        public BeaconItem(string userId, string beaconId)
+        {
+            this.PartitionKey = userId;
+            this.RowKey = beaconId;
+        }
         
-        public string RowKey { get; set; }
+        public string PartitionKey { get; }
+        
+        public string RowKey { get; }
         
         public string? Alias { get; set; }
         

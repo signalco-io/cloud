@@ -20,12 +20,12 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         {
             try
             {
-                var keyEscaped = key.EscapeKeys();
-                var client = await this.GetTableClientAsync("devicestates", cancellationToken).ConfigureAwait(false);
-                var response = await client.GetEntityAsync<AzureDeviceStateTableEntity>(keyEscaped.PartitionKey,
-                    keyEscaped.RowKey, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var client = await this.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken).ConfigureAwait(false);
+                var response = await client.GetEntityAsync<AzureDeviceStateTableEntity>(
+                    AzureTableExtensions.EscapeKey(key.PartitionKey),
+                    AzureTableExtensions.EscapeKey(key.RowKey), 
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
                 var item = response.Value;
-                item.UnEscapeKeys();
                 return item;
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
