@@ -61,8 +61,11 @@ namespace Signal.Api.Public.Auth
                     new KeyValuePair<string, string>("grant_type", refreshToken),
                     new KeyValuePair<string, string>("client_id", clientIdTask.Result),
                     new KeyValuePair<string, string>("client_secret", clientSecretTask.Result),
-                    new KeyValuePair<string, string>("refresh_token", "oldToken")
+                    new KeyValuePair<string, string>("refresh_token", refreshToken)
                 }), cancellationToken);
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(
+                    $"Token refresh failed. Reason: {await response.Content.ReadAsStringAsync()} ({response.StatusCode})");
 
             var tokenResult = await response.Content.ReadAsAsync<Auth0RefreshTokenResult>(cancellationToken);
             if (tokenResult == null)
