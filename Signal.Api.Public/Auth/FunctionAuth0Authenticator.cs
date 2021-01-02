@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,10 +68,13 @@ namespace Signal.Api.Public.Auth
                 throw new Exception(
                     $"Token refresh failed. Reason: {await response.Content.ReadAsStringAsync()} ({response.StatusCode})");
 
-            var tokenResult = await response.Content.ReadAsAsync<Auth0RefreshTokenResult>(cancellationToken);
-            if (tokenResult == null)
-                throw new Exception("Didn't get token.");
-            if (string.IsNullOrWhiteSpace(tokenResult.AccessToken))
+            var tokenResultString = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(tokenResultString))
+                throw new Exception("Auth0 responded with empty response.");
+
+            var tokenResult = JsonSerializer.Deserialize<Auth0RefreshTokenResult>(tokenResultString);
+            if (tokenResult == null || 
+                string.IsNullOrWhiteSpace(tokenResult.AccessToken))
                 throw new Exception("Got invalid access token - null or whitespace.");
 
             return new Auth0UserRefreshToken(
