@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Auth
 {
     public class Auth0UserInfoDto
     {

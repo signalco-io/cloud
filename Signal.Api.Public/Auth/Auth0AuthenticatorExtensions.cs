@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Auth
 {
     public static class Auth0AuthenticatorExtensions
     {

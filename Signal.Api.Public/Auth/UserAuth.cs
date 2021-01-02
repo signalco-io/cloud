@@ -1,7 +1,8 @@
 using System;
 using Signal.Core;
+using Signal.Core.Auth;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Auth
 {
     public class UserAuth : IUserAuth
     {

@@ -1,6 +1,6 @@
 namespace Signal.Api.Public
 {
-    public class BeaconRegisterDto
+    public class BeaconRegisterRequestDto
     {
         public string? BeaconId { get; set; }
     }

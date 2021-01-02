@@ -1,14 +1,12 @@
 using System;
-using System.IO;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
+using Signal.Api.Public.Auth;
 using Signal.Core;
 
 namespace Signal.Api.Public
@@ -30,20 +28,14 @@ namespace Signal.Api.Public
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/register")]
             HttpRequest req,
-            ILogger log,
             CancellationToken cancellationToken)
         {
             try
             {
                 var user = await this.functionAuthenticator.AuthenticateAsync(req, cancellationToken);
 
-                var requestContent = await new StreamReader(req.Body).ReadToEndAsync();
-                if (string.IsNullOrWhiteSpace(requestContent))
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Request empty.");
+                var registerRequest = await req.ReadAsJsonAsync<BeaconRegisterRequestDto>();
 
-                var registerRequest = JsonSerializer.Deserialize<BeaconRegisterDto>(requestContent,
-                    new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
-                
                 if (registerRequest == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Unable to deserialize request.");
                 if (registerRequest.BeaconId == null)

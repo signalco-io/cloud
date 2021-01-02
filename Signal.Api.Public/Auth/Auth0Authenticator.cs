@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Auth
 {
     /// <summary>
     /// A type that authenticates users against an Auth0 account.
@@ -25,17 +24,18 @@ namespace Signal.Api.Public
         /// </summary>
         /// <param name="auth0Domain">The domain of the Auth0 account, e.g., <c>"myauth0test.auth0.com"</c>.</param>
         /// <param name="audiences">The valid audiences for tokens. This must include the "audience" of the access_token request, and may also include a "client id" to enable id_tokens from clients you own.</param>
-        public Auth0Authenticator(string auth0Domain, IEnumerable<string> audiences)
+        public Auth0Authenticator(string auth0Domain, IEnumerable<string> audiences, bool allowExpired)
         {
+            this.manager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                $"https://{auth0Domain}/.well-known/openid-configuration",
+                new OpenIdConnectConfigurationRetriever());
             this.parameters = new TokenValidationParameters
             {
                 ValidIssuer = $"https://{auth0Domain}/",
                 ValidAudiences = audiences.ToArray(),
-                ValidateIssuerSigningKey = true
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = allowExpired
             };
-            this.manager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                $"https://{auth0Domain}/.well-known/openid-configuration", 
-                new OpenIdConnectConfigurationRetriever());
             this.handler = new JwtSecurityTokenHandler();
         }
 

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Auth
 {
     public class Auth0Service
     {
