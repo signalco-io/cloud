@@ -8,7 +8,7 @@ namespace Signal.Api.Public
 {
     public static class HttpRequestExtensions
     {
-        public static async Task<T?> ReadAsJsonAsync<T>(this HttpRequest req)
+        public static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
         {
             var requestContent = await new StreamReader(req.Body).ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(requestContent))
@@ -16,7 +16,7 @@ namespace Signal.Api.Public
 
             return JsonSerializer.Deserialize<T>(
                 requestContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         }
     }
 }
