@@ -34,7 +34,7 @@ namespace Signal.Api.Public
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "\"RefreshToken\" property is required.");
 
                 var token = await this.functionAuthenticator.RefreshTokenAsync(req, "", cancellationToken);
-                return new OkObjectResult(token);
+                return new OkObjectResult(new BeaconRefreshTokenResponseDto(token.AccessToken, token.Expire));
             }
             catch (ExpectedHttpException ex)
             {

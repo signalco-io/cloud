@@ -72,7 +72,7 @@ namespace Signal.Api.Public.Auth
 
             return new Auth0UserRefreshToken(
                 tokenResult.AccessToken,
-                DateTimeOffset.FromUnixTimeSeconds(tokenResult.ExpiresIn ?? 60).DateTime);
+                DateTime.UtcNow.AddSeconds(tokenResult.ExpiresIn ?? 60));
         }
 
         public async Task<IUserAuth> AuthenticateAsync(HttpRequest request, CancellationToken cancellationToken)
