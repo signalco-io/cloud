@@ -33,7 +33,7 @@ namespace Signal.Api.Public
                     string.IsNullOrWhiteSpace(request.RefreshToken))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "\"RefreshToken\" property is required.");
 
-                var token = await this.functionAuthenticator.RefreshTokenAsync(req, "", cancellationToken);
+                var token = await this.functionAuthenticator.RefreshTokenAsync(req, request.RefreshToken, cancellationToken);
                 return new OkObjectResult(new BeaconRefreshTokenResponseDto(token.AccessToken, token.Expire));
             }
             catch (ExpectedHttpException ex)
