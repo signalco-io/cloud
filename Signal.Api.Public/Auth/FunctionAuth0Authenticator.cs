@@ -58,7 +58,7 @@ namespace Signal.Api.Public.Auth
             using var response = await new HttpClient().PostAsync(refreshTokenUrl, new FormUrlEncodedContent(
                 new[]
                 {
-                    new KeyValuePair<string, string>("grant_type", refreshToken),
+                    new KeyValuePair<string, string>("grant_type", "refresh_token"),
                     new KeyValuePair<string, string>("client_id", clientIdTask.Result),
                     new KeyValuePair<string, string>("client_secret", clientSecretTask.Result),
                     new KeyValuePair<string, string>("refresh_token", refreshToken)
