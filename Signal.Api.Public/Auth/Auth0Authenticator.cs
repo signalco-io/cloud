@@ -24,6 +24,7 @@ namespace Signal.Api.Public.Auth
         /// </summary>
         /// <param name="auth0Domain">The domain of the Auth0 account, e.g., <c>"myauth0test.auth0.com"</c>.</param>
         /// <param name="audiences">The valid audiences for tokens. This must include the "audience" of the access_token request, and may also include a "client id" to enable id_tokens from clients you own.</param>
+        /// <param name="allowExpired">Set to <c>True</c> to disable token lifetime validation; should be almost always <c>False</c>. In case of validating token when refreshing access token - set to <c>true</c>.</param>
         public Auth0Authenticator(string auth0Domain, IEnumerable<string> audiences, bool allowExpired)
         {
             this.manager = new ConfigurationManager<OpenIdConnectConfiguration>(
@@ -34,7 +35,7 @@ namespace Signal.Api.Public.Auth
                 ValidIssuer = $"https://{auth0Domain}/",
                 ValidAudiences = audiences.ToArray(),
                 ValidateIssuerSigningKey = true,
-                ValidateLifetime = allowExpired
+                ValidateLifetime = !allowExpired
             };
             this.handler = new JwtSecurityTokenHandler();
         }
