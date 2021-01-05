@@ -11,7 +11,7 @@ namespace Signal.Api.Public.Auth
         {
         }
 
-        protected override void ApplyResponseDetails(HttpResponseMessage response)
+        public override void ApplyResponseDetails(HttpResponseMessage response)
         {
             response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Bearer", "token_type=\"JWT\""));
         }

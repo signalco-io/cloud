@@ -4,22 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Signal.Api.Public;
 using Signal.Core;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Internal
 {
     public class DevicesStateProcessFunction
     {
         private readonly IAzureStorage azureStorage;
-        private readonly IAzureStorageDao azureStorageDao;
 
         
         public DevicesStateProcessFunction(
-            IAzureStorage azureStorage,
-            IAzureStorageDao azureStorageDao)
+            IAzureStorage azureStorage)
         {
             this.azureStorage = azureStorage ?? throw new ArgumentNullException(nameof(azureStorage));
-            this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
         }
 
 
@@ -33,53 +31,38 @@ namespace Signal.Api.Public
                 var newState = deviceStateItemSerialized.ToQueueItem<DeviceStateQueueItem>();
                 if (newState == null ||
                     string.IsNullOrWhiteSpace(newState.UserId) ||
-                    string.IsNullOrWhiteSpace(newState.DeviceIdentifier) ||
+                    string.IsNullOrWhiteSpace(newState.DeviceId) ||
                     string.IsNullOrWhiteSpace(newState.ChannelName) ||
                     string.IsNullOrWhiteSpace(newState.ContactName))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest,
                         "State, one or more required state properties are null or empty.");
 
-                // TODO: Retrieve device configuration (validate user assigned)
+                // TODO: Validate user assigned
+                // TODO: Retrieve device configuration
                 // TODO: Validate device has contact for state
                 // TODO: Assign to device's ignore states if not assigned in config (update device for state visibility)
 
-                // Retrieve current state
-                var currentState = await this.azureStorageDao.GetDeviceStateAsync(
-                    new TableEntityKey(newState.UserId,
-                        $"{newState.DeviceIdentifier}-{newState.ChannelName}-{newState.ContactName}"),
-                    cancellationToken);
-
-                // Ignore outdated states
-                if (currentState != null && newState.TimeStamp < currentState.TimeStamp)
-                    return;
-
                 // Persist as current state
-                var updateCurrentStateTask = this.azureStorage.CreateOrUpdateItemAsync(ItemTableNames.DeviceStates,
-                    new DeviceStateTableEntity
-                    {
-                        PartitionKey = newState.UserId,
-                        RowKey = $"{newState.DeviceIdentifier}-{newState.ChannelName}-{newState.ContactName}",
-                        DeviceIdentifier = newState.DeviceIdentifier,
-                        ChannelName = newState.ChannelName,
-                        ContactName = newState.ContactName,
-                        ValueSerialized = newState.ValueSerialized,
-                        TimeStamp = newState.TimeStamp
-                    }, cancellationToken);
+                var updateCurrentStateTask = this.azureStorage.CreateOrUpdateItemAsync(
+                    ItemTableNames.DeviceStates,
+                    new DeviceStateTableEntity(
+                        newState.DeviceId,
+                        newState.ChannelName,
+                        newState.ContactName,
+                        newState.ValueSerialized,
+                        newState.TimeStamp),
+                    cancellationToken);
 
                 // Persist to history 
                 // TODO: persist only if given contact is marked for history tracking
-                var historyTableName = ItemTableNames.DevicesStatesHistory(newState.UserId);
-                await this.azureStorage.EnsureTableExistsAsync(historyTableName, cancellationToken);
                 var persistHistoryTask = this.azureStorage.CreateOrUpdateItemAsync(
-                    historyTableName,
+                    ItemTableNames.DevicesStatesHistory,
                     new DeviceStateHistoryTableEntity(
-                        newState.DeviceIdentifier, 
+                        newState.DeviceId,
                         newState.ChannelName,
                         newState.ContactName,
-                        newState.TimeStamp)
-                    {
-                        ValueSerialized = newState.ValueSerialized,
-                    },
+                        newState.ValueSerialized,
+                        newState.TimeStamp),
                     cancellationToken);
 
                 // Wait for current state update before triggering notification

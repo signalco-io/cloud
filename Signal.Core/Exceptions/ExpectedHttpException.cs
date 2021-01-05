@@ -14,14 +14,7 @@ namespace Signal.Api.Public
 
         public HttpStatusCode Code { get; }
 
-        public HttpResponseMessage CreateErrorResponseMessage(HttpRequestMessage request)
-        {
-            var result = request.CreateErrorResponse(this.Code, this.Message);
-            this.ApplyResponseDetails(result);
-            return result;
-        }
-
-        protected virtual void ApplyResponseDetails(HttpResponseMessage response)
+        public virtual void ApplyResponseDetails(HttpResponseMessage response)
         {
         }
     }
