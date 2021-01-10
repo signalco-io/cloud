@@ -4,6 +4,8 @@ namespace Signal.Core
     {
         public const string Users = "users";
 
+        public const string UserAssigned = "userassigned";
+
         public const string Beacons = "beacons";
 
         public const string Devices = "devices";

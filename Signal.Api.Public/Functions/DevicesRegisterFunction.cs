@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,13 +62,12 @@ namespace Signal.Api.Public.Functions
                     cancellationToken);
 
                 // Assign device to user
-                var currentUserAssignments = await this.storageDao.UserAsync(user.UserId, UserData.AssignedEntities, cancellationToken);
                 await this.storage.CreateOrUpdateItemAsync(
                     ItemTableNames.Users,
-                    new PersistUserAssignedEntityTableEntry(
+                    new UserAssignedEntityTableEntry(
                         user.UserId,
-                        UserData.AssignedEntities,
-                        (currentUserAssignments?.Devices ?? new List<string>()).Concat(new[] {deviceId})),
+                        EntityType.Device,
+                        deviceId),
                     cancellationToken);
 
                 return new OkObjectResult(new DeviceRegisterResponseDto(deviceId));

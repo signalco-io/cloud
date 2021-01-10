@@ -25,6 +25,6 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
     internal class AzureUserAssignedEntitiesTableEntry : AzureTableEntityBase
     {
-        public string Devices { get; set; }
+        public string EntityId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Signal.Core
@@ -10,6 +11,7 @@ namespace Signal.Core
         Task<bool> DeviceExistsAsync(string deviceId, CancellationToken cancellationToken);
 
         Task<string?> DeviceExistsAsync(string userId, string deviceIdentifier, CancellationToken cancellationToken);
-        Task<IUserAssignedEntitiesTableEntry?> UserAsync(string userId, UserData data, CancellationToken cancellationToken);
+
+        Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType type, CancellationToken cancellationToken);
     }
 }

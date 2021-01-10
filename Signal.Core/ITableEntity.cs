@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Signal.Core
 {
@@ -27,46 +26,32 @@ namespace Signal.Core
     {
     }
 
-    public interface IUserAssignedEntitiesTableEntry : ITableEntity
+    public interface IUserAssignedEntityTableEntry : ITableEntity
     {
-        public IEnumerable<string> Devices { get; }
+        public EntityType EntityType => Enum.Parse<EntityType>(this.RowKey);
+
+        public string EntityId { get; }
     }
 
-    public enum UserData
+    public enum EntityType
     {
-        AssignedEntities
+        Device
     }
-
-    public class PersistUserAssignedEntityTableEntry : ITableEntity
+    
+    public class UserAssignedEntityTableEntry : IUserAssignedEntityTableEntry
     {
-        public PersistUserAssignedEntityTableEntry(string userId, UserData data, IEnumerable<string> deviceIds)
+        public UserAssignedEntityTableEntry(string userId, EntityType data, string entityId)
         {
             this.PartitionKey = userId;
             this.RowKey = data.ToString();
-            this.Devices = string.Join(",", deviceIds);
+            this.EntityId = entityId;
         }
 
         public string PartitionKey { get; }
 
         public string RowKey { get; }
 
-        public string Devices { get; }
-    }
-
-    public class UserAssignedEntitiesTableEntry : IUserAssignedEntitiesTableEntry
-    {
-        public UserAssignedEntitiesTableEntry(string userId, UserData data, IEnumerable<string> deviceIds)
-        {
-            this.PartitionKey = userId;
-            this.RowKey = data.ToString();
-            this.Devices = deviceIds;
-        }
-
-        public string PartitionKey { get; }
-
-        public string RowKey { get; }
-
-        public IEnumerable<string> Devices { get; }
+        public string EntityId { get; }
     }
 
     public interface IDeviceTableEntity : ITableEntity

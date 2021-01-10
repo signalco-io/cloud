@@ -39,12 +39,12 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         private async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
         {
             // Retrieve user assigned devices
-            var userAssignedEntities = await this.UserAsync(userId, UserData.AssignedEntities, cancellationToken);
-            if (userAssignedEntities == null)
-                return Enumerable.Empty<IDeviceTableEntity>();
-
+            var userAssignedDevices = await this.UserAssignedAsync(userId, EntityType.Device, cancellationToken);
+            
             // Split assigned device ids
-            var assignedDeviceIds = userAssignedEntities.Devices.ToList();
+            var assignedDeviceIds = userAssignedDevices.Select(d => d.EntityId).ToList();
+            if (!assignedDeviceIds.Any())
+                return Enumerable.Empty<IDeviceTableEntity>();
 
             // Query user assigned devices
             var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken).ConfigureAwait(false);
@@ -59,19 +59,23 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return devices;
         }
 
-        public async Task<IUserAssignedEntitiesTableEntry?> UserAsync(string userId, UserData data, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType data, CancellationToken cancellationToken)
         {
             var client = await this.GetTableClientAsync(ItemTableNames.Users, cancellationToken).ConfigureAwait(false);
             try
             {
-                var user = await client.GetEntityAsync<AzureUserAssignedEntitiesTableEntry>(
-                    userId, data.ToString(), cancellationToken: cancellationToken);
-                return new UserAssignedEntitiesTableEntry(userId, data,
-                    user.Value.Devices.Split(",", StringSplitOptions.RemoveEmptyEntries));
+                var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
+                    entry => entry.PartitionKey == userId && entry.RowKey == data.ToString(),
+                    cancellationToken: cancellationToken);
+
+                var assignedItems = new List<IUserAssignedEntityTableEntry>();
+                await foreach (var entity in assigned)
+                    assignedItems.Add(new UserAssignedEntityTableEntry(userId, data, entity.EntityId));
+                return assignedItems;
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
             {
-                return null;
+                return Enumerable.Empty<IUserAssignedEntityTableEntry>();
             }
         }
 
