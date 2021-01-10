@@ -41,13 +41,13 @@ namespace Signal.Api.Public.Auth
             string refreshToken,
             CancellationToken cancellationToken)
         {
-            this.authenticator ??= await this.InitializeAuthenticatorAsync(true, cancellationToken);
-            if (this.authenticator == null)
+            var refreshAuthenticator = await this.InitializeAuthenticatorAsync(true, cancellationToken);
+            if (refreshAuthenticator == null)
                 throw new NullReferenceException("Authenticator failed to initialize.");
 
             // We don't really need the info about user, but we want to make sure
             // token was valid before it expired so we authenticate without lifetime validation
-            await this.authenticator.AuthenticateAsync(request, cancellationToken);
+            await refreshAuthenticator.AuthenticateAsync(request, cancellationToken);
 
             // Request new token
             var domainTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
