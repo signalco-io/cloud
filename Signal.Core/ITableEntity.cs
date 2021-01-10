@@ -37,6 +37,22 @@ namespace Signal.Core
         AssignedEntities
     }
 
+    public class PersistUserAssignedEntityTableEntry : ITableEntity
+    {
+        public PersistUserAssignedEntityTableEntry(string userId, UserData data, IEnumerable<string> deviceIds)
+        {
+            this.PartitionKey = userId;
+            this.RowKey = data.ToString();
+            this.Devices = string.Join(",", deviceIds);
+        }
+
+        public string PartitionKey { get; }
+
+        public string RowKey { get; }
+
+        public string Devices { get; }
+    }
+
     public class UserAssignedEntitiesTableEntry : IUserAssignedEntitiesTableEntry
     {
         public UserAssignedEntitiesTableEntry(string userId, UserData data, IEnumerable<string> deviceIds)

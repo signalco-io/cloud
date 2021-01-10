@@ -67,7 +67,7 @@ namespace Signal.Api.Public.Functions
                 var currentUserAssignments = await this.storageDao.UserAsync(user.UserId, UserData.AssignedEntities, cancellationToken);
                 await this.storage.CreateOrUpdateItemAsync(
                     ItemTableNames.Users,
-                    new UserAssignedEntitiesTableEntry(
+                    new PersistUserAssignedEntityTableEntry(
                         user.UserId,
                         UserData.AssignedEntities,
                         (currentUserAssignments?.Devices ?? new List<string>()).Concat(new[] {deviceId})),
