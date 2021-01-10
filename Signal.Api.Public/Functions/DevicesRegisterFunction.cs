@@ -29,7 +29,7 @@ namespace Signal.Api.Public.Functions
         }
 
         [FunctionName("Devices-Register")]
-        public async Task Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
