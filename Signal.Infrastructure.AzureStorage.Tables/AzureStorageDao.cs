@@ -81,10 +81,11 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             {
                 var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken)
                     .ConfigureAwait(false);
-                return client.GetEntityAsync<AzureDeviceTableEntity>("devices", deviceId,
-                    cancellationToken: cancellationToken) != null;
+                var entity = await client.GetEntityAsync<AzureDeviceTableEntity>(
+                    "devices", deviceId, cancellationToken: cancellationToken);
+                return entity.Value != null;
             }
-            catch (RequestFailedException)
+            catch (RequestFailedException ex) when (ex.Status == 404)
             {
                 return false;
             }
