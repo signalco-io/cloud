@@ -32,7 +32,7 @@ namespace Signal.Api.Public.Functions
 
         [FunctionName("Devices-Register")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/state")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
             await req.UserRequest<DeviceRegisterDto>(this.functionAuthenticator, async (user, payload) =>
@@ -49,11 +49,12 @@ namespace Signal.Api.Public.Functions
                     cancellationToken);
                 if (!string.IsNullOrWhiteSpace(existingDeviceId))
                     return new BadRequestObjectResult(new DeviceRegisterResponseDto(existingDeviceId));
-                
+
                 // Generate device id
+                // Check if device with new id exists (avoid collisions)
                 var deviceId = Guid.NewGuid().ToString();
-                
-                // TODO: Check if device with new id exists (avoid collisions)
+                while (await this.storageDao.DeviceExistsAsync(deviceId, cancellationToken))
+                    deviceId = Guid.NewGuid().ToString();
 
                 // Create new device
                 await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Devices, new DeviceTableEntity(

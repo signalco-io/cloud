@@ -36,11 +36,6 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
-        public Task<bool> DeviceExistsAsync(string deviceId, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         private async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
         {
             // Retrieve user assigned devices
@@ -74,18 +69,33 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 return new UserAssignedEntitiesTableEntry(userId, data,
                     user.Value.Devices.Split(",", StringSplitOptions.RemoveEmptyEntries));
             }
-            catch (RequestFailedException)
+            catch (RequestFailedException ex) when (ex.Status == 404)
             {
                 return null;
+            }
+        }
+
+        public async Task<bool> DeviceExistsAsync(string deviceId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken)
+                    .ConfigureAwait(false);
+                return client.GetEntityAsync<AzureDeviceTableEntity>("devices", deviceId,
+                    cancellationToken: cancellationToken) != null;
+            }
+            catch (RequestFailedException)
+            {
+                return false;
             }
         }
 
         public async Task<string?> DeviceExistsAsync(string userId, string deviceIdentifier, CancellationToken cancellationToken)
         {
             var devices = await this.DevicesAsync(userId, cancellationToken);
-            if (devices.FirstOrDefault(d => d.DeviceIdentifier == deviceIdentifier) is { } matchedDevice)
-                return matchedDevice.RowKey;
-            return null;
+            return devices.FirstOrDefault(d => d.DeviceIdentifier == deviceIdentifier) is { } matchedDevice
+                ? matchedDevice.RowKey
+                : null;
         }
 
         // TODO: De-dup AzureStorage
