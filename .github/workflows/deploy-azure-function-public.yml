@@ -20,7 +20,6 @@ env:
   AZURE_FUNCTIONAPP_NAME: signal-api  # set this to your application's name
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'Signal.Api.Public'    # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '3.1.403'              # set this to the dotnet version to use
-  AZURE_FUNCTIONAPP_PUBLISH_PROFILE: ${{secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PUBLIC}}
 
 jobs:
   build-and-deploy:
@@ -46,4 +45,4 @@ jobs:
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PUBLIC }}
