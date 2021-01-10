@@ -36,6 +36,12 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
+        private static string PartitionWithKeysAnyFilter(string partitionKey, IEnumerable<string> rowKeys)
+        {
+            return $"(PartitionKey eq '{partitionKey}') and" +
+                   $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
+        }
+
         private async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
         {
             // Retrieve user assigned devices
@@ -49,7 +55,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             // Query user assigned devices
             var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken).ConfigureAwait(false);
             var devicesQuery = client.QueryAsync<AzureDeviceTableEntity>(
-                tableEntity => tableEntity.PartitionKey == userId && assignedDeviceIds.Contains(tableEntity.RowKey),
+                PartitionWithKeysAnyFilter("device", assignedDeviceIds),
                 cancellationToken: cancellationToken);
             
             // Retrieve and map devices
