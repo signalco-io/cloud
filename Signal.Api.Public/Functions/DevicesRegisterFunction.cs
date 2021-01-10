@@ -63,10 +63,9 @@ namespace Signal.Api.Public.Functions
 
                 // Assign device to user
                 await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.Users,
+                    ItemTableNames.UserAssignedEntity(EntityType.Device),
                     new UserAssignedEntityTableEntry(
                         user.UserId,
-                        EntityType.Device,
                         deviceId),
                     cancellationToken);
 

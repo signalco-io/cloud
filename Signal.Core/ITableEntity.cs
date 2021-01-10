@@ -28,9 +28,6 @@ namespace Signal.Core
 
     public interface IUserAssignedEntityTableEntry : ITableEntity
     {
-        public EntityType EntityType => Enum.Parse<EntityType>(this.RowKey);
-
-        public string EntityId { get; }
     }
 
     public enum EntityType
@@ -40,18 +37,15 @@ namespace Signal.Core
     
     public class UserAssignedEntityTableEntry : IUserAssignedEntityTableEntry
     {
-        public UserAssignedEntityTableEntry(string userId, EntityType data, string entityId)
+        public UserAssignedEntityTableEntry(string userId, string entityId)
         {
             this.PartitionKey = userId;
-            this.RowKey = data.ToString();
-            this.EntityId = entityId;
+            this.RowKey = entityId;
         }
 
         public string PartitionKey { get; }
 
         public string RowKey { get; }
-
-        public string EntityId { get; }
     }
 
     public interface IDeviceTableEntity : ITableEntity

@@ -48,7 +48,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             var userAssignedDevices = await this.UserAssignedAsync(userId, EntityType.Device, cancellationToken);
             
             // Split assigned device ids
-            var assignedDeviceIds = userAssignedDevices.Select(d => d.EntityId).ToList();
+            var assignedDeviceIds = userAssignedDevices.Select(d => d.RowKey).ToList();
             if (!assignedDeviceIds.Any())
                 return Enumerable.Empty<IDeviceTableEntity>();
 
@@ -67,16 +67,16 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
         public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType data, CancellationToken cancellationToken)
         {
-            var client = await this.GetTableClientAsync(ItemTableNames.Users, cancellationToken).ConfigureAwait(false);
+            var client = await this.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken).ConfigureAwait(false);
             try
             {
                 var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
-                    entry => entry.PartitionKey == userId && entry.RowKey == data.ToString(),
+                    entry => entry.PartitionKey == userId,
                     cancellationToken: cancellationToken);
 
                 var assignedItems = new List<IUserAssignedEntityTableEntry>();
                 await foreach (var entity in assigned)
-                    assignedItems.Add(new UserAssignedEntityTableEntry(userId, data, entity.EntityId));
+                    assignedItems.Add(new UserAssignedEntityTableEntry(userId, entity.EntityId));
                 return assignedItems;
             }
             catch (RequestFailedException ex) when (ex.Status == 404)

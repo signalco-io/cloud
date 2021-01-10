@@ -1,10 +1,17 @@
+using System;
+
 namespace Signal.Core
 {
     public static class ItemTableNames
     {
-        public const string Users = "users";
+        //public const string Users = "users";
 
-        public const string UserAssigned = "userassigned";
+        public static string UserAssignedEntity(EntityType type) =>
+            type switch
+            {
+                EntityType.Device => "userassigneddevices",
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
 
         public const string Beacons = "beacons";
 
