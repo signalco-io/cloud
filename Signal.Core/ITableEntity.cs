@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Signal.Core
 {
@@ -25,58 +26,120 @@ namespace Signal.Core
     public interface ITableEntity : ITableEntityKey
     {
     }
-    
+
+    public interface IUserAssignedEntitiesTableEntry : ITableEntity
+    {
+        public IEnumerable<string> Devices { get; }
+    }
+
+    public enum UserData
+    {
+        AssignedEntities
+    }
+
+    public class UserAssignedEntitiesTableEntry : IUserAssignedEntitiesTableEntry
+    {
+        public UserAssignedEntitiesTableEntry(string userId, UserData data, IEnumerable<string> deviceIds)
+        {
+            this.PartitionKey = userId;
+            this.RowKey = data.ToString();
+            this.Devices = deviceIds;
+        }
+
+        public string PartitionKey { get; }
+
+        public string RowKey { get; }
+
+        public IEnumerable<string> Devices { get; }
+    }
+
+    public interface IDeviceTableEntity : ITableEntity
+    {
+        public string DeviceIdentifier { get; set; }
+
+        public string Alias { get; set; }
+    }
+
+    public class DeviceTableEntity : IDeviceTableEntity
+    {
+        public DeviceTableEntity(string deviceId, string deviceIdentifier, string alias)
+        {
+            this.PartitionKey = "device";
+            this.RowKey = deviceId;
+            this.DeviceIdentifier = deviceIdentifier;
+            this.Alias = alias;
+        }
+
+        public string PartitionKey { get; }
+        public string RowKey { get; }
+        public string DeviceIdentifier { get; set; }
+        public string Alias { get; set; }
+    }
+
     public interface IDeviceStateHistoryTableEntity : ITableEntity
     {
-        string? ValueSerialized { get; set; }
+        string? ValueSerialized { get; }
     }
     
     public class DeviceStateHistoryTableEntity : IDeviceStateHistoryTableEntity
     {
         public DeviceStateHistoryTableEntity(
-            string deviceIdentifier,
+            string deviceId,
             string channelName,
             string contactName,
+            string? valueSerialized,
             DateTime timeStamp)
         {
-            this.PartitionKey = $"{deviceIdentifier}-{channelName}-{contactName}";
+            this.PartitionKey = $"{deviceId}-{channelName}-{contactName}";
             this.RowKey = timeStamp.ToString("O");
+            this.ValueSerialized = valueSerialized;
         }
         
-        public string PartitionKey { get; set; }
+        public string PartitionKey { get; }
         
-        public string RowKey { get; set; }
+        public string RowKey { get; }
         
-        public string? ValueSerialized { get; set; }
+        public string? ValueSerialized { get; }
     }
     
     public interface IDeviceStateTableEntity : ITableEntity
     {
-        string DeviceIdentifier { get; set; }
+        string ChannelName { get; }
         
-        string ChannelName { get; set; }
+        string ContactName { get; }
         
-        string ContactName { get; set; }
+        string? ValueSerialized { get; }
         
-        string? ValueSerialized { get; set; }
-        
-        DateTime TimeStamp { get; set; }
+        DateTime TimeStamp { get; }
     }
 
     public class DeviceStateTableEntity : IDeviceStateTableEntity
     {
-        public string PartitionKey { get; set; }
+        public DeviceStateTableEntity(
+            string deviceId,
+            string channelName, 
+            string contactName, 
+            string? valueSerialized, 
+            DateTime timeStamp)
+        {
+            this.PartitionKey = $"{deviceId}";
+            this.RowKey = $"{channelName}-{contactName}";
+            this.ChannelName = channelName;
+            this.ContactName = contactName;
+            this.ValueSerialized = valueSerialized;
+            this.TimeStamp = timeStamp;
+        }
+
+        public string PartitionKey { get; }
         
-        public string RowKey { get; set; }
+        public string RowKey { get; }
         
-        public string DeviceIdentifier { get; set; }
+        public string ChannelName { get; }
         
-        public string ChannelName { get; set; }
+        public string ContactName { get; }
         
-        public string ContactName { get; set; }
+        public string? ValueSerialized { get; }
         
-        public string? ValueSerialized { get; set; }
-        
-        public DateTime TimeStamp { get; set; }
+        public DateTime TimeStamp { get; }
     }
 }

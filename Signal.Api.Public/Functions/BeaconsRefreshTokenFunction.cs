@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
+using Signal.Api.Public.Exceptions;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Functions
 {
     public class BeaconsRefreshTokenFunction
     {
@@ -43,6 +44,24 @@ namespace Signal.Api.Public
                     StatusCode = (int)ex.Code
                 };
             }
+        }
+
+        private class BeaconRefreshTokenRequestDto
+        {
+            public string? RefreshToken { get; set; }
+        }
+
+        private class BeaconRefreshTokenResponseDto
+        {
+            public BeaconRefreshTokenResponseDto(string accessToken, DateTime expire)
+            {
+                this.AccessToken = accessToken;
+                this.Expire = expire;
+            }
+
+            public string AccessToken { get; }
+
+            public DateTime Expire { get; }
         }
     }
 }

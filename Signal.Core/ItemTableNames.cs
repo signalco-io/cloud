@@ -2,10 +2,14 @@ namespace Signal.Core
 {
     public static class ItemTableNames
     {
+        public const string Users = "users";
+
         public const string Beacons = "beacons";
+
+        public const string Devices = "devices";
 
         public const string DeviceStates = "devicestates";
 
-        public static string DevicesStatesHistory(string userId) => $"devicesstateshistory{userId}";
+        public const string DevicesStatesHistory = "devicesstateshistory";
     }
 }
