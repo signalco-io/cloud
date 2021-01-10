@@ -9,7 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Core.Auth;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Exceptions
 {
     public static class HttpRequestExtensions
     {

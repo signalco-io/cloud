@@ -1,6 +1,6 @@
 using System.Net.Http;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Exceptions
 {
     public static class ExpectedHttpExceptionExtensions
     {

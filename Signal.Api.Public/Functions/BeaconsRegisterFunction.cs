@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
+using Signal.Api.Public.Exceptions;
 using Signal.Core;
 
-namespace Signal.Api.Public
+namespace Signal.Api.Public.Functions
 {
     public class BeaconsRegisterFunction
     {
@@ -28,35 +29,24 @@ namespace Signal.Api.Public
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/register")]
             HttpRequest req,
-            CancellationToken cancellationToken)
-        {
-            try
+            CancellationToken cancellationToken) =>
+            await req.UserRequest<BeaconRegisterRequestDto>(this.functionAuthenticator, async (user, payload) =>
             {
-                var user = await this.functionAuthenticator.AuthenticateAsync(req, cancellationToken);
-
-                var registerRequest = await req.ReadAsJsonAsync<BeaconRegisterRequestDto>();
-
-                if (registerRequest == null)
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Unable to deserialize request.");
-                if (registerRequest.BeaconId == null)
+                if (payload.BeaconId == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is null.");
-                
-                // TODO: Check if beacons exists
-                
-                await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons, new BeaconItem(user.UserId, registerRequest.BeaconId)
-                {
-                    RegisteredTimeStamp = DateTime.UtcNow
-                }, cancellationToken);
 
-                return new OkResult();
-            }
-            catch (ExpectedHttpException ex)
-            {
-                return new ObjectResult(new ApiErrorDto(ex.Code.ToString(), ex.Message))
-                {
-                    StatusCode = (int)ex.Code
-                };
-            }
+                // TODO: Check if beacons exists
+
+                await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons,
+                    new BeaconItem(user.UserId, payload.BeaconId)
+                    {
+                        RegisteredTimeStamp = DateTime.UtcNow
+                    }, cancellationToken);
+            }, cancellationToken);
+
+        private class BeaconRegisterRequestDto
+        {
+            public string? BeaconId { get; set; }
         }
     }
 }
