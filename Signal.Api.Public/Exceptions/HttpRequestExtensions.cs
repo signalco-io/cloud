@@ -43,10 +43,10 @@ namespace Signal.Api.Public.Exceptions
             UserRequest<TPayload>(req, authenticator, async (user, payload) =>
             {
                 var response = await executionBody(user, payload);
-                return new OkObjectResult(response);
+                return new OkObjectResult(JsonSerializer.Serialize(response));
             }, cancellationToken);
 
-        public static async Task<IActionResult> UserRequest<TPayload>(
+        private static async Task<IActionResult> UserRequest<TPayload>(
             this HttpRequest req,
             IFunctionAuthenticator authenticator,
             Func<IUserAuth, TPayload, Task<IActionResult>> executionBody,

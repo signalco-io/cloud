@@ -33,7 +33,7 @@ namespace Signal.Api.Public.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<DeviceRegisterDto>(this.functionAuthenticator, async (user, payload) =>
+            await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(this.functionAuthenticator, async (user, payload) =>
             {
                 if (string.IsNullOrWhiteSpace(payload.DeviceIdentifier))
                     throw new ExpectedHttpException(
@@ -46,7 +46,7 @@ namespace Signal.Api.Public.Functions
                     payload.DeviceIdentifier,
                     cancellationToken);
                 if (!string.IsNullOrWhiteSpace(existingDeviceId))
-                    return new BadRequestObjectResult(new DeviceRegisterResponseDto(existingDeviceId));
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
                 // Generate device id
                 // Check if device with new id exists (avoid collisions)
@@ -70,7 +70,7 @@ namespace Signal.Api.Public.Functions
                         deviceId),
                     cancellationToken);
 
-                return new OkObjectResult(new DeviceRegisterResponseDto(deviceId));
+                return new DeviceRegisterResponseDto(deviceId);
             }, cancellationToken);
 
         private class DeviceRegisterDto
