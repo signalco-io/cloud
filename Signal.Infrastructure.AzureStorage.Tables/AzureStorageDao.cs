@@ -42,7 +42,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                    $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
         }
 
-        private async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
         {
             // Retrieve user assigned devices
             var userAssignedDevices = await this.UserAssignedAsync(userId, EntityType.Device, cancellationToken);

@@ -24,6 +24,26 @@ namespace Signal.Api.Public.Exceptions
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
         }
 
+        public static async Task<IActionResult> UserRequest<TResponse>(
+            this HttpRequest req,
+            IFunctionAuthenticator authenticator,
+            Func<IUserAuth, Task<TResponse>> executionBody,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var user = await authenticator.AuthenticateAsync(req, cancellationToken);
+                return new OkObjectResult(await executionBody(user));
+            }
+            catch (ExpectedHttpException ex)
+            {
+                return new ObjectResult(new ApiErrorDto(ex.Code.ToString(), ex.Message))
+                {
+                    StatusCode = (int)ex.Code
+                };
+            }
+        }
+
         public static Task<IActionResult> UserRequest<TPayload>(
             this HttpRequest req,
             IFunctionAuthenticator authenticator,
@@ -43,7 +63,7 @@ namespace Signal.Api.Public.Exceptions
             UserRequest<TPayload>(req, authenticator, async (user, payload) =>
             {
                 var response = await executionBody(user, payload);
-                return new OkObjectResult(JsonSerializer.Serialize(response));
+                return new OkObjectResult(response);
             }, cancellationToken);
 
         private static async Task<IActionResult> UserRequest<TPayload>(
