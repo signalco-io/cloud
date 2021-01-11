@@ -67,16 +67,16 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
         public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType data, CancellationToken cancellationToken)
         {
-            var client = await this.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken).ConfigureAwait(false);
             try
             {
+                var client = await this.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken).ConfigureAwait(false);
                 var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
                     entry => entry.PartitionKey == userId,
                     cancellationToken: cancellationToken);
 
                 var assignedItems = new List<IUserAssignedEntityTableEntry>();
                 await foreach (var entity in assigned)
-                    assignedItems.Add(new UserAssignedEntityTableEntry(userId, entity.EntityId));
+                    assignedItems.Add(new UserAssignedEntityTableEntry(userId, entity.RowKey));
                 return assignedItems;
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
