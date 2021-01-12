@@ -65,6 +65,22 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return devices;
         }
 
+        public async Task<bool> IsUserAssignedAsync(string userId, EntityType data, string entityId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken)
+                    .ConfigureAwait(false);
+                var assignment = await client.GetEntityAsync<AzureUserAssignedEntitiesTableEntry>(
+                    userId, entityId, cancellationToken: cancellationToken);
+                return assignment.Value != null;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return false;
+            }
+        }
+
         public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType data, CancellationToken cancellationToken)
         {
             try

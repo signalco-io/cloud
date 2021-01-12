@@ -53,10 +53,21 @@ namespace Signal.Core
         public string DeviceIdentifier { get; set; }
 
         public string Alias { get; set; }
+        public string? Endpoints { get; set; }
+        public string? Manufacturer { get; set; }
+        public string? Model { get; set; }
     }
 
     public class DeviceTableEntity : IDeviceTableEntity
     {
+        public string PartitionKey { get; }
+        public string RowKey { get; }
+        public string DeviceIdentifier { get; set; }
+        public string Alias { get; set; }
+        public string? Endpoints { get; set; }
+        public string? Manufacturer { get; set; }
+        public string? Model { get; set; }
+
         public DeviceTableEntity(string deviceId, string deviceIdentifier, string alias)
         {
             this.PartitionKey = "device";
@@ -64,11 +75,20 @@ namespace Signal.Core
             this.DeviceIdentifier = deviceIdentifier;
             this.Alias = alias;
         }
+    }
 
+    public class DeviceTableEndpointsEntity : ITableEntity
+    {
         public string PartitionKey { get; }
         public string RowKey { get; }
-        public string DeviceIdentifier { get; set; }
-        public string Alias { get; set; }
+        public string Endpoints { get; set; }
+
+        public DeviceTableEndpointsEntity(string deviceId, string endpoints)
+        {
+            this.PartitionKey = "device";
+            this.RowKey = deviceId;
+            this.Endpoints = endpoints;
+        }
     }
 
     public interface IDeviceStateHistoryTableEntity : ITableEntity

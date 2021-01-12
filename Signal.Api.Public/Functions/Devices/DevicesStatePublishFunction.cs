@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
 
-namespace Signal.Api.Public.Functions
+namespace Signal.Api.Public.Functions.Devices
 {
     public class DevicesStatePublishFunction
     {

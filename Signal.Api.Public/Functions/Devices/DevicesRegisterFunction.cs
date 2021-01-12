@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +11,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
+using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
 
-namespace Signal.Api.Public.Functions
+namespace Signal.Api.Public.Functions.Devices
 {
     public class DevicesRegisterFunction
     {
@@ -55,10 +59,17 @@ namespace Signal.Api.Public.Functions
                     deviceId = Guid.NewGuid().ToString();
 
                 // Create new device
-                await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Devices, new DeviceTableEntity(
+                await this.storage.CreateOrUpdateItemAsync(
+                    ItemTableNames.Devices,
+                    new DeviceTableEntity(
                         deviceId,
                         payload.DeviceIdentifier,
-                        payload.Alias ?? "New device"),
+                        payload.Alias ?? "New device")
+                    {
+                        Endpoints = payload.Endpoints != null ? JsonSerializer.Serialize(payload.Endpoints) : null,
+                        Manufacturer = payload.Manufacturer,
+                        Model = payload.Model
+                    },
                     cancellationToken);
 
                 // Assign device to user
@@ -77,6 +88,12 @@ namespace Signal.Api.Public.Functions
             public string? DeviceIdentifier { get; set; }
 
             public string? Alias { get; set; }
+            
+            public IEnumerable<DeviceEndpointDto>? Endpoints { get; set; }
+
+            public string? Manufacturer { get; set; }
+
+            public string? Model { get; set; }
         }
 
         private class DeviceRegisterResponseDto

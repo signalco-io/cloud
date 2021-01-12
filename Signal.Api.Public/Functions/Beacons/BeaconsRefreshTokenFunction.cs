@@ -9,7 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 
-namespace Signal.Api.Public.Functions
+namespace Signal.Api.Public.Functions.Beacons
 {
     public class BeaconsRefreshTokenFunction
     {

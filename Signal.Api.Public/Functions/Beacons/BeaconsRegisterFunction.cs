@@ -10,7 +10,7 @@ using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
 
-namespace Signal.Api.Public.Functions
+namespace Signal.Api.Public.Functions.Beacons
 {
     public class BeaconsRegisterFunction
     {

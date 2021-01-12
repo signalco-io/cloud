@@ -21,6 +21,9 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         public string DeviceIdentifier { get; set; }
 
         public string Alias { get; set; }
+        public string? Endpoints { get; set; }
+        public string? Manufacturer { get; set; }
+        public string? Model { get; set; }
     }
 
     internal class AzureUserAssignedEntitiesTableEntry : AzureTableEntityBase
