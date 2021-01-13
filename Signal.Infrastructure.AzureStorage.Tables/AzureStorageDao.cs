@@ -86,7 +86,12 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             // Retrieve and map devices
             var devices = new List<IDeviceTableEntity>();
             await foreach (var device in devicesQuery)
-                devices.Add(new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias));
+                devices.Add(new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias)
+                {
+                    Endpoints = device.Endpoints,
+                    Manufacturer = device.Manufacturer,
+                    Model = device.Model
+                });
             return devices;
         }
 
