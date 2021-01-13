@@ -12,7 +12,7 @@ namespace Signal.Core
             DateTime timeStamp)
         {
             this.PartitionKey = $"{deviceId}-{channelName}-{contactName}";
-            this.RowKey = timeStamp.ToString("O");
+            this.RowKey = $"{DateTime.MaxValue.Ticks - timeStamp.Ticks:D19}"; // Storing in inverted ticks (see Azure Tables Storage Log tail pattern)
             this.ValueSerialized = valueSerialized;
         }
         
