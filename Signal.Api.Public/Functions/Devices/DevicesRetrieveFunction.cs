@@ -46,7 +46,7 @@ namespace Signal.Api.Public.Functions.Devices
                         : null,
                     Manufacturer = d.Manufacturer,
                     Model = d.Model,
-                    States = states.Select(s => new DeviceContactStateDto
+                    States = states.Where(s => s.PartitionKey == d.RowKey).Select(s => new DeviceContactStateDto
                     (
                         s.ContactName,
                         s.ChannelName,
