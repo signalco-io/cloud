@@ -28,9 +28,9 @@ namespace Signal.Api.Public.Functions.Conducts
             this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         }
 
-        [FunctionName("Devices-Register")]
+        [FunctionName("Conducts-Request")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
             await req.UserRequest<ConductRequestDto>(this.functionAuthenticator, async (user, payload) =>
