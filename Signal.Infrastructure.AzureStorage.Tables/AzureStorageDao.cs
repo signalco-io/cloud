@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -17,7 +18,28 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         {
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
-        
+
+        public async Task<IEnumerable<IDeviceStateTableEntity>> GetDeviceStatesAsync(
+            IEnumerable<string> deviceIds,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken)
+                    .ConfigureAwait(false);
+                var statesAsync = client.QueryAsync<AzureDeviceStateTableEntity>(PartitionsAnyFilter(deviceIds));
+                var states = new List<IDeviceStateTableEntity>();
+                await foreach (var state in statesAsync)
+                    if (state != null)
+                        states.Add(state);
+                return states;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return Enumerable.Empty<IDeviceStateTableEntity>();
+            }
+        }
+
         public async Task<IDeviceStateTableEntity?> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken)
         {
             try
@@ -35,6 +57,9 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 return null;
             }
         }
+
+        private static string PartitionsAnyFilter(IEnumerable<string> partitionKeys) => 
+            $"({string.Join(" or", partitionKeys.Select(tl => $"(PartitionKey eq '{tl}')"))})";
 
         private static string PartitionWithKeysAnyFilter(string partitionKey, IEnumerable<string> rowKeys)
         {
