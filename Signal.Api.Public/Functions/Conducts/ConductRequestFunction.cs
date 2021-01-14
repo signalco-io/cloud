@@ -1,11 +1,13 @@
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
@@ -32,6 +34,7 @@ namespace Signal.Api.Public.Functions.Conducts
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request")]
             HttpRequest req,
+            [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
             CancellationToken cancellationToken) =>
             await req.UserRequest<ConductRequestDto>(this.functionAuthenticator, async (user, payload) =>
             {
@@ -41,8 +44,15 @@ namespace Signal.Api.Public.Functions.Conducts
                     throw new ExpectedHttpException(
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
-                
+
                 // TODO: Queue conduct
+                await signalRMessages.AddAsync(
+                    new SignalRMessage
+                    {
+                        Target = "requested",
+                        Arguments = new[] {JsonSerializer.Serialize(payload)},
+                        UserId = user.UserId
+                    }, cancellationToken);
             }, cancellationToken);
 
         private class ConductRequestDto
