@@ -21,7 +21,7 @@ namespace Signal.Api.Public.Functions.SignalR
             this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         }
 
-        [FunctionName("SignalR-Conducts-Negotiate")]
+        [FunctionName("SignalR-Devices-Negotiate")]
         public async Task<IActionResult> Negotiate(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/devices/negotiate")]
             HttpRequest req,
