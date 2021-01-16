@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
@@ -51,18 +52,5 @@ namespace Signal.Api.Public.Functions.Devices
                         payload.TimeStamp ?? DateTime.UtcNow),
                     cancellationToken);
             }, cancellationToken);
-
-        private class SignalDeviceStatePublishDto
-        {
-            public string? DeviceId { get; set; }
-
-            public string? ChannelName { get; set; }
-
-            public string? ContactName { get; set; }
-
-            public string? ValueSerialized { get; set; }
-
-            public DateTime? TimeStamp { get; set; }
-        }
     }
 }

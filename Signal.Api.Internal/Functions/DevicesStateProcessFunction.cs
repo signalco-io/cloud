@@ -1,9 +1,12 @@
 using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
+using Signal.Api.Common;
 using Signal.Api.Public;
 using Signal.Core;
 
@@ -24,7 +27,10 @@ namespace Signal.Api.Internal
         [FunctionName("Devices-ProcessState")]
         public async Task Run(
             [QueueTrigger(QueueNames.DevicesState, Connection = SecretKeys.StorageAccountConnectionString)]
-            string deviceStateItemSerialized, ILogger log, CancellationToken cancellationToken)
+            string deviceStateItemSerialized,
+            [SignalR(HubName = "devices")] IAsyncCollector<SignalRMessage> signalRMessages,
+            ILogger log, 
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -64,12 +70,27 @@ namespace Signal.Api.Internal
                         newState.ValueSerialized,
                         newState.TimeStamp),
                     cancellationToken);
-
+                
                 // Wait for current state update before triggering notification
                 await updateCurrentStateTask;
 
-                // TODO: Notify listeners
-                var notifyStateChangeTask = Task.CompletedTask;
+                // Notify listeners
+                var notifyStateChangeTask = signalRMessages.AddAsync(new SignalRMessage
+                {
+                    UserId = newState.UserId,
+                    Arguments = new object[]
+                    {
+                        new SignalDeviceStatePublishDto
+                        {
+                            DeviceId = newState.DeviceId,
+                            ChannelName = newState.ChannelName,
+                            ContactName = newState.ContactName,
+                            TimeStamp = newState.TimeStamp,
+                            ValueSerialized = newState.ValueSerialized
+                        }
+                    },
+                    Target = "device-state"
+                }, cancellationToken);
 
                 // Wait for all to finish
                 await Task.WhenAll(
