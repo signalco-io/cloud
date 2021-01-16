@@ -89,7 +89,7 @@ namespace Signal.Api.Internal
                             ValueSerialized = newState.ValueSerialized
                         }
                     },
-                    Target = "device-state"
+                    Target = "devicestate"
                 }, cancellationToken);
 
                 // Wait for all to finish
