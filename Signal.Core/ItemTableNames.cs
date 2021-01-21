@@ -10,6 +10,7 @@ namespace Signal.Core
             type switch
             {
                 EntityType.Device => "userassigneddevices",
+                EntityType.Process => "userassignedprocesses",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 
@@ -20,5 +21,7 @@ namespace Signal.Core
         public const string DeviceStates = "devicestates";
 
         public const string DevicesStatesHistory = "devicesstateshistory";
+
+        public const string Processes = "processes";
     }
 }

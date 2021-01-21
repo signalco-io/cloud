@@ -21,5 +21,7 @@ namespace Signal.Core
         Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType type, CancellationToken cancellationToken);
 
         Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
+
+        Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(string userId, CancellationToken cancellationToken);
     }
 }

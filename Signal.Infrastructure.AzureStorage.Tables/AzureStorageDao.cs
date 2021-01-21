@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Signal.Core;
+using ITableEntity = Azure.Data.Tables.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {
@@ -61,39 +62,73 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         private static string PartitionsAnyFilter(IEnumerable<string> partitionKeys) => 
             $"({string.Join(" or", partitionKeys.Select(tl => $"(PartitionKey eq '{tl}')"))})";
 
-        private static string PartitionWithKeysAnyFilter(string partitionKey, IEnumerable<string> rowKeys)
+        private static string PartitionWithKeysAnyFilter(string partitionKey, IEnumerable<string> rowKeys) =>
+            $"(PartitionKey eq '{partitionKey}') and" +
+            $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
+
+        private static string RowsWithKeysAnyFilter(IEnumerable<string> rowKeys) => 
+            $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
+
+        private async Task<IEnumerable<TEntity>> GetUserAssignedAsync<TEntity, TAzureTableEntity>(
+            string userId, 
+            EntityType type,
+            string tableName,
+            string? partitionFilter,
+            Func<TAzureTableEntity, TEntity> entityMap,
+            CancellationToken cancellationToken) 
+            where TAzureTableEntity : class, ITableEntity, new()
         {
-            return $"(PartitionKey eq '{partitionKey}') and" +
-                   $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
+            // Retrieve user assigned entities
+            var userAssignedEntities = await this.UserAssignedAsync(userId, type, cancellationToken);
+
+            // Select entity id's
+            var assignedEntityIds = userAssignedEntities.Select(d => d.RowKey).ToList();
+            if (!assignedEntityIds.Any())
+                return Enumerable.Empty<TEntity>();
+
+            // Query user assigned entities
+            var client = await this.GetTableClientAsync(tableName, cancellationToken).ConfigureAwait(false);
+            var entityQuery = client.QueryAsync<TAzureTableEntity>(
+                string.IsNullOrWhiteSpace(partitionFilter)
+                    ? RowsWithKeysAnyFilter(assignedEntityIds)
+                    : PartitionWithKeysAnyFilter(partitionFilter, assignedEntityIds),
+                cancellationToken: cancellationToken);
+
+            // Retrieve and map entities
+            var entities = new List<TEntity>();
+            await foreach (var entity in entityQuery)
+                entities.Add(entityMap(entity));
+            return entities;
         }
 
-        public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken)
-        {
-            // Retrieve user assigned devices
-            var userAssignedDevices = await this.UserAssignedAsync(userId, EntityType.Device, cancellationToken);
-            
-            // Split assigned device ids
-            var assignedDeviceIds = userAssignedDevices.Select(d => d.RowKey).ToList();
-            if (!assignedDeviceIds.Any())
-                return Enumerable.Empty<IDeviceTableEntity>();
+        public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(string userId,
+            CancellationToken cancellationToken) =>
+            await this.GetUserAssignedAsync<IProcessTableEntity, AzureProcessTableEntity>(
+                userId,
+                EntityType.Process,
+                ItemTableNames.Processes,
+                null,
+                process => new ProcessTableEntity(
+                    process.PartitionKey, 
+                    process.RowKey,
+                    process.Alias, 
+                    process.IsDisabled, 
+                    process.ConfigurationSerialized),
+                cancellationToken);
 
-            // Query user assigned devices
-            var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken).ConfigureAwait(false);
-            var devicesQuery = client.QueryAsync<AzureDeviceTableEntity>(
-                PartitionWithKeysAnyFilter("device", assignedDeviceIds),
-                cancellationToken: cancellationToken);
-            
-            // Retrieve and map devices
-            var devices = new List<IDeviceTableEntity>();
-            await foreach (var device in devicesQuery)
-                devices.Add(new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias)
+        public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken) =>
+            await this.GetUserAssignedAsync<IDeviceTableEntity, AzureDeviceTableEntity>(
+                userId,
+                EntityType.Device,
+                ItemTableNames.Devices,
+                "device",
+                device => new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias)
                 {
                     Endpoints = device.Endpoints,
                     Manufacturer = device.Manufacturer,
                     Model = device.Model
-                });
-            return devices;
-        }
+                },
+                cancellationToken);
 
         public async Task<bool> IsUserAssignedAsync(string userId, EntityType data, string entityId, CancellationToken cancellationToken)
         {

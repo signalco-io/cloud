@@ -2,6 +2,7 @@
 {
     public enum EntityType
     {
-        Device
+        Device,
+        Process
     }
 }
