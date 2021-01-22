@@ -101,7 +101,8 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             return entities;
         }
 
-        public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(string userId,
+        public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(
+            string userId,
             CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IProcessTableEntity, AzureProcessTableEntity>(
                 userId,
