@@ -29,7 +29,7 @@ namespace Signal.Api.Public.Functions.Devices
 
         [FunctionName("Devices-RetrieveStateHistory")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices/state-history")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
             await req.UserRequest<DeviceStateHistoryRequestDto, DeviceStateHistoryResponseDto>(this.functionAuthenticator, async (user, dto) =>
