@@ -21,5 +21,7 @@ namespace Signal.Core
         public string RowKey { get; }
         
         public string? ValueSerialized { get; }
+
+        public DateTimeOffset? Timestamp { get; }
     }
 }
