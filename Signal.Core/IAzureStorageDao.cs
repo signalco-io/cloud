@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,5 +24,12 @@ namespace Signal.Core
         Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
 
         Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(string userId, CancellationToken cancellationToken);
+
+        Task<IEnumerable<IDeviceStateHistoryTableEntity>> GetDeviceStateHistoryAsync(
+            string deviceId,
+            string channelName,
+            string contactName,
+            TimeSpan duration,
+            CancellationToken cancellationToken);
     }
 }

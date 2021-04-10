@@ -20,6 +20,45 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
 
+        public async Task<IEnumerable<IDeviceStateHistoryTableEntity>> GetDeviceStateHistoryAsync(
+            string deviceId,
+            string channelName,
+            string contactName,
+            TimeSpan duration,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.DevicesStatesHistory, cancellationToken)
+                    .ConfigureAwait(false);
+                var history = client.QueryAsync<AzureDeviceStateHistoryTableEntity>(entry =>
+                    entry.PartitionKey == $"{deviceId}-{channelName}-{contactName}");
+
+                // Limit to one day
+                // TODO: Move this check to BLL
+                var correctedDuration = duration;
+                if (correctedDuration > TimeSpan.FromDays(1))
+                    correctedDuration = TimeSpan.FromDays(1);
+
+                // Fetch all until reaching requested duration
+                var items = new List<IDeviceStateHistoryTableEntity>();
+                var startDateTime = DateTime.UtcNow - correctedDuration;
+                await foreach (var data in history)
+                {
+                    if (data.Timestamp < startDateTime) 
+                        break;
+
+                    items.Add(data);
+                }
+
+                return items;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return Enumerable.Empty<IDeviceStateHistoryTableEntity>();
+            }
+        }
+
         public async Task<IEnumerable<IDeviceStateTableEntity>> GetDeviceStatesAsync(
             IEnumerable<string> deviceIds,
             CancellationToken cancellationToken)
