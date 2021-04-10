@@ -33,13 +33,18 @@ namespace Signal.Api.Public.Functions.Devices
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices/state-history")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<DeviceStateHistoryRequestDto, DeviceStateHistoryResponseDto>(this.functionAuthenticator, async (user, dto) =>
+            await req.UserRequest<DeviceStateHistoryResponseDto>(this.functionAuthenticator, async user =>
             {
+                var deviceId = req.Query["deviceId"];
+                var channelName = req.Query["channelName"];
+                var contactName = req.Query["contactName"];
+                var duration = req.Query["duration"];
+
                 var data = await this.storage.GetDeviceStateHistoryAsync(
-                    dto.DeviceId,
-                    dto.ChannelName,
-                    dto.ContactName,
-                    dto.Duration ?? TimeSpan.FromDays(1),
+                    deviceId,
+                    channelName,
+                    contactName,
+                    TimeSpan.TryParse(duration, out var durationValue) ? durationValue : TimeSpan.FromDays(1),
                     cancellationToken);
 
                 return new DeviceStateHistoryResponseDto
