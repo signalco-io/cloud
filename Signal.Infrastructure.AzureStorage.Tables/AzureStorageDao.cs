@@ -34,11 +34,11 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 var history = client.QueryAsync<AzureDeviceStateHistoryTableEntity>(entry =>
                     entry.PartitionKey == $"{deviceId}-{channelName}-{contactName}");
 
-                // Limit to one day
+                // Limit to 30 days
                 // TODO: Move this check to BLL
                 var correctedDuration = duration;
-                if (correctedDuration > TimeSpan.FromDays(1))
-                    correctedDuration = TimeSpan.FromDays(1);
+                if (correctedDuration > TimeSpan.FromDays(30))
+                    correctedDuration = TimeSpan.FromDays(30);
 
                 // Fetch all until reaching requested duration
                 var items = new List<IDeviceStateHistoryTableEntity>();

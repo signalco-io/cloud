@@ -33,7 +33,7 @@ namespace Signal.Api.Public.Functions.Devices
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices/state-history")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<DeviceStateHistoryResponseDto>(this.functionAuthenticator, async user =>
+            await req.UserRequest(this.functionAuthenticator, async user =>
             {
                 var deviceId = req.Query["deviceId"];
                 var channelName = req.Query["channelName"];
