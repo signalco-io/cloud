@@ -43,16 +43,10 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 // Fetch all until reaching requested duration
                 var items = new List<IDeviceStateHistoryTableEntity>();
                 var startDateTime = DateTime.UtcNow - correctedDuration;
-                int counter = 0;
                 await foreach (var data in history)
                 {
-                    counter++;
-                    if (counter > 20)
-                    {
+                    if (data.Timestamp < startDateTime)
                         break;
-                    }
-                    //if (data.Timestamp < startDateTime) 
-                    //    break;
 
                     items.Add(data);
                 }
