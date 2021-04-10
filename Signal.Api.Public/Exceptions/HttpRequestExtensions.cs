@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,19 @@ namespace Signal.Api.Public.Exceptions
 {
     public static class HttpRequestExtensions
     {
+        public class TimeSpanConverter : JsonConverter<TimeSpan>
+        {
+            public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                return TimeSpan.Parse(reader.GetString());
+            }
+
+            public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value.ToString());
+            }
+        }
+
         public static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
         {
             var requestContent = await req.ReadAsStringAsync();
@@ -21,7 +35,11 @@ namespace Signal.Api.Public.Exceptions
 
             return JsonSerializer.Deserialize<T>(
                 requestContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = {new TimeSpanConverter()}
+                })!;
         }
 
         public static async Task<IActionResult> UserRequest<TResponse>(
