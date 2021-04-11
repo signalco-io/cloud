@@ -6,12 +6,15 @@
 
         public string RowKey { get; }
 
+        public string Name { get; set; }
+
         public string? ConfigurationSerialized { get; set; }
 
         public DashboardTableEntity(string id, string name, string? configurationSerialized)
         {
-            this.PartitionKey = id;
-            this.RowKey = name;
+            this.PartitionKey = "dashboard";
+            this.RowKey = id;
+            this.Name = name;
             this.ConfigurationSerialized = configurationSerialized;
         }
     }

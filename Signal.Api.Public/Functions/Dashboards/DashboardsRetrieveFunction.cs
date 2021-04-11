@@ -33,8 +33,8 @@ namespace Signal.Api.Public.Functions.Dashboards
             await req.UserRequest(this.functionAuthenticator, async user =>
                     (await this.storage.DashboardsAsync(user.UserId, cancellationToken))
                     .Select(p => new DashboardsDto(
-                        p.PartitionKey,
                         p.RowKey,
+                        p.Name,
                         p.ConfigurationSerialized))
                     .ToList(),
                 cancellationToken);

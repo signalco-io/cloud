@@ -11,6 +11,7 @@ namespace Signal.Core
             {
                 EntityType.Device => "userassigneddevices",
                 EntityType.Process => "userassignedprocesses",
+                EntityType.Dashboard => "userassigneddashboards",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 
