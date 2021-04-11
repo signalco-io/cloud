@@ -66,8 +66,8 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 ItemTableNames.Dashboards,
                 null,
                 dashboard => new DashboardTableEntity(
-                    dashboard.PartitionKey,
                     dashboard.RowKey,
+                    dashboard.Name,
                     dashboard.ConfigurationSerialized),
                 cancellationToken);
         
