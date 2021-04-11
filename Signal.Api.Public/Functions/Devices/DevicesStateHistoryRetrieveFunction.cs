@@ -40,6 +40,8 @@ namespace Signal.Api.Public.Functions.Devices
                 var contactName = req.Query["contactName"];
                 var duration = req.Query["duration"];
 
+                // TODO: Validate user assigned
+
                 var data = await this.storage.GetDeviceStateHistoryAsync(
                     deviceId,
                     channelName,

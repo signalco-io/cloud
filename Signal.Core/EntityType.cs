@@ -3,6 +3,7 @@
     public enum EntityType
     {
         Device,
-        Process
+        Process,
+        Dashboard
     }
 }

@@ -31,5 +31,7 @@ namespace Signal.Core
             string contactName,
             TimeSpan duration,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId, CancellationToken cancellationToken);
     }
 }

@@ -23,5 +23,7 @@ namespace Signal.Core
         public const string DevicesStatesHistory = "devicesstateshistory";
 
         public const string Processes = "processes";
+
+        public const string Dashboards = "dashboards";
     }
 }

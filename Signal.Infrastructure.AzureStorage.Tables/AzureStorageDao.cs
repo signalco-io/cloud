@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -58,6 +57,20 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 return Enumerable.Empty<IDeviceStateHistoryTableEntity>();
             }
         }
+
+        public async Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId,
+            CancellationToken cancellationToken) =>
+            await this.GetUserAssignedAsync<IDashboardTableEntity, AzureDashboardTableEntity>(
+                userId,
+                EntityType.Dashboard,
+                ItemTableNames.Dashboards,
+                null,
+                dashboard => new DashboardTableEntity(
+                    dashboard.PartitionKey,
+                    dashboard.RowKey,
+                    dashboard.ConfigurationSerialized),
+                cancellationToken);
+        
 
         public async Task<IEnumerable<IDeviceStateTableEntity>> GetDeviceStatesAsync(
             IEnumerable<string> deviceIds,
