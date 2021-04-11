@@ -64,6 +64,8 @@ namespace Signal.Api.Public.Functions.Conducts
             public string? ContactName { get; set; }
 
             public string? ValueSerialized { get; set; }
+
+            public double? Delay { get; set; }
         }
     }
 }
