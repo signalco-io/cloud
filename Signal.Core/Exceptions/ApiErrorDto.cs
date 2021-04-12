@@ -1,4 +1,4 @@
-namespace Signal.Api.Public
+namespace Signal.Core.Exceptions
 {
     public class ApiErrorDto
     {

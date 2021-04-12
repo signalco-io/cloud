@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 
-namespace Signal.Api.Public
+namespace Signal.Core.Exceptions
 {
     public class ExpectedHttpException : Exception
     {

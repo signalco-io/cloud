@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Signal.Core;
+using Signal.Core.Storage;
+using ITableEntity = Signal.Core.Storage.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {
@@ -29,7 +31,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             await client.SendMessageAsync(BinaryData.FromString(itemSerializedBase64), delay, ttl, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : Core.ITableEntity
+        public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
         {
             var client = await this.GetTableClientAsync(tableName, cancellationToken);
             var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();

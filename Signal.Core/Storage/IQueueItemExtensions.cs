@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Signal.Core
+namespace Signal.Core.Storage
 {
     public static class IQueueItemExtensions
     {

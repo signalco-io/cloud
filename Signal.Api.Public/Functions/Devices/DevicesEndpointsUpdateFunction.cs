@@ -12,6 +12,9 @@ using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
+using Signal.Core.Devices;
+using Signal.Core.Exceptions;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices
 {
@@ -45,7 +48,7 @@ namespace Signal.Api.Public.Functions.Devices
                         "DeviceIdentifier property is required.");
 
                 // Check if user has assigned requested device
-                if (!await this.storageDao.IsUserAssignedAsync(user.UserId, EntityType.Device, payload.DeviceId,
+                if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, payload.DeviceId,
                     cancellationToken))
                     throw new ExpectedHttpException(HttpStatusCode.NotFound);
 

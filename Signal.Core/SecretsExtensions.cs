@@ -6,7 +6,6 @@ namespace Signal.Core
     {
         public static void AddCore(this IServiceCollection services)
         {
-            services.AddTransient<IIntegrationsService, IntegrationsService>();
         }
     }
 }

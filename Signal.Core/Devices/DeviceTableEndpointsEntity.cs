@@ -1,4 +1,6 @@
-﻿namespace Signal.Core
+﻿using Signal.Core.Storage;
+
+namespace Signal.Core.Devices
 {
     public class DeviceTableEndpointsEntity : ITableEntity
     {

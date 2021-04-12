@@ -1,4 +1,4 @@
-﻿namespace Signal.Core
+﻿namespace Signal.Core.Devices
 {
     public enum DeviceStateDataType
     {

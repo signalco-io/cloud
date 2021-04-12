@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Signal.Core
+namespace Signal.Core.Storage
 {
     public interface IAzureStorage
     {

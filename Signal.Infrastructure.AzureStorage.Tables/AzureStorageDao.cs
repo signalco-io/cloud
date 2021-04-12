@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Signal.Core;
+using Signal.Core.Dashboards;
+using Signal.Core.Devices;
+using Signal.Core.Processes;
+using Signal.Core.Storage;
 using ITableEntity = Azure.Data.Tables.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
@@ -62,7 +66,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IDashboardTableEntity, AzureDashboardTableEntity>(
                 userId,
-                EntityType.Dashboard,
+                TableEntityType.Dashboard,
                 ItemTableNames.Dashboards,
                 null,
                 dashboard => new DashboardTableEntity(
@@ -123,7 +127,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
         private async Task<IEnumerable<TEntity>> GetUserAssignedAsync<TEntity, TAzureTableEntity>(
             string userId, 
-            EntityType type,
+            TableEntityType type,
             string tableName,
             string? partitionFilter,
             Func<TAzureTableEntity, TEntity> entityMap,
@@ -158,7 +162,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IProcessTableEntity, AzureProcessTableEntity>(
                 userId,
-                EntityType.Process,
+                TableEntityType.Process,
                 ItemTableNames.Processes,
                 null,
                 process => new ProcessTableEntity(
@@ -172,7 +176,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IDeviceTableEntity, AzureDeviceTableEntity>(
                 userId,
-                EntityType.Device,
+                TableEntityType.Device,
                 ItemTableNames.Devices,
                 "device",
                 device => new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias)
@@ -183,7 +187,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 },
                 cancellationToken);
 
-        public async Task<bool> IsUserAssignedAsync(string userId, EntityType data, string entityId, CancellationToken cancellationToken)
+        public async Task<bool> IsUserAssignedAsync(string userId, TableEntityType data, string entityId, CancellationToken cancellationToken)
         {
             try
             {
@@ -199,7 +203,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
-        public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType data, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
         {
             try
             {

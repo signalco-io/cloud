@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Signal.Core;
+using Signal.Core.Storage;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Auth
 {

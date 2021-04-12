@@ -1,5 +1,6 @@
 ﻿using System;
 using Signal.Core;
+using Signal.Core.Devices;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {

@@ -12,6 +12,9 @@ using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
+using Signal.Core.Devices;
+using Signal.Core.Exceptions;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices
 {
@@ -73,7 +76,7 @@ namespace Signal.Api.Public.Functions.Devices
 
                 // Assign device to user
                 await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.UserAssignedEntity(EntityType.Device),
+                    ItemTableNames.UserAssignedEntity(TableEntityType.Device),
                     new UserAssignedEntityTableEntry(
                         user.UserId,
                         deviceId),

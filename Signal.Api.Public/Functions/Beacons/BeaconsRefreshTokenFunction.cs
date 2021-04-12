@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
+using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Functions.Beacons
 {

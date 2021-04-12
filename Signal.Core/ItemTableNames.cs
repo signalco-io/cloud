@@ -1,4 +1,5 @@
 using System;
+using Signal.Core.Storage;
 
 namespace Signal.Core
 {
@@ -6,12 +7,12 @@ namespace Signal.Core
     {
         //public const string Users = "users";
 
-        public static string UserAssignedEntity(EntityType type) =>
+        public static string UserAssignedEntity(TableEntityType type) =>
             type switch
             {
-                EntityType.Device => "userassigneddevices",
-                EntityType.Process => "userassignedprocesses",
-                EntityType.Dashboard => "userassigneddashboards",
+                TableEntityType.Device => "userassigneddevices",
+                TableEntityType.Process => "userassignedprocesses",
+                TableEntityType.Dashboard => "userassigneddashboards",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 

@@ -1,4 +1,4 @@
-namespace Signal.Api.Public
+namespace Signal.Core.Storage
 {
     public static class QueueNames
     {

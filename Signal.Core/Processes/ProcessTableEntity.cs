@@ -1,4 +1,4 @@
-﻿namespace Signal.Core
+﻿namespace Signal.Core.Processes
 {
     public class ProcessTableEntity : IProcessTableEntity
     {

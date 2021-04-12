@@ -1,6 +1,6 @@
-﻿namespace Signal.Core
+﻿namespace Signal.Core.Storage
 {
-    public enum EntityType
+    public enum TableEntityType
     {
         Device,
         Process,

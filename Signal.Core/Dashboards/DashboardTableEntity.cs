@@ -1,4 +1,4 @@
-﻿namespace Signal.Core
+﻿namespace Signal.Core.Dashboards
 {
     public class DashboardTableEntity : IDashboardTableEntity
     {

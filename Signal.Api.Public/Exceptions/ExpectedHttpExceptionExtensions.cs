@@ -1,4 +1,5 @@
 using System.Net.Http;
+using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Exceptions
 {

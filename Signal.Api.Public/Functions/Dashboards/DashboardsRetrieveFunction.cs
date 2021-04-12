@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Dashboards
 {

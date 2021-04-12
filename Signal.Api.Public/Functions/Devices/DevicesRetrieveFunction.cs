@@ -12,6 +12,7 @@ using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices
 {

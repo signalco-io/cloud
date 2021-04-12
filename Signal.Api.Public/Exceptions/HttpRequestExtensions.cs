@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Core.Auth;
+using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Exceptions
 {

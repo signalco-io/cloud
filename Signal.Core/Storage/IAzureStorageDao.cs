@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Signal.Core.Dashboards;
+using Signal.Core.Devices;
+using Signal.Core.Processes;
 
-namespace Signal.Core
+namespace Signal.Core.Storage
 {
     public interface IAzureStorageDao
     {
@@ -17,9 +20,9 @@ namespace Signal.Core
 
         Task<string?> DeviceExistsAsync(string userId, string deviceIdentifier, CancellationToken cancellationToken);
 
-        Task<bool> IsUserAssignedAsync(string userId, EntityType type, string entityId, CancellationToken cancellationToken);
+        Task<bool> IsUserAssignedAsync(string userId, TableEntityType type, string entityId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, EntityType type, CancellationToken cancellationToken);
+        Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType type, CancellationToken cancellationToken);
 
         Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
 

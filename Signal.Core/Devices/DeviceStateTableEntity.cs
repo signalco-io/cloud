@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Signal.Core
+namespace Signal.Core.Devices
 {
     public class DeviceStateTableEntity : IDeviceStateTableEntity
     {

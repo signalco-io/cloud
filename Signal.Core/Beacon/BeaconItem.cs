@@ -1,6 +1,7 @@
 ﻿using System;
+using Signal.Core.Storage;
 
-namespace Signal.Core
+namespace Signal.Core.Beacon
 {
     public class BeaconItem : ITableEntity
     {
