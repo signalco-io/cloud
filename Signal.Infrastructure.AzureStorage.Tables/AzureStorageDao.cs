@@ -11,6 +11,7 @@ using Signal.Core.Dashboards;
 using Signal.Core.Devices;
 using Signal.Core.Processes;
 using Signal.Core.Storage;
+using Signal.Core.Users;
 using ITableEntity = Azure.Data.Tables.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables

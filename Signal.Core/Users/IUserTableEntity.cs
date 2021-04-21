@@ -1,6 +1,6 @@
 ﻿using Signal.Core.Storage;
 
-namespace Signal.Core.Dashboards
+namespace Signal.Core.Users
 {
     public interface IUserTableEntity : ITableEntity
     {

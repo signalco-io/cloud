@@ -1,6 +1,4 @@
-﻿using Signal.Core.Dashboards;
-
-namespace Signal.Core.Beacon
+﻿namespace Signal.Core.Users
 {
     public class UserEntity : IUserTableEntity
     {

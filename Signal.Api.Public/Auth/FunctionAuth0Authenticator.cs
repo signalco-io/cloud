@@ -13,6 +13,7 @@ using Signal.Core;
 using Signal.Core.Auth;
 using Signal.Core.Beacon;
 using Signal.Core.Storage;
+using Signal.Core.Users;
 
 namespace Signal.Api.Public.Auth
 {
@@ -105,7 +106,8 @@ namespace Signal.Api.Public.Auth
 
                 // Create user if doesn't exist
                 var existingUser = await this.azureStorageDao.UserAsync(nameIdentifier, cancellationToken);
-                if (existingUser == null)
+                if (existingUser == null ||
+                    string.IsNullOrWhiteSpace(existingUser.Email))
                 {
                     // Retrieve Auth0 user info
                     using var httpClient = new HttpClient();

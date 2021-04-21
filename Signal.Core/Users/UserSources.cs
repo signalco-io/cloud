@@ -1,4 +1,4 @@
-﻿namespace Signal.Core.Beacon
+﻿namespace Signal.Core.Users
 {
     public static class UserSources
     {

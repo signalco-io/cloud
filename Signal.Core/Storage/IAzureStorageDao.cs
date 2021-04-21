@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Signal.Core.Dashboards;
 using Signal.Core.Devices;
 using Signal.Core.Processes;
+using Signal.Core.Users;
 
 namespace Signal.Core.Storage
 {

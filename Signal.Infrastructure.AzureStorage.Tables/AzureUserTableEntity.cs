@@ -1,4 +1,5 @@
 ﻿using Signal.Core.Dashboards;
+using Signal.Core.Users;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
 {
