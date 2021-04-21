@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -13,6 +14,7 @@ using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
 using Signal.Core.Storage;
+using Signal.Core.Users;
 
 namespace Signal.Api.Public.Functions.Devices
 {
@@ -38,22 +40,55 @@ namespace Signal.Api.Public.Functions.Devices
             {
                 var devices = (await this.storage.DevicesAsync(user.UserId, cancellationToken)).ToList();
                 var states = await this.storage.GetDeviceStatesAsync(devices.Select(d => d.RowKey).ToList(), cancellationToken);
-
-                return devices.Select(d => new DeviceDto(d.RowKey, d.DeviceIdentifier, d.Alias)
+                var assignedDevicesUsers = await this.storage.AssignedUsersAsync(
+                    TableEntityType.Device, 
+                    devices.Select(d => d.RowKey),
+                    cancellationToken);
+                var assignedUserIds = assignedDevicesUsers.Values.SelectMany(i => i).Distinct().ToList();
+                var assignedUsers = new Dictionary<string, IUserTableEntity>();
+                foreach (var userId in assignedUserIds)
                 {
-                    Endpoints = d.Endpoints != null
-                        ? JsonSerializer.Deserialize<IEnumerable<DeviceEndpointDto>>(d.Endpoints,
-                            new JsonSerializerOptions {PropertyNameCaseInsensitive = true})
-                        : null,
-                    Manufacturer = d.Manufacturer,
-                    Model = d.Model,
-                    States = states.Where(s => s.PartitionKey == d.RowKey).Select(s => new DeviceContactStateDto
-                    (
-                        s.ContactName,
-                        s.ChannelName,
-                        s.ValueSerialized,
-                        s.TimeStamp
-                    ))
+                    var assignedUser = await this.storage.UserAsync(userId, cancellationToken);
+                    if (assignedUser != null)
+                        assignedUsers.Add(assignedUser.RowKey, assignedUser);
+                }
+
+                return devices.Select(d =>
+                {
+                    var users = new List<UserDto>();
+                    if (assignedDevicesUsers.TryGetValue(d.RowKey, out var assignedDeviceUserIds))
+                    {
+                        foreach (var assignedDeviceUserId in assignedDeviceUserIds)
+                        {
+                            if (assignedUsers.TryGetValue(assignedDeviceUserId, out var assignedDeviceUser))
+                            {
+                                users.Add(new UserDto
+                                {
+                                    Id = assignedDeviceUser.RowKey,
+                                    Name = assignedDeviceUser.FullName,
+                                    Email = assignedDeviceUser.Email
+                                });
+                            }
+                        }
+                    }
+
+                    return new DeviceDto(d.RowKey, d.DeviceIdentifier, d.Alias)
+                    {
+                        Endpoints = d.Endpoints != null
+                            ? JsonSerializer.Deserialize<IEnumerable<DeviceEndpointDto>>(d.Endpoints,
+                                new JsonSerializerOptions {PropertyNameCaseInsensitive = true})
+                            : null,
+                        Manufacturer = d.Manufacturer,
+                        Model = d.Model,
+                        States = states.Where(s => s.PartitionKey == d.RowKey).Select(s => new DeviceContactStateDto
+                        (
+                            s.ContactName,
+                            s.ChannelName,
+                            s.ValueSerialized,
+                            s.TimeStamp
+                        )),
+                        SharedWith = users
+                    };
                 });
             }, cancellationToken);
 
@@ -79,6 +114,17 @@ namespace Signal.Api.Public.Functions.Devices
             public string? Model { get; set; }
 
             public IEnumerable<DeviceContactStateDto>? States { get; set; }
+
+            public IEnumerable<UserDto> SharedWith { get; set; }
+        }
+
+        private class UserDto
+        {
+            public string Id { get; set; }
+
+            public string Email { get; set; }
+
+            public string? Name { get; set; }
         }
 
         private class DeviceContactStateDto

@@ -240,6 +240,31 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
+        public async Task<Dictionary<string, ICollection<string>>> AssignedUsersAsync(
+            TableEntityType type, 
+            IEnumerable<string> entityIds,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.UserAssignedEntity(type), cancellationToken).ConfigureAwait(false);
+                var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
+                    RowsWithKeysAnyFilter(entityIds), cancellationToken: cancellationToken);
+
+                var assignedUsers = new Dictionary<string, ICollection<string>>();
+                await foreach (var entity in assigned)
+                    if (assignedUsers.ContainsKey(entity.RowKey))
+                        assignedUsers[entity.RowKey].Add(entity.PartitionKey);
+                    else assignedUsers[entity.RowKey] = new List<string> {entity.PartitionKey};
+
+                return assignedUsers;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return new Dictionary<string, ICollection<string>>();
+            }
+        }
+
         public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
         {
             try

@@ -40,5 +40,10 @@ namespace Signal.Core.Storage
 
         Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken);
         Task<string?> UserIdByEmailAsync(string userEmail, CancellationToken cancellationToken);
+
+        public Task<Dictionary<string, ICollection<string>>> AssignedUsersAsync(
+            TableEntityType type,
+            IEnumerable<string> entityIds,
+            CancellationToken cancellationToken);
     }
 }
