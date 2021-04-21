@@ -4,6 +4,7 @@
     {
         Device,
         Process,
-        Dashboard
+        Dashboard,
+        Beacon
     }
 }

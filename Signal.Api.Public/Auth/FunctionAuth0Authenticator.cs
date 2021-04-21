@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Signal.Core;
 using Signal.Core.Auth;
+using Signal.Core.Beacon;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Auth
 {
@@ -18,14 +20,20 @@ namespace Signal.Api.Public.Auth
     {
         private const string RefreshTokenUrlPath = "/oauth/token";
         private readonly ISecretsProvider secretsProvider;
+        private readonly IAzureStorageDao azureStorageDao;
+        private readonly IAzureStorage azureStorage;
         private readonly ILogger<FunctionAuth0Authenticator> logger;
         private Auth0Authenticator? authenticator;
         
         public FunctionAuth0Authenticator(
             ISecretsProvider secretsProvider,
+            IAzureStorageDao azureStorageDao,
+            IAzureStorage azureStorage,
             ILogger<FunctionAuth0Authenticator> logger)
         {
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
+            this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
+            this.azureStorage = azureStorage ?? throw new ArgumentNullException(nameof(azureStorage));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -94,6 +102,21 @@ namespace Signal.Api.Public.Auth
                 var nameIdentifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrWhiteSpace(nameIdentifier))
                     throw new AuthenticationExpectedHttpException("NameIdentifier claim not present.");
+
+                // Create user if doesn't exist
+                var existingUser = await this.azureStorageDao.UserAsync(nameIdentifier, cancellationToken);
+                if (existingUser == null)
+                {
+                    // Retrieve Auth0 user info
+                    var userInfo = await new Auth0Service(new HttpClient(), this.secretsProvider)
+                        .Auth0UserInfo(request.Headers["Authorization"], cancellationToken);
+
+                    // Create user entity
+                    await this.azureStorage.CreateOrUpdateItemAsync(
+                        ItemTableNames.Users,
+                        new UserEntity(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name), 
+                        cancellationToken);
+                }
 
                 return new UserAuth(nameIdentifier);
             }

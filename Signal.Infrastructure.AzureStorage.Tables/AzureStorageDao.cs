@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Signal.Core;
+using Signal.Core.Beacon;
 using Signal.Core.Dashboards;
 using Signal.Core.Devices;
 using Signal.Core.Processes;
@@ -62,7 +63,25 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
-        public async Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId,
+        public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.Users, cancellationToken)
+                    .ConfigureAwait(false);
+                return (await client.GetEntityAsync<AzureUserTableEntity>(
+                    UserSources.GoogleOauth,
+                    userId,
+                    cancellationToken: cancellationToken)).Value;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(
+            string userId,
             CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IDashboardTableEntity, AzureDashboardTableEntity>(
                 userId,

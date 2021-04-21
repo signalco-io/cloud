@@ -13,6 +13,7 @@ namespace Signal.Core
                 TableEntityType.Device => "userassigneddevices",
                 TableEntityType.Process => "userassignedprocesses",
                 TableEntityType.Dashboard => "userassigneddashboards",
+                TableEntityType.Beacon => "userassignedbeacons",
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 
@@ -27,5 +28,7 @@ namespace Signal.Core
         public const string Processes = "processes";
 
         public const string Dashboards = "dashboards";
+
+        public const string Users = "users";
     }
 }

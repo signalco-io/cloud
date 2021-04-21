@@ -36,5 +36,7 @@ namespace Signal.Core.Storage
             CancellationToken cancellationToken);
 
         Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId, CancellationToken cancellationToken);
+
+        Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken);
     }
 }
