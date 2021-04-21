@@ -65,7 +65,7 @@ namespace Signal.Api.Public.Functions.Devices
                                 users.Add(new UserDto
                                 {
                                     Id = assignedDeviceUser.RowKey,
-                                    Name = assignedDeviceUser.FullName,
+                                    FullName = assignedDeviceUser.FullName,
                                     Email = assignedDeviceUser.Email
                                 });
                             }
@@ -124,7 +124,7 @@ namespace Signal.Api.Public.Functions.Devices
 
             public string Email { get; set; }
 
-            public string? Name { get; set; }
+            public string? FullName { get; set; }
         }
 
         private class DeviceContactStateDto
