@@ -97,7 +97,7 @@ namespace Signal.Api.Public.Auth
                 this.authenticator ??= await this.InitializeAuthenticatorAsync(false, cancellationToken);
                 if (this.authenticator == null)
                     throw new NullReferenceException("Authenticator failed to initialize.");
-                
+
                 var (user, _) = await this.authenticator.AuthenticateAsync(request, cancellationToken);
                 var nameIdentifier = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrWhiteSpace(nameIdentifier))
@@ -108,13 +108,14 @@ namespace Signal.Api.Public.Auth
                 if (existingUser == null)
                 {
                     // Retrieve Auth0 user info
-                    var userInfo = await new Auth0Service(new HttpClient(), this.secretsProvider)
+                    using var httpClient = new HttpClient();
+                    var userInfo = await new Auth0Service(httpClient, this.secretsProvider)
                         .Auth0UserInfo(request.Headers["Authorization"], cancellationToken);
 
                     // Create user entity
                     await this.azureStorage.CreateOrUpdateItemAsync(
                         ItemTableNames.Users,
-                        new UserEntity(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name), 
+                        new UserEntity(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
                         cancellationToken);
                 }
 

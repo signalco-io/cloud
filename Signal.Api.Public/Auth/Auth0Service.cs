@@ -24,7 +24,7 @@ namespace Signal.Api.Public.Auth
 
         public async Task<Auth0UserInfoDto> Auth0UserInfo(string authHeader, CancellationToken cancellationToken)
         {
-            var domain = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
+            var domain = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
             var request = new HttpRequestMessage(HttpMethod.Get, $"https://{domain}/userinfo");
             request.Headers.Authorization = AuthenticationHeaderValue.Parse(authHeader);
             using var result = await this.httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
