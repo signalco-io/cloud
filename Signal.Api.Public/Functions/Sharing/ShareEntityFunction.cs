@@ -49,7 +49,7 @@ namespace Signal.Api.Public.Functions.Sharing
                         throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Type is required");
                     if (string.IsNullOrWhiteSpace(payload.EntityId))
                         throw new ExpectedHttpException(HttpStatusCode.BadRequest, "EntityId is required");
-                    if (payload.UserEmails == null || payload.UserEmails.Any())
+                    if (payload.UserEmails == null || !payload.UserEmails.Any())
                         throw new ExpectedHttpException(HttpStatusCode.BadRequest, "UserEmails is required - at least one user email is required");
 
                     // TODO: Check user has entity assigned
