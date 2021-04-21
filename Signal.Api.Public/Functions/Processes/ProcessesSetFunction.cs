@@ -39,6 +39,8 @@ namespace Signal.Api.Public.Functions.Processes
                     if (string.IsNullOrWhiteSpace(payload.Alias))
                         throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Alias is required");
 
+                    // TODO: Check user assigned
+
                     var id = payload.Id ?? Guid.NewGuid().ToString();
                     await this.storage.CreateOrUpdateItemAsync(
                         ItemTableNames.Processes,

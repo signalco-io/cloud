@@ -64,6 +64,23 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
+        public async Task<string?> UserIdByEmailAsync(string userEmail, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var client = await this.GetTableClientAsync(ItemTableNames.Users, cancellationToken)
+                    .ConfigureAwait(false);
+                var query = client.QueryAsync<AzureUserTableEntity>(u => u.Email == userEmail);
+                await foreach (var match in query)
+                    return match.RowKey;
+                return null;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return null;
+            }
+        }
+
         public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken)
         {
             try
