@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
@@ -47,14 +48,33 @@ namespace Signal.Api.Public.Functions.Conducts
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
+                // TODO: Validate user has assigned device
                 // TODO: Queue conduct
-                await signalRMessages.AddAsync(
-                    new SignalRMessage
-                    {
-                        Target = "requested",
-                        Arguments = new[] {JsonSerializer.Serialize(payload)},
-                        UserId = user.UserId
-                    }, cancellationToken);
+
+                // Retrieve all device assigned devices
+                var deviceUsers = await this.storageDao.AssignedUsersAsync(
+                    TableEntityType.Device,
+                    new[] {payload.DeviceId},
+                    cancellationToken);
+
+                // Retrieve all users with beacons
+                var beaconAssignments = await deviceUsers.FirstOrDefault().Value.SelectManyAsync(deviceUserId =>
+                    this.storageDao.UserAssignedAsync(deviceUserId, TableEntityType.Beacon, cancellationToken));
+
+                // Retrieve all beacon users
+                var beaconUserIds = beaconAssignments.Select(ba => ba.PartitionKey);
+
+                // Sent to all users
+                foreach (var beaconUserId in beaconUserIds)
+                {
+                    await signalRMessages.AddAsync(
+                        new SignalRMessage
+                        {
+                            Target = "requested",
+                            Arguments = new object[] {JsonSerializer.Serialize(payload)},
+                            UserId = beaconUserId
+                        }, cancellationToken);
+                }
             }, cancellationToken);
 
         private class ConductRequestDto
