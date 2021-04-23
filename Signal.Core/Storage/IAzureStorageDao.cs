@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Signal.Core.Beacon;
 using Signal.Core.Dashboards;
 using Signal.Core.Devices;
 using Signal.Core.Processes;
@@ -45,5 +46,7 @@ namespace Signal.Core.Storage
             TableEntityType type,
             IEnumerable<string> entityIds,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken);
     }
 }

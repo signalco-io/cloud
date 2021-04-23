@@ -12,6 +12,7 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
+using Signal.Core.Auth;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
@@ -48,34 +49,39 @@ namespace Signal.Api.Public.Functions.Conducts
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
-                // TODO: Validate user has assigned device
+                // Check if user has assigned device
+                await this.AssertEntityAssigned(
+                    user.UserId, TableEntityType.Device, payload.DeviceId,
+                    cancellationToken);
+
                 // TODO: Queue conduct
 
                 // Retrieve all device assigned devices
-                var deviceUsers = await this.storageDao.AssignedUsersAsync(
+                var devicesUsers = await this.storageDao.AssignedUsersAsync(
                     TableEntityType.Device,
                     new[] {payload.DeviceId},
                     cancellationToken);
+                var deviceUsers = devicesUsers.FirstOrDefault();
 
-                // Retrieve all users with beacons
-                var beaconAssignments = await deviceUsers.FirstOrDefault().Value.SelectManyAsync(deviceUserId =>
-                    this.storageDao.UserAssignedAsync(deviceUserId, TableEntityType.Beacon, cancellationToken));
-
-                // Retrieve all beacon users
-                var beaconUserIds = beaconAssignments.Select(ba => ba.PartitionKey);
-
-                // Sent to all users
-                foreach (var beaconUserId in beaconUserIds)
+                // Send to all users
+                foreach (var deviceUserId in deviceUsers.Value)
                 {
                     await signalRMessages.AddAsync(
                         new SignalRMessage
                         {
                             Target = "requested",
                             Arguments = new object[] {JsonSerializer.Serialize(payload)},
-                            UserId = beaconUserId
+                            UserId = deviceUserId
                         }, cancellationToken);
                 }
             }, cancellationToken);
+
+        private async Task AssertEntityAssigned(string userId, TableEntityType entityType, string entityId, CancellationToken cancellationToken)
+        {
+            if (!(await this.storageDao.IsUserAssignedAsync(
+                userId, entityType, entityId, cancellationToken)))
+                throw new ExpectedHttpException(HttpStatusCode.NotFound, "Unknown device");
+        }
 
         private class ConductRequestDto
         {

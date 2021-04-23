@@ -265,6 +265,18 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             }
         }
 
+        public async Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken) =>
+            await this.GetUserAssignedAsync<IBeaconTableEntity, AzureBeaconTableEntity>(
+                userId,
+                TableEntityType.Beacon,
+                ItemTableNames.Beacons,
+                null,
+                beacon => new BeaconTableEntity(beacon.PartitionKey, beacon.RowKey)
+                {
+                    RegisteredTimeStamp = beacon.RegisteredTimeStamp
+                },
+                cancellationToken);
+
         public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
         {
             try

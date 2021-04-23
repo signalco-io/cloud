@@ -44,5 +44,6 @@ namespace Signal.Core.Beacon
 
     public interface IBeaconTableEntity : ITableEntity
     {
+        public DateTime RegisteredTimeStamp { get; set; }
     }
 }

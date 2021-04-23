@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Signal.Api.Public.Functions.Beacons
             await req.UserRequest<BeaconRegisterRequestDto>(this.functionAuthenticator, async (user, payload) =>
             {
                 if (payload.BeaconId == null)
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is null.");
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
 
                 // TODO: Check if beacons exists
 
@@ -49,6 +50,7 @@ namespace Signal.Api.Public.Functions.Beacons
 
         private class BeaconRegisterRequestDto
         {
+            [Required]
             public string? BeaconId { get; set; }
         }
     }
