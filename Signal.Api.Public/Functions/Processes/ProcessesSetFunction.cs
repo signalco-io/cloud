@@ -45,7 +45,7 @@ namespace Signal.Api.Public.Functions.Processes
                     await this.storage.CreateOrUpdateItemAsync(
                         ItemTableNames.Processes,
                         new ProcessTableEntity(
-                            ProcessType.StateTriggered.ToString(),
+                            ProcessType.StateTriggered.ToString().ToLowerInvariant(),
                             id,
                             payload.Alias,
                             payload.IsDisabled ?? false,
