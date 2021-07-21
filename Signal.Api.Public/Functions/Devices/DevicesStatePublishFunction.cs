@@ -37,7 +37,7 @@ namespace Signal.Api.Public.Functions.Devices
             HttpRequest req,
             [SignalR(HubName = "devices")] 
             IAsyncCollector<SignalRMessage> signalRMessages,
-            ILogger<DevicesStatePublishFunction> logger,
+            ILogger logger,
             CancellationToken cancellationToken) =>
             await req.UserRequest<SignalDeviceStatePublishDto>(this.functionAuthenticator, async (user, payload) =>
             {
@@ -64,41 +64,43 @@ namespace Signal.Api.Public.Functions.Devices
                         payload.TimeStamp ?? DateTime.UtcNow),
                     cancellationToken);
 
-                // Persist to history 
-                // TODO: persist only if given contact is marked for history tracking
-                var persistHistoryTask = this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.DevicesStatesHistory,
-                    new DeviceStateHistoryTableEntity(
-                        payload.DeviceId,
-                        payload.ChannelName,
-                        payload.ContactName,
-                        payload.ValueSerialized,
-                        payload.TimeStamp ?? DateTime.UtcNow),
-                    cancellationToken);
-
                 // Wait for current state update before triggering notification
                 await updateCurrentStateTask;
 
-                // Notify listeners
-                var notifyStateChangeTask = signalRMessages.AddAsync(new SignalRMessage
-                {
-                    UserId = user.UserId,
-                    Arguments = new object[]
-                    {
-                        new SignalDeviceStatePublishDto
-                        {
-                            DeviceId = payload.DeviceId,
-                            ChannelName = payload.ChannelName,
-                            ContactName = payload.ContactName,
-                            TimeStamp = payload.TimeStamp,
-                            ValueSerialized = payload.ValueSerialized
-                        }
-                    },
-                    Target = "devicestate"
-                }, cancellationToken);
-
+                Task? persistHistoryTask = null;
+                Task? notifyStateChangeTask = null;
                 try
                 {
+                    // Persist to history 
+                    // TODO: persist only if given contact is marked for history tracking
+                    persistHistoryTask = this.storage.CreateOrUpdateItemAsync(
+                        ItemTableNames.DevicesStatesHistory,
+                        new DeviceStateHistoryTableEntity(
+                            payload.DeviceId,
+                            payload.ChannelName,
+                            payload.ContactName,
+                            payload.ValueSerialized,
+                            payload.TimeStamp ?? DateTime.UtcNow),
+                        cancellationToken);
+
+                    // Notify listeners
+                    notifyStateChangeTask = signalRMessages.AddAsync(new SignalRMessage
+                    {
+                        UserId = user.UserId,
+                        Arguments = new object[]
+                        {
+                            new SignalDeviceStatePublishDto
+                            {
+                                DeviceId = payload.DeviceId,
+                                ChannelName = payload.ChannelName,
+                                ContactName = payload.ContactName,
+                                TimeStamp = payload.TimeStamp,
+                                ValueSerialized = payload.ValueSerialized
+                            }
+                        },
+                        Target = "devicestate"
+                    }, cancellationToken);
+
                     // Wait for all to finish
                     await Task.WhenAll(
                         notifyStateChangeTask,
@@ -106,9 +108,9 @@ namespace Signal.Api.Public.Functions.Devices
                 }
                 catch (Exception ex)
                 {
-                    if (notifyStateChangeTask.IsFaulted)
+                    if (notifyStateChangeTask?.IsFaulted ?? false)
                         logger.LogError(ex, "Failed to notify state change.");
-                    else if (persistHistoryTask.IsFaulted)
+                    else if (persistHistoryTask?.IsFaulted ?? false)
                         logger.LogError(ex, "Failed to persist state to history.");
                     else logger.LogError(ex, "Failed to notify or persist state to history.");
                 }
