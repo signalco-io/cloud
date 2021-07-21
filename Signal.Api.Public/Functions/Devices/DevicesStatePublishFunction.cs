@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Microsoft.Extensions.Logging;
 using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
@@ -36,6 +37,7 @@ namespace Signal.Api.Public.Functions.Devices
             HttpRequest req,
             [SignalR(HubName = "devices")] 
             IAsyncCollector<SignalRMessage> signalRMessages,
+            ILogger<DevicesStatePublishFunction> logger,
             CancellationToken cancellationToken) =>
             await req.UserRequest<SignalDeviceStatePublishDto>(this.functionAuthenticator, async (user, payload) =>
             {
@@ -95,10 +97,21 @@ namespace Signal.Api.Public.Functions.Devices
                     Target = "devicestate"
                 }, cancellationToken);
 
-                // Wait for all to finish
-                await Task.WhenAll(
-                    notifyStateChangeTask,
-                    persistHistoryTask);
+                try
+                {
+                    // Wait for all to finish
+                    await Task.WhenAll(
+                        notifyStateChangeTask,
+                        persistHistoryTask);
+                }
+                catch (Exception ex)
+                {
+                    if (notifyStateChangeTask.IsFaulted)
+                        logger.LogError(ex, "Failed to notify state change.");
+                    else if (persistHistoryTask.IsFaulted)
+                        logger.LogError(ex, "Failed to persist state to history.");
+                    else logger.LogError(ex, "Failed to notify or persist state to history.");
+                }
             }, cancellationToken);
     }
 }
