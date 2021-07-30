@@ -17,6 +17,15 @@ namespace Signal.Api.Public.Functions.Devices.Dtos
             public DeviceEndpointContactAccessDto Access { get; set; }
 
             public double? NoiseReductionDelta { get; set; }
+
+            public IEnumerable<DeviceEndpointContactDataValueDto>? DataValues { get; set; }
+
+            public class DeviceEndpointContactDataValueDto
+            {
+                public string Value { get; set; }
+
+                public string? Label { get; set; }
+            }
         }
     }
 }
