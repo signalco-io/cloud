@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
 using Signal.Core;
@@ -29,6 +30,14 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             var itemSerializedBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(itemSerialized));
             var client = await this.GetQueueClientAsync(queueName, cancellationToken).ConfigureAwait(false);
             await client.SendMessageAsync(BinaryData.FromString(itemSerializedBase64), delay, ttl, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task UpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
+        {
+            var client = await this.GetTableClientAsync(tableName, cancellationToken);
+            var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
+            await client.UpdateEntityAsync(azureItem, ETag.All, TableUpdateMode.Merge, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity

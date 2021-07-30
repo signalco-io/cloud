@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +8,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
-using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
 using Signal.Core.Devices;
 using Signal.Core.Exceptions;
@@ -63,15 +60,12 @@ namespace Signal.Api.Public.Functions.Devices
                 // Create new device
                 await this.storage.CreateOrUpdateItemAsync(
                     ItemTableNames.Devices,
-                    new DeviceTableEntity(
+                    new DeviceInfoTableEntity(
                         deviceId,
                         payload.DeviceIdentifier,
-                        payload.Alias ?? "New device")
-                    {
-                        Endpoints = payload.Endpoints != null ? JsonSerializer.Serialize(payload.Endpoints) : null,
-                        Manufacturer = payload.Manufacturer,
-                        Model = payload.Model
-                    },
+                        payload.Alias ?? "New device",
+                        payload.Manufacturer,
+                        payload.Model),
                     cancellationToken);
 
                 // Assign device to user
@@ -91,8 +85,6 @@ namespace Signal.Api.Public.Functions.Devices
 
             public string? Alias { get; set; }
             
-            public IEnumerable<DeviceEndpointDto>? Endpoints { get; set; }
-
             public string? Manufacturer { get; set; }
 
             public string? Model { get; set; }

@@ -210,18 +210,16 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                     process.ConfigurationSerialized),
                 cancellationToken);
 
-        public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken) =>
+        public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId,
+            CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IDeviceTableEntity, AzureDeviceTableEntity>(
                 userId,
                 TableEntityType.Device,
                 ItemTableNames.Devices,
                 "device",
-                device => new DeviceTableEntity(device.RowKey, device.DeviceIdentifier, device.Alias)
-                {
-                    Endpoints = device.Endpoints,
-                    Manufacturer = device.Manufacturer,
-                    Model = device.Model
-                },
+                device => new DeviceTableEntity(
+                    device.RowKey, device.DeviceIdentifier, device.Alias,
+                    device.Manufacturer, device.Model, device.Endpoints),
                 cancellationToken);
 
         public async Task<bool> IsUserAssignedAsync(string userId, TableEntityType data, string entityId, CancellationToken cancellationToken)

@@ -53,9 +53,9 @@ namespace Signal.Api.Public.Functions.Devices
                     throw new ExpectedHttpException(HttpStatusCode.NotFound);
 
                 // Commit endpoints
-                await this.storage.CreateOrUpdateItemAsync(
+                await this.storage.UpdateItemAsync(
                     ItemTableNames.Devices,
-                    new DeviceInfoTableEntity(
+                    new DeviceInfoUpdateTableEntity(
                         payload.DeviceId,
                         payload.Alias, 
                         payload.Manufacturer,

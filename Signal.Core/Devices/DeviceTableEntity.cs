@@ -1,27 +1,12 @@
 ﻿namespace Signal.Core.Devices
 {
-    public class DeviceTableEntity : IDeviceTableEntity
+    public class DeviceTableEntity : DeviceInfoTableEntity, IDeviceTableEntity
     {
-        public string PartitionKey { get; }
-        
-        public string RowKey { get; }
-        
-        public string DeviceIdentifier { get; set; }
-        
-        public string Alias { get; set; }
-        
         public string? Endpoints { get; set; }
-        
-        public string? Manufacturer { get; set; }
-        
-        public string? Model { get; set; }
 
-        public DeviceTableEntity(string deviceId, string deviceIdentifier, string alias)
+        public DeviceTableEntity(string deviceId, string deviceIdentifier, string alias, string? manufacturer, string? model, string? endpoints) : base(deviceId, deviceIdentifier, alias, manufacturer, model)
         {
-            this.PartitionKey = "device";
-            this.RowKey = deviceId;
-            this.DeviceIdentifier = deviceIdentifier;
-            this.Alias = alias;
+            this.Endpoints = endpoints;
         }
     }
 }
