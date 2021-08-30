@@ -10,9 +10,9 @@
 
             public const string Domain = "Auth0--Domain";
 
-            public const string ClientSecretBeacon = "Auth0--ClientSecret--Beacon";
+            public const string ClientSecretBeacon = "Auth0--ClientSecret--Station";
 
-            public const string ClientIdBeacon = "Auth0--ClientId--Beacon";
+            public const string ClientIdBeacon = "Auth0--ClientId--Station";
         }
 
         public static class AzureSpeech
