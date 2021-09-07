@@ -1,6 +1,6 @@
 ﻿using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Sharing
+namespace Signal.Core.Sharing
 {
     public class UserAssignedEntity : ITableEntity
     {

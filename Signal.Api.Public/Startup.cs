@@ -17,7 +17,8 @@ namespace Signal.Api.Public
             builder.Services
                 .AddTransient<ISecretsProvider, SecretsProvider>()
                 .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
-                .AddAzureStorage();
+                .AddAzureStorage()
+                .AddCore();
         }
 
         public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)

@@ -12,8 +12,8 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
-using Signal.Core;
 using Signal.Core.Exceptions;
+using Signal.Core.Sharing;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Sharing
@@ -21,19 +21,16 @@ namespace Signal.Api.Public.Functions.Sharing
     public class ShareEntityFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
-        private readonly IAzureStorageDao azureStorageDao;
-        private readonly IAzureStorage storage;
+        private readonly ISharingService sharingService;
         private readonly ILogger<ShareEntityFunction> logger;
 
         public ShareEntityFunction(
             IFunctionAuthenticator functionAuthenticator,
-            IAzureStorageDao azureStorageDao,
-            IAzureStorage storage,
+            ISharingService sharingService,
             ILogger<ShareEntityFunction> logger)
         {
             this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-            this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
-            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -60,14 +57,10 @@ namespace Signal.Api.Public.Functions.Sharing
 
                         try
                         {
-                            var sanitizedEmail = userEmail.Trim().ToLowerInvariant();
-                            var targetUserId = await this.azureStorageDao.UserIdByEmailAsync(sanitizedEmail, cancellationToken);
-                            if (!string.IsNullOrWhiteSpace(targetUserId))
-                            {
-                                await this.storage.CreateOrUpdateItemAsync(
-                                    ItemTableNames.UserAssignedEntity(payload.Type.Value),
-                                    new UserAssignedEntity(targetUserId, payload.EntityId), cancellationToken);
-                            }
+                            await this.sharingService.AssignToUserEmail(
+                                userEmail,
+                                payload.Type.Value, payload.EntityId,
+                                cancellationToken);
                         }
                         catch (Exception ex)
                         {
