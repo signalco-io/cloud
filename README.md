@@ -1,8 +1,8 @@
-# signalapi
-Signal API
+# Signalco Cloud
 
-![Deploy Public API to Azure Functions](https://github.com/AleksandarDev/signalapi/workflows/Deploy%20Public%20API%20to%20Azure%20Functions/badge.svg)
-![CodeQL](https://github.com/dfnoise/signalapi/workflows/CodeQL/badge.svg)
+[![Deploy Public API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml)
+[![Deploy Internal API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml)
+[![CodeQL](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml)
 
 ### Azure KeyVault configuration
 
