@@ -10,6 +10,10 @@ namespace Signal.Core.Devices
         public string RowKey { get; }
 
         public DateTime RegisteredTimeStamp { get; set; }
+        
+        public string? Version { get; set; }
+
+        public DateTime? StateTimeStamp { get; set; }
 
         public BeaconTableEntity(string userId, string id)
         {

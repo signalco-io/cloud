@@ -271,7 +271,9 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 null,
                 beacon => new BeaconTableEntity(beacon.PartitionKey, beacon.RowKey)
                 {
-                    RegisteredTimeStamp = beacon.RegisteredTimeStamp
+                    RegisteredTimeStamp = beacon.RegisteredTimeStamp,
+                    Version = beacon.Version,
+                    StateTimeStamp = beacon.StateTimeStamp
                 },
                 cancellationToken);
 

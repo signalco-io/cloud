@@ -37,6 +37,8 @@ namespace Signal.Api.Public.Functions.Beacons
                     .Select(b => new BeaconDto
                     {
                         Id = b.RowKey,
+                        Version = b.Version,
+                        StateTimeStamp = b.StateTimeStamp,
                         RegisteredTimeStamp = b.RegisteredTimeStamp
                     })
                     .ToList(),
@@ -45,6 +47,10 @@ namespace Signal.Api.Public.Functions.Beacons
         private class BeaconDto
         {
             public string Id { get; set; }
+
+            public string? Version { get; set; }
+
+            public DateTime? StateTimeStamp { get; set; }
 
             public DateTime RegisteredTimeStamp { get; set; }
         }
