@@ -49,16 +49,18 @@ namespace Signal.Api.Public.Functions.Conducts
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
+                var entityType = payload.ChannelName == "station" ? TableEntityType.Beacon : TableEntityType.Device;
+                
                 // Check if user has assigned device
                 await this.AssertEntityAssigned(
-                    user.UserId, TableEntityType.Device, payload.DeviceId,
+                    user.UserId, entityType, payload.DeviceId,
                     cancellationToken);
 
                 // TODO: Queue conduct
 
                 // Retrieve all device assigned devices
                 var devicesUsers = await this.storageDao.AssignedUsersAsync(
-                    TableEntityType.Device,
+                    entityType,
                     new[] {payload.DeviceId},
                     cancellationToken);
                 var deviceUsers = devicesUsers.FirstOrDefault();
