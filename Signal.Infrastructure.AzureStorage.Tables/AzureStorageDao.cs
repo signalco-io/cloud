@@ -109,7 +109,8 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 dashboard => new DashboardTableEntity(
                     dashboard.RowKey,
                     dashboard.Name,
-                    dashboard.ConfigurationSerialized),
+                    dashboard.ConfigurationSerialized,
+                    dashboard.Timestamp?.DateTime),
                 cancellationToken);
         
 

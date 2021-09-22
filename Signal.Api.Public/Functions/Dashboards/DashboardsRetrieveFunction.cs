@@ -8,7 +8,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
-using Signal.Core;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Dashboards
@@ -36,7 +35,8 @@ namespace Signal.Api.Public.Functions.Dashboards
                     .Select(p => new DashboardsDto(
                         p.RowKey,
                         p.Name,
-                        p.ConfigurationSerialized))
+                        p.ConfigurationSerialized,
+                        p.TimeStamp))
                     .ToList(),
                 cancellationToken);
 
@@ -48,11 +48,14 @@ namespace Signal.Api.Public.Functions.Dashboards
 
             public string? ConfigurationSerialized { get; }
 
-            public DashboardsDto(string id, string name, string? configurationSerialized)
+            public DateTime? TimeStamp {  get; }
+
+            public DashboardsDto(string id, string name, string? configurationSerialized, DateTime? timeStamp)
             {
                 this.Id = id;
                 this.Name = name;
                 this.ConfigurationSerialized = configurationSerialized;
+                this.TimeStamp = timeStamp;
             }
         }
     }

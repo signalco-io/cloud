@@ -1,4 +1,5 @@
-﻿using Signal.Core.Storage;
+﻿using System;
+using Signal.Core.Storage;
 
 namespace Signal.Core.Dashboards
 {
@@ -7,5 +8,7 @@ namespace Signal.Core.Dashboards
         public string Name { get; set; }
 
         public string? ConfigurationSerialized { get; set; }
+
+        DateTime? TimeStamp { get; }
     }
 }
