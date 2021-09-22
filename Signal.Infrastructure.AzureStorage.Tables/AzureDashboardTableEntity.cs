@@ -1,4 +1,5 @@
-﻿using Signal.Core;
+﻿using System;
+using Signal.Core;
 using Signal.Core.Dashboards;
 
 namespace Signal.Infrastructure.AzureStorage.Tables
@@ -8,5 +9,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         public string Name { get; set; }
 
         public string? ConfigurationSerialized { get; set; }
+
+        public DateTime? TimeStamp { get; }
     }
 }
