@@ -40,7 +40,7 @@ namespace Signal.Api.Public.Functions.Conducts
             CancellationToken cancellationToken) =>
             await req.UserRequest<List<ConductRequestDto>>(this.functionAuthenticator, async (user, payload) =>
             {
-                var usersConducts = new Dictionary<string, List<ConductRequestDto>>();
+                var usersConducts = new Dictionary<string, ICollection<ConductRequestDto>>();
                 foreach (var conduct in payload)
                 {
                     if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
@@ -63,8 +63,8 @@ namespace Signal.Api.Public.Functions.Conducts
                         new[] { conduct.DeviceId },
                         cancellationToken)).FirstOrDefault();
 
-                    foreach (var userId in deviceUsers.Value)
-                        usersConducts.AddOrSet(userId, new List<ConductRequestDto> { conduct });
+                    foreach (var userId in deviceUsers.Value) 
+                        usersConducts.Append(userId, conduct);
                 }
 
                 // TODO: Queue conduct on remote in case client doesn't receive signalR message
