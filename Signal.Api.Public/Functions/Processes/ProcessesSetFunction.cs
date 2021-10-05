@@ -30,7 +30,7 @@ namespace Signal.Api.Public.Functions.Processes
 
         [FunctionName("Processes-Set")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "processes/set")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "processes/set")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
             await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(this.functionAuthenticator,
