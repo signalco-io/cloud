@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Microsoft.IdentityModel.Tokens;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core.Exceptions;
@@ -18,12 +19,12 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Conducts
 {
-    public class ConductRequestFunction
+    public class ConductRequestMultipleFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
         private readonly IAzureStorageDao storageDao;
 
-        public ConductRequestFunction(
+        public ConductRequestMultipleFunction(
             IFunctionAuthenticator functionAuthenticator,
             IAzureStorageDao storageDao)
         {
@@ -31,45 +32,57 @@ namespace Signal.Api.Public.Functions.Conducts
             this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         }
 
-        [FunctionName("Conducts-Request")]
+        [FunctionName("Conducts-RequestMultiple")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request-multiple")]
             HttpRequest req,
             [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<ConductRequestDto>(this.functionAuthenticator, async (user, payload) =>
+            await req.UserRequest<ConductRequestMultipleDto>(this.functionAuthenticator, async (user, payload) =>
             {
-                if (string.IsNullOrWhiteSpace(payload.DeviceId) ||
-                    string.IsNullOrWhiteSpace(payload.ChannelName) ||
-                    string.IsNullOrWhiteSpace(payload.ContactName))
-                    throw new ExpectedHttpException(
-                        HttpStatusCode.BadRequest,
-                        "DeviceId, ChannelName and ContactName properties are required.");
+                if (payload.Conducts == null ||
+                    !payload.Conducts.Any())
+                    return;
 
-                var entityType = payload.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
-                
-                // Check if user has assigned device
-                await this.AssertEntityAssigned(
-                    user.UserId, entityType, payload.DeviceId,
-                    cancellationToken);
+                var usersConducts = new Dictionary<string, List<ConductRequestDto>>();
+                foreach (var conduct in payload.Conducts)
+                {
+                    if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
+                        string.IsNullOrWhiteSpace(conduct.ChannelName) ||
+                        string.IsNullOrWhiteSpace(conduct.ContactName))
+                        throw new ExpectedHttpException(
+                            HttpStatusCode.BadRequest,
+                            "DeviceId, ChannelName and ContactName properties are required.");
+
+                    var entityType = conduct.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
+
+                    // Check if user has assigned device
+                    await this.AssertEntityAssigned(
+                        user.UserId, entityType, conduct.DeviceId,
+                        cancellationToken);
+
+                    // Retrieve all device assigned devices
+                    var deviceUsers = (await this.storageDao.AssignedUsersAsync(
+                        entityType,
+                        new[] { conduct.DeviceId },
+                        cancellationToken)).FirstOrDefault();
+
+                    foreach (var userId in deviceUsers.Value)
+                        usersConducts.AddOrSet(userId, new List<ConductRequestDto> { conduct });
+                }
 
                 // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
-                // Retrieve all device assigned devices
-                var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                    entityType,
-                    new[] {payload.DeviceId},
-                    cancellationToken)).FirstOrDefault();
-
                 // Send to all users of the device
-                foreach (var deviceUserId in deviceUsers.Value)
+                foreach (var userId in usersConducts.Keys)
                 {
+                    var conducts = usersConducts[userId];
                     await signalRMessages.AddAsync(
                         new SignalRMessage
                         {
-                            Target = "requested",
-                            Arguments = new object[] {JsonSerializer.Serialize(payload)},
-                            UserId = deviceUserId
+                            Target = "requested-multiple",
+                            Arguments = new object[] { JsonSerializer.Serialize(conducts) },
+                            UserId = userId
                         }, cancellationToken);
                 }
             }, cancellationToken);
@@ -79,6 +92,12 @@ namespace Signal.Api.Public.Functions.Conducts
             if (!(await this.storageDao.IsUserAssignedAsync(
                 userId, entityType, entityId, cancellationToken)))
                 throw new ExpectedHttpException(HttpStatusCode.NotFound);
+        }
+
+        [Serializable]
+        private class ConductRequestMultipleDto
+        {
+            public IEnumerable<ConductRequestDto>? Conducts { get; set; }
         }
 
         [Serializable]
