@@ -18,7 +18,8 @@ namespace Signal.Infrastructure.AzureStorage.Tables
     {
         private readonly ISecretsProvider secretsProvider;
 
-        public AzureStorage(ISecretsProvider secretsProvider)
+        public AzureStorage(
+            ISecretsProvider secretsProvider)
         {
             this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
         }
@@ -45,6 +46,16 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             var client = await this.GetTableClientAsync(tableName, cancellationToken);
             var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
             await client.UpsertEntityAsync(azureItem, TableUpdateMode.Merge, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task DeleteItemAsync(
+            string tableName, 
+            string partitionKey, 
+            string rowKey,
+            CancellationToken cancellationToken)
+        {
+            var client = await this.GetTableClientAsync(tableName, cancellationToken);
+            await client.DeleteEntityAsync(partitionKey, rowKey, cancellationToken: cancellationToken);
         }
 
         public async Task EnsureTableExistsAsync(string tableName, CancellationToken cancellationToken)

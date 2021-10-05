@@ -16,15 +16,7 @@ namespace Signal.Core.Storage
             IEnumerable<string> deviceIds,
             CancellationToken cancellationToken);
 
-        Task<IDeviceStateTableEntity?> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken);
-
-        Task<bool> DeviceExistsAsync(string deviceId, CancellationToken cancellationToken);
-
-        Task<string?> DeviceExistsAsync(string userId, string deviceIdentifier, CancellationToken cancellationToken);
-
         Task<bool> IsUserAssignedAsync(string userId, TableEntityType type, string entityId, CancellationToken cancellationToken);
-
-        Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType type, CancellationToken cancellationToken);
 
         Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
 
@@ -40,6 +32,7 @@ namespace Signal.Core.Storage
         Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId, CancellationToken cancellationToken);
 
         Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken);
+
         Task<string?> UserIdByEmailAsync(string userEmail, CancellationToken cancellationToken);
 
         public Task<Dictionary<string, ICollection<string>>> AssignedUsersAsync(
@@ -48,5 +41,10 @@ namespace Signal.Core.Storage
             CancellationToken cancellationToken);
 
         Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken);
+
+        Task<IEnumerable<ITableEntityKey>> EntitiesByRowKeysAsync(
+            string tableName,
+            IEnumerable<string> rowKeys,
+            CancellationToken cancellationToken);
     }
 }

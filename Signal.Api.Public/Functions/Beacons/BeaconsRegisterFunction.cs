@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,15 +22,18 @@ namespace Signal.Api.Public.Functions.Beacons
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
         private readonly IAzureStorage storage;
+        private readonly IAzureStorageDao storageDao;
         private readonly ISharingService sharingService;
 
         public BeaconsRegisterFunction(
             IFunctionAuthenticator functionAuthenticator,
             IAzureStorage storage,
+            IAzureStorageDao storageDao,
             ISharingService sharingService)
         {
             this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
         }
 
@@ -43,7 +47,13 @@ namespace Signal.Api.Public.Functions.Beacons
                 if (payload.BeaconId == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
 
-                // TODO: Check if beacons exists
+                // Check if beacons exists
+                var existingBeacons = await this.storageDao.EntitiesByRowKeysAsync(
+                    ItemTableNames.Beacons,
+                    new[] { payload.BeaconId }, 
+                    cancellationToken);
+                if (existingBeacons.Any())
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Beacon already registered.");
 
                 // Create or update existing item
                 await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons,
@@ -53,9 +63,9 @@ namespace Signal.Api.Public.Functions.Beacons
                     }, cancellationToken);
 
                 // Assign to current user
-                await this.sharingService.AssignToUser(
+                await this.sharingService.AssignToUserAsync(
                     user.UserId,
-                    TableEntityType.Beacon,
+                    TableEntityType.Station,
                     payload.BeaconId,
                     cancellationToken);
             }, cancellationToken);

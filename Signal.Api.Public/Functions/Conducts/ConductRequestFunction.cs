@@ -49,7 +49,7 @@ namespace Signal.Api.Public.Functions.Conducts
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
-                var entityType = payload.ChannelName == "station" ? TableEntityType.Beacon : TableEntityType.Device;
+                var entityType = payload.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
                 
                 // Check if user has assigned device
                 await this.AssertEntityAssigned(

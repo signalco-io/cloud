@@ -2,9 +2,10 @@
 {
     public enum TableEntityType
     {
+        Unknown = 0,
         Device,
         Process,
         Dashboard,
-        Beacon
+        Station
     }
 }

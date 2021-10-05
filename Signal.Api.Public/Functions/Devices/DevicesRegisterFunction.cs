@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,17 +45,14 @@ namespace Signal.Api.Public.Functions.Devices
                         "DeviceIdentifier property is required.");
 
                 // Check if device already exists
-                var existingDeviceId = await this.storageDao.DeviceExistsAsync(
-                    user.UserId,
-                    payload.DeviceIdentifier,
-                    cancellationToken);
-                if (!string.IsNullOrWhiteSpace(existingDeviceId))
+                var userDevices = await this.storageDao.DevicesAsync(user.UserId, cancellationToken);
+                if (userDevices.Any(ud => ud.DeviceIdentifier == payload.DeviceIdentifier))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
                 // Generate device id
                 // Check if device with new id exists (avoid collisions)
                 var deviceId = Guid.NewGuid().ToString();
-                while (await this.storageDao.DeviceExistsAsync(deviceId, cancellationToken))
+                while ((await this.storageDao.EntitiesByRowKeysAsync(ItemTableNames.Devices, new[] { deviceId }, cancellationToken)).Any())
                     deviceId = Guid.NewGuid().ToString();
 
                 // Create new device

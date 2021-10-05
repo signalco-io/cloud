@@ -22,13 +22,16 @@ namespace Signal.Api.Public.Functions.Devices
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
         private readonly IAzureStorage storage;
+        private readonly IAzureStorageDao dao;
 
         public DevicesStatePublishFunction(
             IFunctionAuthenticator functionAuthenticator,
-            IAzureStorage storage)
+            IAzureStorage storage,
+            IAzureStorageDao dao)
         {
             this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            this.dao = dao ?? throw new ArgumentNullException(nameof(dao));
         }
 
         [FunctionName("Devices-PublishState")]
@@ -48,7 +51,15 @@ namespace Signal.Api.Public.Functions.Devices
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
                 
-                // TODO: Validate user assigned
+                // Validate user assigned
+                var isOwned = await this.dao.IsUserAssignedAsync(
+                    user.UserId,
+                    TableEntityType.Device,
+                    payload.DeviceId,
+                    cancellationToken);
+                if (!isOwned)
+                    throw new ExpectedHttpException(HttpStatusCode.NotFound);
+
                 // TODO: Retrieve device configuration
                 // TODO: Validate device has contact for state
                 // TODO: Assign to device's ignore states if not assigned in config (update device for state visibility)

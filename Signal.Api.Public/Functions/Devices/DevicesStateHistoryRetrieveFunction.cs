@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
+using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices
@@ -18,14 +20,17 @@ namespace Signal.Api.Public.Functions.Devices
     public class DevicesStateHistoryRetrieveFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
+        private readonly IAzureStorageDao storageDao;
         private readonly IAzureStorageDao storage;
 
         public DevicesStateHistoryRetrieveFunction(
             IFunctionAuthenticator functionAuthenticator,
+            IAzureStorageDao storageDao,
             IAzureStorageDao storage)
         {
             this.functionAuthenticator =
                 functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
 
@@ -41,7 +46,9 @@ namespace Signal.Api.Public.Functions.Devices
                 var contactName = req.Query["contactName"];
                 var duration = req.Query["duration"];
 
-                // TODO: Validate user assigned
+                // Check if user has assigned requested device
+                if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, deviceId, cancellationToken))
+                    throw new ExpectedHttpException(HttpStatusCode.NotFound);
 
                 var data = await this.storage.GetDeviceStateHistoryAsync(
                     deviceId,

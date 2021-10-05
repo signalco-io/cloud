@@ -21,15 +21,18 @@ namespace Signal.Api.Public.Functions.Sharing
     public class ShareEntityFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
+        private readonly IAzureStorageDao storageDao;
         private readonly ISharingService sharingService;
         private readonly ILogger<ShareEntityFunction> logger;
 
         public ShareEntityFunction(
             IFunctionAuthenticator functionAuthenticator,
+            IAzureStorageDao storageDao,
             ISharingService sharingService,
             ILogger<ShareEntityFunction> logger)
         {
             this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -49,15 +52,19 @@ namespace Signal.Api.Public.Functions.Sharing
                     if (payload.UserEmails == null || !payload.UserEmails.Any())
                         throw new ExpectedHttpException(HttpStatusCode.BadRequest, "UserEmails is required - at least one user email is required");
 
-                    // TODO: Check user has entity assigned
+                    // Check user has entity assigned
+                    if (!await this.storageDao.IsUserAssignedAsync(
+                        user.UserId, 
+                        payload.Type.Value, 
+                        payload.EntityId,
+                        cancellationToken))
+                        throw new ExpectedHttpException(HttpStatusCode.NotFound);
 
-                    foreach (var userEmail in payload.UserEmails)
+                    foreach (var userEmail in payload.UserEmails.Where(userEmail => !string.IsNullOrWhiteSpace(userEmail)))
                     {
-                        if (string.IsNullOrWhiteSpace(userEmail)) continue;
-
                         try
                         {
-                            await this.sharingService.AssignToUserEmail(
+                            await this.sharingService.AssignToUserEmailAsync(
                                 userEmail,
                                 payload.Type.Value, payload.EntityId,
                                 cancellationToken);

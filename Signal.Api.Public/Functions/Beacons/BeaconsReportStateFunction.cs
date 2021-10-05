@@ -19,13 +19,16 @@ namespace Signal.Api.Public.Functions.Beacons
     public class BeaconsReportStateFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
+        private readonly IAzureStorageDao storageDao;
         private readonly IAzureStorage storage;
 
         public BeaconsReportStateFunction(
             IFunctionAuthenticator functionAuthenticator,
+            IAzureStorageDao storageDao,
             IAzureStorage storage)
         {
             this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }
 
@@ -39,7 +42,13 @@ namespace Signal.Api.Public.Functions.Beacons
                 if (payload.Id == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
 
-                // TODO: Check if beacons exists
+                // Check if beacon is assigned to user
+                if (!await this.storageDao.IsUserAssignedAsync(
+                    user.UserId, 
+                    TableEntityType.Station, 
+                    payload.Id,
+                    cancellationToken))
+                    throw new ExpectedHttpException(HttpStatusCode.NotFound);
 
                 await this.storage.UpdateItemAsync(
                     ItemTableNames.Beacons,

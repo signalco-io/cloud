@@ -16,5 +16,11 @@ namespace Signal.Core.Storage
             where T : ITableEntity;
 
         Task EnsureTableExistsAsync(string tableName, CancellationToken cancellationToken);
+
+        Task DeleteItemAsync(
+            string tableName, 
+            string partitionKey, 
+            string rowKey,
+            CancellationToken cancellationToken);
     }
 }

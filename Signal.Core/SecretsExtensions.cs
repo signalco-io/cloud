@@ -7,7 +7,9 @@ namespace Signal.Core
     {
         public static IServiceCollection AddCore(this IServiceCollection services)
         {
-            return services.AddTransient<ISharingService, SharingService>();
+            return services
+                .AddTransient<ISharingService, SharingService>()
+                .AddTransient<IEntityService, EntityService>();
         }
     }
 }

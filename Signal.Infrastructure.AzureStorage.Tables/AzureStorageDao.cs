@@ -134,25 +134,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 return Enumerable.Empty<IDeviceStateTableEntity>();
             }
         }
-
-        public async Task<IDeviceStateTableEntity?> GetDeviceStateAsync(ITableEntityKey key, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var client = await this.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken).ConfigureAwait(false);
-                var response = await client.GetEntityAsync<AzureDeviceStateTableEntity>(
-                    AzureTableExtensions.EscapeKey(key.PartitionKey),
-                    AzureTableExtensions.EscapeKey(key.RowKey), 
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                var item = response.Value;
-                return item;
-            }
-            catch (RequestFailedException ex) when (ex.Status == 404)
-            {
-                return null;
-            }
-        }
-
+        
         private static string PartitionsAnyFilter(IEnumerable<string> partitionKeys) => 
             $"({string.Join(" or", partitionKeys.Select(tl => $"(PartitionKey eq '{tl}')"))})";
 
@@ -192,6 +174,20 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             var entities = new List<TEntity>();
             await foreach (var entity in entityQuery)
                 entities.Add(entityMap(entity));
+            return entities;
+        }
+
+        public async Task<IEnumerable<ITableEntityKey>> EntitiesByRowKeysAsync(
+            string tableName,
+            IEnumerable<string> rowKeys,
+            CancellationToken cancellationToken)
+        {
+            var client = await this.GetTableClientAsync(tableName, cancellationToken).ConfigureAwait(false);
+            var entityQuery = client.QueryAsync<TableEntity>(RowsWithKeysAnyFilter(rowKeys), cancellationToken: cancellationToken);
+
+            var entities = new List<ITableEntityKey>();
+            await foreach (var entity in entityQuery)
+                entities.Add(new TableEntityKey(entity.PartitionKey, entity.RowKey));
             return entities;
         }
 
@@ -267,7 +263,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         public async Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken) =>
             await this.GetUserAssignedAsync<IBeaconTableEntity, AzureBeaconTableEntity>(
                 userId,
-                TableEntityType.Beacon,
+                TableEntityType.Station,
                 ItemTableNames.Beacons,
                 null,
                 beacon => new BeaconTableEntity(beacon.PartitionKey, beacon.RowKey)
@@ -278,7 +274,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 },
                 cancellationToken);
 
-        public async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
+        private async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
         {
             try
             {
@@ -297,31 +293,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 return Enumerable.Empty<IUserAssignedEntityTableEntry>();
             }
         }
-
-        public async Task<bool> DeviceExistsAsync(string deviceId, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var client = await this.GetTableClientAsync(ItemTableNames.Devices, cancellationToken)
-                    .ConfigureAwait(false);
-                var entity = await client.GetEntityAsync<AzureDeviceTableEntity>(
-                    "devices", deviceId, cancellationToken: cancellationToken);
-                return entity.Value != null;
-            }
-            catch (RequestFailedException ex) when (ex.Status == 404)
-            {
-                return false;
-            }
-        }
-
-        public async Task<string?> DeviceExistsAsync(string userId, string deviceIdentifier, CancellationToken cancellationToken)
-        {
-            var devices = await this.DevicesAsync(userId, cancellationToken);
-            return devices.FirstOrDefault(d => d.DeviceIdentifier == deviceIdentifier) is { } matchedDevice
-                ? matchedDevice.RowKey
-                : null;
-        }
-
+        
         // TODO: De-dup AzureStorage
         private async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken) => 
             new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), AzureTableExtensions.EscapeKey(tableName));
