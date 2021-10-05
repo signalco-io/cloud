@@ -38,14 +38,10 @@ namespace Signal.Api.Public.Functions.Conducts
             HttpRequest req,
             [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<ConductRequestMultipleDto>(this.functionAuthenticator, async (user, payload) =>
+            await req.UserRequest<List<ConductRequestDto>>(this.functionAuthenticator, async (user, payload) =>
             {
-                if (payload.Conducts == null ||
-                    !payload.Conducts.Any())
-                    return;
-
                 var usersConducts = new Dictionary<string, List<ConductRequestDto>>();
-                foreach (var conduct in payload.Conducts)
+                foreach (var conduct in payload)
                 {
                     if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
                         string.IsNullOrWhiteSpace(conduct.ChannelName) ||
@@ -93,13 +89,7 @@ namespace Signal.Api.Public.Functions.Conducts
                 userId, entityType, entityId, cancellationToken)))
                 throw new ExpectedHttpException(HttpStatusCode.NotFound);
         }
-
-        [Serializable]
-        private class ConductRequestMultipleDto
-        {
-            public IEnumerable<ConductRequestDto>? Conducts { get; set; }
-        }
-
+        
         [Serializable]
         private class ConductRequestDto
         {
