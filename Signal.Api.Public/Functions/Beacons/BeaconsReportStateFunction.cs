@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
@@ -55,7 +56,9 @@ namespace Signal.Api.Public.Functions.Beacons
                     new BeaconStateItem(user.UserId, payload.Id)
                     {
                         StateTimeStamp = DateTime.UtcNow,
-                        Version = payload.Version
+                        Version = payload.Version,
+                        AvailableWorkerServices = payload.AvailableWorkerServices,
+                        RunningWorkerServices = payload.RunningWorkerServices
                     }, cancellationToken);
             }, cancellationToken);
 
@@ -66,6 +69,12 @@ namespace Signal.Api.Public.Functions.Beacons
 
             [Required]
             public string? Version { get; set; }
+
+            [Required]
+            public IEnumerable<string>? AvailableWorkerServices { get; set; }
+
+            [Required]
+            public IEnumerable<string>? RunningWorkerServices { get; set; }
         }
     }
 }
