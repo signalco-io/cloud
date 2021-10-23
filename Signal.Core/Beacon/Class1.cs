@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -49,5 +50,9 @@ namespace Signal.Core.Beacon
         string? Version { get; set; }
 
         DateTime? StateTimeStamp { get; set; }
+
+        IEnumerable<string> AvailableWorkerServices { get; set; }
+
+        IEnumerable<string> RunningWorkerServices { get; set; }
     }
 }

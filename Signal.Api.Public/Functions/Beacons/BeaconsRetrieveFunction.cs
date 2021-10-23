@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,9 @@ namespace Signal.Api.Public.Functions.Beacons
                         Id = b.RowKey,
                         Version = b.Version,
                         StateTimeStamp = b.StateTimeStamp,
-                        RegisteredTimeStamp = b.RegisteredTimeStamp
+                        RegisteredTimeStamp = b.RegisteredTimeStamp,
+                        AvailableWorkerServices = b.AvailableWorkerServices,
+                        RunningWorkerServices = b.RunningWorkerServices
                     })
                     .ToList(),
                 cancellationToken);
@@ -53,6 +56,10 @@ namespace Signal.Api.Public.Functions.Beacons
             public DateTime? StateTimeStamp { get; set; }
 
             public DateTime RegisteredTimeStamp { get; set; }
+         
+            public IEnumerable<string>? AvailableWorkerServices { get; set; }
+
+            public IEnumerable<string>? RunningWorkerServices { get; set; }
         }
     }
 }

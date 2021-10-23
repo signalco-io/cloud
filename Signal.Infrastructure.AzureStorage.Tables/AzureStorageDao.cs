@@ -270,7 +270,9 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                 {
                     RegisteredTimeStamp = beacon.RegisteredTimeStamp,
                     Version = beacon.Version,
-                    StateTimeStamp = beacon.StateTimeStamp
+                    StateTimeStamp = beacon.StateTimeStamp,
+                    AvailableWorkerServices = beacon.AvailableWorkerServices,
+                    RunningWorkerServices = beacon.RunningWorkerServices
                 },
                 cancellationToken);
 
