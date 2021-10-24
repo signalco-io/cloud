@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -271,8 +272,8 @@ namespace Signal.Infrastructure.AzureStorage.Tables
                     RegisteredTimeStamp = beacon.RegisteredTimeStamp,
                     Version = beacon.Version,
                     StateTimeStamp = beacon.StateTimeStamp,
-                    AvailableWorkerServices = beacon.AvailableWorkerServices,
-                    RunningWorkerServices = beacon.RunningWorkerServices
+                    AvailableWorkerServices = beacon.AvailableWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.AvailableWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>(),
+                    RunningWorkerServices = beacon.RunningWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.RunningWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>()
                 },
                 cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,7 +66,16 @@ namespace Signal.Infrastructure.AzureStorage.Tables
         }
 
         private static Dictionary<string, object> ObjectToDictionary(object item) => 
-            item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
+            item.GetType().GetProperties().ToDictionary(x => x.Name, x =>
+            {
+                var value = x.GetValue(item);
+                
+                // Serialize arrays
+                if (value is IEnumerable)
+                    return JsonSerializer.Serialize(value);
+
+                return value;
+            });
 
         private async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken) => 
             new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), AzureTableExtensions.EscapeTableName(tableName));

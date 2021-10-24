@@ -71,10 +71,10 @@ namespace Signal.Api.Public.Functions.Beacons
             public string? Version { get; set; }
 
             [Required]
-            public IEnumerable<string>? AvailableWorkerServices { get; set; }
+            public List<string>? AvailableWorkerServices { get; set; }
 
             [Required]
-            public IEnumerable<string>? RunningWorkerServices { get; set; }
+            public List<string>? RunningWorkerServices { get; set; }
         }
     }
 }
