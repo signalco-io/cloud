@@ -12,6 +12,7 @@ using Signal.Api.Public.Exceptions;
 using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Processes;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Processes
 {
@@ -37,6 +38,7 @@ namespace Signal.Api.Public.Functions.Processes
                 async (user, payload) => new ProcessSetResponseDto(await this.entityService.UpsertEntityAsync(
                     user.UserId,
                     payload.Id,
+                    TableEntityType.Process,
                     ItemTableNames.Processes,
                     id => new ProcessTableEntity(
                         ProcessType.StateTriggered.ToString().ToLowerInvariant(),

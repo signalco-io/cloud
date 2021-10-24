@@ -10,6 +10,6 @@ namespace Signal.Infrastructure.AzureStorage.Tables
 
         public string? ConfigurationSerialized { get; set; }
 
-        public DateTime? TimeStamp { get; }
+        public DateTime? TimeStamp { get; set; }
     }
 }

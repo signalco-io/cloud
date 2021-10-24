@@ -12,6 +12,7 @@ using Signal.Api.Public.Exceptions;
 using Signal.Core;
 using Signal.Core.Dashboards;
 using Signal.Core.Exceptions;
+using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Dashboards
 {
@@ -33,17 +34,19 @@ namespace Signal.Api.Public.Functions.Dashboards
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "dashboards/set")]
             HttpRequest req,
             CancellationToken cancellationToken) =>
-            await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(this.functionAuthenticator, async (user, payload) => 
-                new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
+            await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(this.functionAuthenticator,
+                async (user, payload) => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
                     user.UserId,
                     payload.Id,
+                    TableEntityType.Dashboard,
                     ItemTableNames.Dashboards,
                     id => new DashboardTableEntity(
                         id,
                         payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
                         payload.ConfigurationSerialized,
                         DateTime.UtcNow),
-                    cancellationToken)), cancellationToken);
+                    cancellationToken)), 
+                cancellationToken);
 
         [Serializable]
         private class DashboardSetResponseDto

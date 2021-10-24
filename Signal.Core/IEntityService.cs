@@ -7,7 +7,7 @@ namespace Signal.Core
 {
     public interface IEntityService
     {
-        Task<string> UpsertEntityAsync<TEntity>(string userId, string? entityId, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)
+        Task<string> UpsertEntityAsync<TEntity>(string userId, string? entityId, TableEntityType entityType, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)
             where TEntity : ITableEntity;
 
         Task RemoveByIdAsync(string tableName, string rowKey, CancellationToken cancellationToken);
