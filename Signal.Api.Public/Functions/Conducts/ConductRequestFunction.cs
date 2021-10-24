@@ -55,7 +55,7 @@ namespace Signal.Api.Public.Functions.Conducts
 
                 // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
-                // Retrieve all device assigned devices
+                // Retrieve all entity assigned users
                 var deviceUsers = (await this.storageDao.AssignedUsersAsync(
                     entityType,
                     new[] {payload.DeviceId},
