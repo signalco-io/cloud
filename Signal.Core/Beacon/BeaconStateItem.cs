@@ -18,9 +18,9 @@ namespace Signal.Core.Beacon
 
         public string? Version { get; set; }
 
-        public IEnumerable<string>? AvailableWorkerServices { get; set; }
+        public string? AvailableWorkerServices { get; set; }
 
-        public IEnumerable<string>? RunningWorkerServices { get; set; }
+        public string? RunningWorkerServices { get; set; }
 
         public DateTime StateTimeStamp { get; set; }
     }

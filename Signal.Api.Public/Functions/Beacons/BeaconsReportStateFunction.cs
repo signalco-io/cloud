@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -57,8 +58,8 @@ namespace Signal.Api.Public.Functions.Beacons
                     {
                         StateTimeStamp = DateTime.UtcNow,
                         Version = payload.Version,
-                        AvailableWorkerServices = payload.AvailableWorkerServices,
-                        RunningWorkerServices = payload.RunningWorkerServices
+                        AvailableWorkerServices = payload.AvailableWorkerServices != null ? JsonSerializer.Serialize(payload.AvailableWorkerServices) : null,
+                        RunningWorkerServices = payload.RunningWorkerServices != null ? JsonSerializer.Serialize(payload.RunningWorkerServices) : null
                     }, cancellationToken);
             }, cancellationToken);
 
