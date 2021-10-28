@@ -28,9 +28,9 @@ namespace Signal.Core
             if (entityId != null)
             {
                 exists = (await this.storageDao.EntitiesByRowKeysAsync(
-                    ItemTableNames.Processes, new[] {entityId}, cancellationToken)).Any();
+                    tableName, new[] {entityId}, cancellationToken)).Any();
                 var isAssigned = await this.storageDao.IsUserAssignedAsync(
-                    userId, TableEntityType.Process, entityId, cancellationToken);
+                    userId, entityType, entityId, cancellationToken);
 
                 if (exists && !isAssigned)
                     throw new ExpectedHttpException(HttpStatusCode.NotFound);
