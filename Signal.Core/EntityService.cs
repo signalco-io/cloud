@@ -24,7 +24,7 @@ namespace Signal.Core
             where TEntity : ITableEntity
         {
             // Check if existing entity was requested but not assigned
-            var exists = true;
+            var exists = false;
             if (entityId != null)
             {
                 exists = (await this.storageDao.EntitiesByRowKeysAsync(
