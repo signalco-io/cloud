@@ -11,7 +11,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
 {
     private static readonly Dictionary<string, TableClient> EstablishedClients = new();
     private readonly ISecretsProvider secretsProvider;
-
+    
 
     public AzureStorageClientFactory(
         ISecretsProvider secretsProvider)
