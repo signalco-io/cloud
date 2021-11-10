@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
@@ -16,56 +17,57 @@ using Signal.Core.Devices;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Devices
+namespace Signal.Api.Public.Functions.Devices;
+
+public class DevicesEndpointsUpdateFunction
 {
-    public class DevicesEndpointsUpdateFunction
+    private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IAzureStorage storage;
+    private readonly IAzureStorageDao storageDao;
+
+    public DevicesEndpointsUpdateFunction(
+        IFunctionAuthenticator functionAuthenticator,
+        IAzureStorage storage,
+        IAzureStorageDao storageDao)
     {
-        private readonly IFunctionAuthenticator functionAuthenticator;
-        private readonly IAzureStorage storage;
-        private readonly IAzureStorageDao storageDao;
+        this.functionAuthenticator =
+            functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+    }
 
-        public DevicesEndpointsUpdateFunction(
-            IFunctionAuthenticator functionAuthenticator,
-            IAzureStorage storage,
-            IAzureStorageDao storageDao)
+    [FunctionName("Devices-EndpointsUpdate")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/endpoints/update")]
+        HttpRequest req,
+        CancellationToken cancellationToken) =>
+        await req.UserRequest<DeviceEndpointsUpdateDto>(this.functionAuthenticator, async (user, payload) =>
         {
-            this.functionAuthenticator =
-                functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
-        }
+            if (string.IsNullOrWhiteSpace(payload.DeviceId))
+                throw new ExpectedHttpException(
+                    HttpStatusCode.BadRequest,
+                    "DeviceIdentifier property is required.");
 
-        [FunctionName("Devices-EndpointsUpdate")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/endpoints/update")]
-            HttpRequest req,
-            CancellationToken cancellationToken) =>
-            await req.UserRequest<DeviceEndpointsUpdateDto>(this.functionAuthenticator, async (user, payload) =>
-            {
-                if (string.IsNullOrWhiteSpace(payload.DeviceId))
-                    throw new ExpectedHttpException(
-                        HttpStatusCode.BadRequest,
-                        "DeviceIdentifier property is required.");
-
-                // Check if user has assigned requested device
-                if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, payload.DeviceId,
+            // Check if user has assigned requested device
+            if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, payload.DeviceId,
                     cancellationToken))
-                    throw new ExpectedHttpException(HttpStatusCode.NotFound);
+                throw new ExpectedHttpException(HttpStatusCode.NotFound);
                 
-                // Commit endpoints
-                await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.Devices,
-                    new DeviceTableEndpointsEntity(
-                        payload.DeviceId,
-                        JsonSerializer.Serialize(payload.Endpoints)),
-                    cancellationToken);
-            }, cancellationToken);
+            // Commit endpoints
+            await this.storage.CreateOrUpdateItemAsync(
+                ItemTableNames.Devices,
+                new DeviceTableEndpointsEntity(
+                    payload.DeviceId,
+                    JsonSerializer.Serialize(payload.Endpoints)),
+                cancellationToken);
+        }, cancellationToken);
 
-        private class DeviceEndpointsUpdateDto
-        {
-            public string? DeviceId { get; set; }
+    [Serializable]
+    private class DeviceEndpointsUpdateDto
+    {
+        public string? DeviceId { get; set; }
 
-            public IEnumerable<DeviceEndpointDto> Endpoints { get; set; }
-        }
+        [Required]
+        public IEnumerable<DeviceEndpointDto>? Endpoints { get; set; }
     }
 }

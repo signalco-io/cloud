@@ -9,31 +9,30 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 
-namespace Signal.Api.Public.Functions.SignalR
+namespace Signal.Api.Public.Functions.SignalR;
+
+public class DevicesNegotiateFunction
 {
-    public class DevicesNegotiateFunction
+    private readonly IFunctionAuthenticator authenticator;
+
+    public DevicesNegotiateFunction(
+        IFunctionAuthenticator authenticator)
     {
-        private readonly IFunctionAuthenticator authenticator;
-
-        public DevicesNegotiateFunction(
-            IFunctionAuthenticator authenticator)
-        {
-            this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
-        }
-
-        [FunctionName("SignalR-Devices-Negotiate")]
-        public async Task<IActionResult> Negotiate(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/devices/negotiate")]
-            HttpRequest req,
-            IBinder binder, CancellationToken cancellationToken) =>
-            // This style is an example of imperative attribute binding; the mechanism for declarative binding described below does not work
-            // UserId = "{headers.x-my-custom-header}" https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-concept-serverless-development-config
-            // Source: https://charliedigital.com/2019/09/02/azure-functions-signalr-and-authorization/
-            await req.UserRequest(this.authenticator, async user =>
-                await binder.BindAsync<SignalRConnectionInfo>(new SignalRConnectionInfoAttribute
-                {
-                    HubName = "devices",
-                    UserId = user.UserId
-                }, cancellationToken), cancellationToken);
+        this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
     }
+
+    [FunctionName("SignalR-Devices-Negotiate")]
+    public async Task<IActionResult> Negotiate(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/devices/negotiate")]
+        HttpRequest req,
+        IBinder binder, CancellationToken cancellationToken) =>
+        // This style is an example of imperative attribute binding; the mechanism for declarative binding described below does not work
+        // UserId = "{headers.x-my-custom-header}" https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-concept-serverless-development-config
+        // Source: https://charliedigital.com/2019/09/02/azure-functions-signalr-and-authorization/
+        await req.UserRequest(this.authenticator, async user =>
+            await binder.BindAsync<SignalRConnectionInfo>(new SignalRConnectionInfoAttribute
+            {
+                HubName = "devices",
+                UserId = user.UserId
+            }, cancellationToken), cancellationToken);
 }

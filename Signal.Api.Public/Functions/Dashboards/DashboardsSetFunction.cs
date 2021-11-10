@@ -14,60 +14,59 @@ using Signal.Core.Dashboards;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Dashboards
+namespace Signal.Api.Public.Functions.Dashboards;
+
+public class DashboardsSetFunction
 {
-    public class DashboardsSetFunction
+    private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
+
+    public DashboardsSetFunction(
+        IFunctionAuthenticator functionAuthenticator,
+        IEntityService entityService)
     {
-        private readonly IFunctionAuthenticator functionAuthenticator;
-        private readonly IEntityService entityService;
+        this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
+    }
 
-        public DashboardsSetFunction(
-            IFunctionAuthenticator functionAuthenticator,
-            IEntityService entityService)
+    [FunctionName("Dashboards-Set")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "dashboards/set")]
+        HttpRequest req,
+        CancellationToken cancellationToken) =>
+        await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(this.functionAuthenticator,
+            async (user, payload) => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
+                user.UserId,
+                payload.Id,
+                TableEntityType.Dashboard,
+                ItemTableNames.Dashboards,
+                id => new DashboardTableEntity(
+                    id,
+                    payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
+                    payload.ConfigurationSerialized,
+                    DateTime.UtcNow),
+                cancellationToken)), 
+            cancellationToken);
+
+    [Serializable]
+    private class DashboardSetResponseDto
+    {
+        public DashboardSetResponseDto(string id)
         {
-            this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-            this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
+            this.Id = id;
         }
 
-        [FunctionName("Dashboards-Set")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "dashboards/set")]
-            HttpRequest req,
-            CancellationToken cancellationToken) =>
-            await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(this.functionAuthenticator,
-                async (user, payload) => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
-                    user.UserId,
-                    payload.Id,
-                    TableEntityType.Dashboard,
-                    ItemTableNames.Dashboards,
-                    id => new DashboardTableEntity(
-                        id,
-                        payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
-                        payload.ConfigurationSerialized,
-                        DateTime.UtcNow),
-                    cancellationToken)), 
-                cancellationToken);
+        public string Id { get; }
+    }
 
-        [Serializable]
-        private class DashboardSetResponseDto
-        {
-            public DashboardSetResponseDto(string id)
-            {
-                this.Id = id;
-            }
+    [Serializable]
+    private class DashboardsSetRequestDto
+    {
+        public string? Id { get; set;  }
 
-            public string Id { get; }
-        }
+        [Required]
+        public string? Name { get; set; }
 
-        [Serializable]
-        private class DashboardsSetRequestDto
-        {
-            public string? Id { get; set;  }
-
-            [Required]
-            public string? Name { get; set; }
-
-            public string? ConfigurationSerialized { get; set; }
-        }
+        public string? ConfigurationSerialized { get; set; }
     }
 }

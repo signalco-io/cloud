@@ -3,18 +3,17 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Signal.Core.Exceptions;
 
-namespace Signal.Api.Public.Auth
-{
-    public sealed class AuthenticationExpectedHttpException : ExpectedHttpException
-    {
-        public AuthenticationExpectedHttpException(string message = "")
-            : base(HttpStatusCode.Forbidden, message)
-        {
-        }
+namespace Signal.Api.Public.Auth;
 
-        public override void ApplyResponseDetails(HttpResponseMessage response)
-        {
-            response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Bearer", "token_type=\"JWT\""));
-        }
+public sealed class AuthenticationExpectedHttpException : ExpectedHttpException
+{
+    public AuthenticationExpectedHttpException(string message = "")
+        : base(HttpStatusCode.Forbidden, message)
+    {
+    }
+
+    public override void ApplyResponseDetails(HttpResponseMessage response)
+    {
+        response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Bearer", "token_type=\"JWT\""));
     }
 }

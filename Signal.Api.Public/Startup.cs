@@ -8,21 +8,20 @@ using Signal.Infrastructure.Secrets;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Signal.Api.Public
-{
-    public class Startup : FunctionsStartup
-    {
-        public override void Configure(IFunctionsHostBuilder builder)
-        {
-            builder.Services
-                .AddTransient<ISecretsProvider, SecretsProvider>()
-                .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
-                .AddAzureStorage()
-                .AddCore();
-        }
+namespace Signal.Api.Public;
 
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-        }
+public class Startup : FunctionsStartup
+{
+    public override void Configure(IFunctionsHostBuilder builder)
+    {
+        builder.Services
+            .AddTransient<ISecretsProvider, SecretsProvider>()
+            .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
+            .AddAzureStorage()
+            .AddCore();
+    }
+
+    public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+    {
     }
 }

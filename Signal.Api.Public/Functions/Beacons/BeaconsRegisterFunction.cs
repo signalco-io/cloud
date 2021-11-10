@@ -16,64 +16,63 @@ using Signal.Core.Exceptions;
 using Signal.Core.Sharing;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Beacons
+namespace Signal.Api.Public.Functions.Beacons;
+
+public class BeaconsRegisterFunction
 {
-    public class BeaconsRegisterFunction
+    private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IAzureStorage storage;
+    private readonly IAzureStorageDao storageDao;
+    private readonly ISharingService sharingService;
+
+    public BeaconsRegisterFunction(
+        IFunctionAuthenticator functionAuthenticator,
+        IAzureStorage storage,
+        IAzureStorageDao storageDao,
+        ISharingService sharingService)
     {
-        private readonly IFunctionAuthenticator functionAuthenticator;
-        private readonly IAzureStorage storage;
-        private readonly IAzureStorageDao storageDao;
-        private readonly ISharingService sharingService;
+        this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+        this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
+    }
 
-        public BeaconsRegisterFunction(
-            IFunctionAuthenticator functionAuthenticator,
-            IAzureStorage storage,
-            IAzureStorageDao storageDao,
-            ISharingService sharingService)
+    [FunctionName("Beacons-Register")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/register")]
+        HttpRequest req,
+        CancellationToken cancellationToken) =>
+        await req.UserRequest<BeaconRegisterRequestDto>(this.functionAuthenticator, async (user, payload) =>
         {
-            this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
-            this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
-        }
+            if (payload.BeaconId == null)
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
 
-        [FunctionName("Beacons-Register")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/register")]
-            HttpRequest req,
-            CancellationToken cancellationToken) =>
-            await req.UserRequest<BeaconRegisterRequestDto>(this.functionAuthenticator, async (user, payload) =>
-            {
-                if (payload.BeaconId == null)
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
+            // Check if beacons exists
+            var existingBeacons = await this.storageDao.EntitiesByRowKeysAsync(
+                ItemTableNames.Beacons,
+                new[] { payload.BeaconId }, 
+                cancellationToken);
+            if (existingBeacons.Any())
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Beacon already registered.");
 
-                // Check if beacons exists
-                var existingBeacons = await this.storageDao.EntitiesByRowKeysAsync(
-                    ItemTableNames.Beacons,
-                    new[] { payload.BeaconId }, 
-                    cancellationToken);
-                if (existingBeacons.Any())
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Beacon already registered.");
+            // Create or update existing item
+            await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons,
+                new BeaconItem(user.UserId, payload.BeaconId)
+                {
+                    RegisteredTimeStamp = DateTime.UtcNow
+                }, cancellationToken);
 
-                // Create or update existing item
-                await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons,
-                    new BeaconItem(user.UserId, payload.BeaconId)
-                    {
-                        RegisteredTimeStamp = DateTime.UtcNow
-                    }, cancellationToken);
+            // Assign to current user
+            await this.sharingService.AssignToUserAsync(
+                user.UserId,
+                TableEntityType.Station,
+                payload.BeaconId,
+                cancellationToken);
+        }, cancellationToken);
 
-                // Assign to current user
-                await this.sharingService.AssignToUserAsync(
-                    user.UserId,
-                    TableEntityType.Station,
-                    payload.BeaconId,
-                    cancellationToken);
-            }, cancellationToken);
-
-        private class BeaconRegisterRequestDto
-        {
-            [Required]
-            public string? BeaconId { get; set; }
-        }
+    private class BeaconRegisterRequestDto
+    {
+        [Required]
+        public string? BeaconId { get; set; }
     }
 }
