@@ -19,6 +19,7 @@ Visit <a aria-label="Signalco learn" href="https://www.signalco.io/learn">https:
 [![Deploy Public API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml)
 [![Deploy Internal API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml)
 [![CodeQL](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml)
+[![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)
 
 ### Azure KeyVault configuration
 
