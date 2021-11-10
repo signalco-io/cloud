@@ -26,6 +26,7 @@ Code
 
 [![CodeQL](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)
+[![CodeFactor](https://www.codefactor.io/repository/github/signalco-io/cloud/badge)](https://www.codefactor.io/repository/github/signalco-io/cloud)
 
 ### Azure KeyVault configuration
 
