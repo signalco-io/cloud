@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
@@ -9,7 +9,7 @@ namespace Signal.Infrastructure.AzureStorage.Tables;
 
 public class AzureStorageClientFactory : IAzureStorageClientFactory
 {
-    private static readonly Dictionary<string, TableClient> EstablishedClients = new();
+    private static readonly ConcurrentDictionary<string, TableClient> EstablishedClients = new();
     private readonly ISecretsProvider secretsProvider;
     
 
@@ -27,9 +27,10 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
             return client;
 
         // Instantiate new client and persist
-        client = new TableClient(await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false),
+        client = new TableClient(
+            await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false),
             AzureTableExtensions.EscapeKey(tableName));
-        EstablishedClients.Add(tableName, client);
+        EstablishedClients.TryAdd(tableName, client);
 
         return client;
     }
