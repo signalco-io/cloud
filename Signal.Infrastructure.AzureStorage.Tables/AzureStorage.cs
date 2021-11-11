@@ -53,6 +53,11 @@ namespace Signal.Infrastructure.AzureStorage.Tables
             await client.CreateIfNotExistsAsync(cancellationToken);
         }
 
+        public Task AppendToFileAsync(string directory, string fileName, string data, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         private static Dictionary<string, object> ObjectToDictionary(object item) => 
             item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
 

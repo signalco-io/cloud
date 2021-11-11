@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +20,75 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Beacons
 {
+    public class StationsLoggingPersistFunction
+    {
+        private readonly IFunctionAuthenticator functionAuthenticator;
+        private readonly IAzureStorage storage;
+        
+        public StationsLoggingPersistFunction(
+            IFunctionAuthenticator functionAuthenticator,
+            IAzureStorage storage)
+        {
+            this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        }
+
+        [FunctionName("Stations-Logging-Persist")]
+        public async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "stations/logging/persist")]
+            HttpRequest req,
+            CancellationToken cancellationToken) =>
+            await req.UserRequest<StationsLoggingPersistRequestDto>(this.functionAuthenticator, async (user, payload) =>
+                {
+                    // TODO: Check if user owns station
+                    
+                    var entriesByDate = (payload.Entries ?? Enumerable.Empty<StationsLoggingPersistRequestDto.Entry>())
+                        .Where(e => e.TimeStamp.HasValue)
+                        .GroupBy(e => e.TimeStamp!.Value.Date)
+                        .ToList();
+                    foreach (var entriesDay in entriesByDate)
+                    {
+                        var sb = new StringBuilder();
+                        foreach (var entry in entriesDay)
+                            sb.AppendLine($"[{entry.TimeStamp:O}] ({entry.Level.ToString()}) {entry.Message}");
+
+                        var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.log";
+                        var logs = sb.ToString();
+                        await this.storage.AppendToFileAsync("Logs/Stations/", fileName, logs, cancellationToken);
+                    }
+                },
+                cancellationToken);
+
+        private class StationsLoggingPersistRequestDto
+        {
+            public string? StationId { get; set; }
+            
+            public List<Entry>? Entries { get; set; }
+            
+            public class Entry
+            {
+                [JsonPropertyName("T")]
+                public DateTime? TimeStamp { get; set; }
+                
+                [JsonPropertyName("L")]
+                public LogLevel? Level { get; set; }
+                
+                [JsonPropertyName("M")]
+                public string? Message { get; set; }
+            }
+
+            public enum LogLevel
+            {
+                Trace,
+                Debug,
+                Information,
+                Warning,
+                Error,
+                Fatal
+            }
+        }
+    }
+    
     public class BeaconsReportStateFunction
     {
         private readonly IFunctionAuthenticator functionAuthenticator;
