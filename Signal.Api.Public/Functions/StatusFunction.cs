@@ -10,10 +10,10 @@ namespace Signal.Api.Public.Functions;
 
 public class StatusFunction
 {
-    [FunctionName("StatusFunction")]
+    [FunctionName("Status")]
     [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK, Description = "API status is running.")]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest _) =>
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "status")] HttpRequest _) =>
         new OkResult();
 }
