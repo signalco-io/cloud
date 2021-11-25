@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Signal.Infrastructure.Secre
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95C89F3D-87B3-4142-8105-1C58C8C4981B}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\deploy-azure-function-internal.yml = .github\workflows\deploy-azure-function-internal.yml
+		.github\workflows\deploy-azure-function-public.yml = .github\workflows\deploy-azure-function-public.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
