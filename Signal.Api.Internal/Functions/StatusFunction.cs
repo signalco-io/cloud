@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -13,7 +12,7 @@ public class StatusFunction
     [FunctionName("Status")]
     [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK, Description = "API status is running.")]
-    public async Task<IActionResult> Run(
+    public IActionResult Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "status")] HttpRequest req) =>
         new OkResult();
 }
