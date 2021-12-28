@@ -20,16 +20,19 @@ namespace Signal.Api.Public.Functions.Devices;
 public class DevicesStateHistoryRetrieveFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
     private readonly IAzureStorageDao storageDao;
     private readonly IAzureStorageDao storage;
 
     public DevicesStateHistoryRetrieveFunction(
         IFunctionAuthenticator functionAuthenticator,
+        IEntityService entityService,
         IAzureStorageDao storageDao,
         IAzureStorageDao storage)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
@@ -39,16 +42,14 @@ public class DevicesStateHistoryRetrieveFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices/state-history")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest(this.functionAuthenticator, async user =>
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
         {
             var deviceId = req.Query["deviceId"];
             var channelName = req.Query["channelName"];
             var contactName = req.Query["contactName"];
             var duration = req.Query["duration"];
 
-            // Check if user has assigned requested device
-            if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, deviceId, cancellationToken))
-                throw new ExpectedHttpException(HttpStatusCode.NotFound);
+            await context.ValidateUserAssignedAsync(this.entityService, TableEntityType.Device, deviceId);
 
             var data = await this.storage.GetDeviceStateHistoryAsync(
                 deviceId,
@@ -65,7 +66,7 @@ public class DevicesStateHistoryRetrieveFunction
                     ValueSerialized = d.ValueSerialized
                 }).ToList()
             };
-        }, cancellationToken);
+        });
 
     private class DeviceStateHistoryRequestDto
     {

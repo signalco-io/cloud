@@ -21,17 +21,17 @@ namespace Signal.Api.Public.Functions.Devices;
 public class DevicesStatePublishFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
     private readonly IAzureStorage storage;
-    private readonly IAzureStorageDao dao;
 
     public DevicesStatePublishFunction(
         IFunctionAuthenticator functionAuthenticator,
-        IAzureStorage storage,
-        IAzureStorageDao dao)
+        IEntityService entityService,
+        IAzureStorage storage)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        this.dao = dao ?? throw new ArgumentNullException(nameof(dao));
     }
 
     [FunctionName("Devices-PublishState")]
@@ -42,24 +42,18 @@ public class DevicesStatePublishFunction
         IAsyncCollector<SignalRMessage> signalRMessages,
         ILogger logger,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<SignalDeviceStatePublishDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<SignalDeviceStatePublishDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
             if (string.IsNullOrWhiteSpace(payload.ChannelName) ||
                 string.IsNullOrWhiteSpace(payload.ContactName) ||
                 string.IsNullOrWhiteSpace(payload.DeviceId))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
                     "DeviceId, ChannelName and ContactName properties are required.");
-                
-            // Validate user assigned
-            var isOwned = await this.dao.IsUserAssignedAsync(
-                user.UserId,
-                TableEntityType.Device,
-                payload.DeviceId,
-                cancellationToken);
-            if (!isOwned)
-                throw new ExpectedHttpException(HttpStatusCode.NotFound);
 
+            await context.ValidateUserAssignedAsync(this.entityService, TableEntityType.Device, payload.DeviceId);
+            
             // TODO: Retrieve device configuration
             // TODO: Validate device has contact for state
             // TODO: Assign to device's ignore states if not assigned in config (update device for state visibility)
@@ -97,7 +91,7 @@ public class DevicesStatePublishFunction
                 // Notify listeners
                 notifyStateChangeTask = signalRMessages.AddAsync(new SignalRMessage
                 {
-                    UserId = user.UserId,
+                    UserId = context.User.UserId,
                     Arguments = new object[]
                     {
                         new SignalDeviceStatePublishDto
@@ -125,5 +119,5 @@ public class DevicesStatePublishFunction
                     logger.LogError(ex, "Failed to persist state to history.");
                 else logger.LogError(ex, "Failed to notify or persist state to history.");
             }
-        }, cancellationToken);
+        });
 }

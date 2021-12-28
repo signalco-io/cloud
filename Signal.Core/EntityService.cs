@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core.Exceptions;
+using Signal.Core.Sharing;
 using Signal.Core.Storage;
 
 namespace Signal.Core
@@ -13,11 +14,16 @@ namespace Signal.Core
     {
         private readonly IAzureStorageDao storageDao;
         private readonly IAzureStorage storage;
+        private readonly ISharingService sharingService;
 
-        public EntityService(IAzureStorageDao storageDao, IAzureStorage storage)
+        public EntityService(
+            IAzureStorageDao storageDao, 
+            IAzureStorage storage,
+            ISharingService sharingService)
         {
             this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
         }
 
         public async Task<string> UpsertEntityAsync<TEntity>(string userId, string? entityId, TableEntityType entityType, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)
@@ -66,5 +72,9 @@ namespace Signal.Core
             foreach (var item in entitiesList)
                 await this.storage.DeleteItemAsync(tableName, item.PartitionKey, item.RowKey, cancellationToken);
         }
+
+        public Task<bool> IsUserAssignedAsync(string userId, TableEntityType entityType, string id, CancellationToken cancellationToken) =>
+            this.storageDao.IsUserAssignedAsync(
+                userId, entityType, id, cancellationToken);
     }
 }

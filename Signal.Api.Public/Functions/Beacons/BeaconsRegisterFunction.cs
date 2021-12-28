@@ -42,8 +42,10 @@ public class BeaconsRegisterFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/register")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<BeaconRegisterRequestDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<BeaconRegisterRequestDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
+            var user = context.User;
             if (payload.BeaconId == null)
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
 
@@ -68,7 +70,7 @@ public class BeaconsRegisterFunction
                 TableEntityType.Station,
                 payload.BeaconId,
                 cancellationToken);
-        }, cancellationToken);
+        });
 
     private class BeaconRegisterRequestDto
     {

@@ -12,6 +12,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
+using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Sharing;
 using Signal.Core.Storage;
@@ -21,19 +22,19 @@ namespace Signal.Api.Public.Functions.Sharing;
 public class ShareEntityFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
-    private readonly IAzureStorageDao storageDao;
     private readonly ISharingService sharingService;
+    private readonly IEntityService entityService;
     private readonly ILogger<ShareEntityFunction> logger;
 
     public ShareEntityFunction(
         IFunctionAuthenticator functionAuthenticator,
-        IAzureStorageDao storageDao,
         ISharingService sharingService,
+        IEntityService entityService,
         ILogger<ShareEntityFunction> logger)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -42,31 +43,25 @@ public class ShareEntityFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "share/entity")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<ProcessSetDto>(this.functionAuthenticator,
-            async (user, payload) =>
+        await req.UserRequest<ProcessSetDto>(cancellationToken, this.functionAuthenticator,
+            async context =>
             {
-                if (payload.Type == null)
+                if (context.Payload.Type == null)
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Type is required");
-                if (string.IsNullOrWhiteSpace(payload.EntityId))
+                if (string.IsNullOrWhiteSpace(context.Payload.EntityId))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "EntityId is required");
-                if (payload.UserEmails == null || !payload.UserEmails.Any())
+                if (context.Payload.UserEmails == null || !context.Payload.UserEmails.Any())
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "UserEmails is required - at least one user email is required");
 
-                // Check user has entity assigned
-                if (!await this.storageDao.IsUserAssignedAsync(
-                        user.UserId, 
-                        payload.Type.Value, 
-                        payload.EntityId,
-                        cancellationToken))
-                    throw new ExpectedHttpException(HttpStatusCode.NotFound);
-
-                foreach (var userEmail in payload.UserEmails.Where(userEmail => !string.IsNullOrWhiteSpace(userEmail)))
+                await context.ValidateUserAssignedAsync(this.entityService, context.Payload.Type.Value, context.Payload.EntityId);
+                
+                foreach (var userEmail in context.Payload.UserEmails.Where(userEmail => !string.IsNullOrWhiteSpace(userEmail)))
                 {
                     try
                     {
                         await this.sharingService.AssignToUserEmailAsync(
                             userEmail,
-                            payload.Type.Value, payload.EntityId,
+                            context.Payload.Type.Value, context.Payload.EntityId,
                             cancellationToken);
                     }
                     catch (Exception ex)
@@ -74,7 +69,7 @@ public class ShareEntityFunction
                         this.logger.LogInformation(ex, "Failed to share with provided user.");
                     }
                 }
-            }, cancellationToken);
+            });
 
     private class ProcessSetDto
     {

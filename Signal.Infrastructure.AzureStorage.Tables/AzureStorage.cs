@@ -47,6 +47,11 @@ internal class AzureStorage : IAzureStorage
         await client.DeleteEntityAsync(partitionKey, rowKey, cancellationToken: cancellationToken);
     }
 
-    private static Dictionary<string, object> ObjectToDictionary(object item) => 
+    private static Dictionary<string, object?> ObjectToDictionary(object item) => 
         item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
+
+    public Task AppendToFileAsync(string directory, string fileName, string data, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -37,8 +37,10 @@ public class DevicesRegisterFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
+            var user = context.User;
             if (string.IsNullOrWhiteSpace(payload.DeviceIdentifier))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
@@ -75,7 +77,7 @@ public class DevicesRegisterFunction
                 cancellationToken);
 
             return new DeviceRegisterResponseDto(deviceId);
-        }, cancellationToken);
+        });
 
     private class DeviceRegisterDto
     {

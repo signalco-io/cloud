@@ -14,26 +14,20 @@ using Signal.Core.Exceptions;
 using Signal.Core.Sharing;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Devices;
+namespace Signal.Api.Public.Functions.Entity;
 
 public class EntityDeleteFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
-    private readonly IAzureStorage storage;
-    private readonly IAzureStorageDao storageDao;
     private readonly IEntityService entityService;
     private readonly ISharingService sharingService;
 
     public EntityDeleteFunction(
         IFunctionAuthenticator functionAuthenticator,
-        IAzureStorage storage,
-        IAzureStorageDao storageDao,
         IEntityService entityService,
         ISharingService sharingService)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
     }
@@ -43,34 +37,27 @@ public class EntityDeleteFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "entity/delete")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<EntityDeleteDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<EntityDeleteDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
-            if (string.IsNullOrWhiteSpace(payload.Id))
+            if (string.IsNullOrWhiteSpace(context.Payload.Id))
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Id property is required.");
-            if (payload.EntityType == null || payload.EntityType == TableEntityType.Unknown)
+            if (context.Payload.EntityType is null or TableEntityType.Unknown)
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "EntityType property is required.");
 
-            // Check if entity is assigned to user
-            var isOwned = await this.storageDao.IsUserAssignedAsync(
-                user.UserId,
-                payload.EntityType.Value,
-                payload.Id,
-                cancellationToken);
-            if (!isOwned)
-                throw new ExpectedHttpException(HttpStatusCode.NotFound);
-                
+            await context.ValidateUserAssignedAsync(entityService, context.Payload.EntityType.Value, context.Payload.Id);
+            
             // Remove device
             await this.entityService.RemoveByIdAsync(
                 ItemTableNames.Devices, 
-                payload.Id, 
+                context.Payload.Id, 
                 cancellationToken);
 
             // Delete user assignments
             await this.sharingService.RemoveAssignmentsAsync(
-                payload.EntityType.Value, 
-                payload.Id,
+                context.Payload.EntityType.Value, 
+                context.Payload.Id,
                 cancellationToken);
-        }, cancellationToken);
+        });
 
     private class EntityDeleteDto
     {

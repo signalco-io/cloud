@@ -34,19 +34,18 @@ public class DashboardsSetFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "dashboards/set")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(this.functionAuthenticator,
-            async (user, payload) => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
-                user.UserId,
-                payload.Id,
+        await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(cancellationToken, this.functionAuthenticator,
+            async context => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
+                context.User.UserId,
+                context.Payload.Id,
                 TableEntityType.Dashboard,
                 ItemTableNames.Dashboards,
                 id => new DashboardTableEntity(
                     id,
-                    payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
-                    payload.ConfigurationSerialized,
+                    context.Payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
+                    context.Payload.ConfigurationSerialized,
                     DateTime.UtcNow),
-                cancellationToken)), 
-            cancellationToken);
+                cancellationToken)));
 
     [Serializable]
     private class DashboardSetResponseDto

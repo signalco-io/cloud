@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
-using Signal.Core.Auth;
 using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Exceptions;
@@ -44,16 +43,16 @@ public static class HttpRequestExtensions
             })!;
     }
 
-    public static async Task<IActionResult> UserRequest<TResponse>(
+    internal static async Task<IActionResult> UserRequest<TResponse>(
         this HttpRequest req,
+        CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
-        Func<IUserAuth, Task<TResponse>> executionBody,
-        CancellationToken cancellationToken)
+        Func<UserRequestContext, Task<TResponse>> executionBody)
     {
         try
         {
             var user = await authenticator.AuthenticateAsync(req, cancellationToken);
-            return new OkObjectResult(await executionBody(user));
+            return new OkObjectResult(await executionBody(new UserRequestContext(user, cancellationToken)));
         }
         catch (ExpectedHttpException ex)
         {
@@ -64,33 +63,30 @@ public static class HttpRequestExtensions
         }
     }
 
-    public static Task<IActionResult> UserRequest<TPayload>(
+    internal static Task<IActionResult> UserRequest<TPayload>(
         this HttpRequest req,
+        CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
-        Func<IUserAuth, TPayload, Task> executionBody,
-        CancellationToken cancellationToken) =>
-        UserRequest<TPayload>(req, authenticator, async (user, payload) =>
+        Func<UserRequestContextWithPayload<TPayload>, Task> executionBody) =>
+        UserRequest<TPayload>(req, cancellationToken, authenticator, async context =>
         {
-            await executionBody(user, payload);
+            await executionBody(context);
             return new OkResult();
-        }, cancellationToken);
+        });
 
-    public static Task<IActionResult> UserRequest<TPayload, TResponse>(
+    internal static Task<IActionResult> UserRequest<TPayload, TResponse>(
         this HttpRequest req,
+        CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
-        Func<IUserAuth, TPayload, Task<TResponse>> executionBody,
-        CancellationToken cancellationToken) =>
-        UserRequest<TPayload>(req, authenticator, async (user, payload) =>
-        {
-            var response = await executionBody(user, payload);
-            return new OkObjectResult(response);
-        }, cancellationToken);
+        Func<UserRequestContextWithPayload<TPayload>, Task<TResponse>> executionBody) =>
+        UserRequest<TPayload>(req, cancellationToken, authenticator, async context =>
+            new OkObjectResult(await executionBody(context)));
 
     private static async Task<IActionResult> UserRequest<TPayload>(
         this HttpRequest req,
+        CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
-        Func<IUserAuth, TPayload, Task<IActionResult>> executionBody,
-        CancellationToken cancellationToken)
+        Func<UserRequestContextWithPayload<TPayload>, Task<IActionResult>> executionBody)
     {
         try
         {
@@ -101,7 +97,7 @@ public static class HttpRequestExtensions
             if (payload == null)
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Failed to read request data.");
 
-            return await executionBody(user, payload);
+            return await executionBody(new UserRequestContextWithPayload<TPayload>(user, payload, cancellationToken));
         }
         catch (ExpectedHttpException ex)
         {

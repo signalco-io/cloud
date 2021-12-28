@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
+using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
@@ -22,13 +23,16 @@ namespace Signal.Api.Public.Functions.Conducts;
 public class ConductRequestMultipleFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
     private readonly IAzureStorageDao storageDao;
 
     public ConductRequestMultipleFunction(
         IFunctionAuthenticator functionAuthenticator,
+        IEntityService entityService,
         IAzureStorageDao storageDao)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
     }
 
@@ -38,8 +42,9 @@ public class ConductRequestMultipleFunction
         HttpRequest req,
         [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<List<ConductRequestDto>>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<List<ConductRequestDto>>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
             var usersConducts = new Dictionary<string, ICollection<ConductRequestDto>>();
             foreach (var conduct in payload)
             {
@@ -52,10 +57,7 @@ public class ConductRequestMultipleFunction
 
                 var entityType = conduct.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
 
-                // Check if user has assigned device
-                await this.AssertEntityAssigned(
-                    user.UserId, entityType, conduct.DeviceId,
-                    cancellationToken);
+                await context.ValidateUserAssignedAsync(this.entityService, entityType, conduct.DeviceId);
 
                 // Retrieve all device assigned devices
                 var deviceUsers = (await this.storageDao.AssignedUsersAsync(
@@ -81,15 +83,8 @@ public class ConductRequestMultipleFunction
                         UserId = userId
                     }, cancellationToken);
             }
-        }, cancellationToken);
-
-    private async Task AssertEntityAssigned(string userId, TableEntityType entityType, string entityId, CancellationToken cancellationToken)
-    {
-        if (!(await this.storageDao.IsUserAssignedAsync(
-                userId, entityType, entityId, cancellationToken)))
-            throw new ExpectedHttpException(HttpStatusCode.NotFound);
-    }
-        
+        });
+    
     [Serializable]
     private class ConductRequestDto
     {

@@ -32,8 +32,8 @@ public class BeaconsRetrieveFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "beacons")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<IEnumerable<StationDto>>(this.functionAuthenticator, async user =>
-                (await this.storageDao.BeaconsAsync(user.UserId, cancellationToken))
+        await req.UserRequest<IEnumerable<StationDto>>(cancellationToken, this.functionAuthenticator, async context =>
+                (await this.storageDao.BeaconsAsync(context.User.UserId, cancellationToken))
                 .Select(b => new StationDto(b.RowKey)
                 {
                     Version = b.Version,
@@ -42,8 +42,7 @@ public class BeaconsRetrieveFunction
                     AvailableWorkerServices = b.AvailableWorkerServices,
                     RunningWorkerServices = b.RunningWorkerServices
                 })
-                .ToList(),
-            cancellationToken);
+                .ToList());
         
     [Serializable]
     private class StationDto

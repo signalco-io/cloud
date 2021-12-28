@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Microsoft.IdentityModel.Tokens;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
+using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
@@ -21,13 +21,16 @@ namespace Signal.Api.Public.Functions.Conducts;
 public class ConductRequestFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
     private readonly IAzureStorageDao storageDao;
 
     public ConductRequestFunction(
         IFunctionAuthenticator functionAuthenticator,
+        IEntityService entityService,
         IAzureStorageDao storageDao)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
     }
 
@@ -37,8 +40,9 @@ public class ConductRequestFunction
         HttpRequest req,
         [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<ConductRequestDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<ConductRequestDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
             if (string.IsNullOrWhiteSpace(payload.DeviceId) ||
                 string.IsNullOrWhiteSpace(payload.ChannelName) ||
                 string.IsNullOrWhiteSpace(payload.ContactName))
@@ -47,11 +51,8 @@ public class ConductRequestFunction
                     "DeviceId, ChannelName and ContactName properties are required.");
 
             var entityType = payload.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
-                
-            // Check if user has assigned device
-            await this.AssertEntityAssigned(
-                user.UserId, entityType, payload.DeviceId,
-                cancellationToken);
+
+            await context.ValidateUserAssignedAsync(this.entityService, entityType, payload.DeviceId);
 
             // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
@@ -72,14 +73,7 @@ public class ConductRequestFunction
                         UserId = deviceUserId
                     }, cancellationToken);
             }
-        }, cancellationToken);
-
-    private async Task AssertEntityAssigned(string userId, TableEntityType entityType, string entityId, CancellationToken cancellationToken)
-    {
-        if (!(await this.storageDao.IsUserAssignedAsync(
-                userId, entityType, entityId, cancellationToken)))
-            throw new ExpectedHttpException(HttpStatusCode.NotFound);
-    }
+        });
 
     [Serializable]
     private class ConductRequestDto
