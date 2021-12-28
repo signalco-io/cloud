@@ -7,19 +7,18 @@ using Signal.Infrastructure.Secrets;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Signal.Api.Internal
-{
-    public class Startup : FunctionsStartup
-    {
-        public override void Configure(IFunctionsHostBuilder builder)
-        {
-            builder.Services
-                .AddTransient<ISecretsProvider, SecretsProvider>()
-                .AddAzureStorage();
-        }
+namespace Signal.Api.Internal;
 
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-        }
+public class Startup : FunctionsStartup
+{
+    public override void Configure(IFunctionsHostBuilder builder)
+    {
+        builder.Services
+            .AddTransient<ISecretsProvider, SecretsProvider>()
+            .AddAzureStorage();
+    }
+
+    public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+    {
     }
 }

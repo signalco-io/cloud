@@ -6,11 +6,16 @@ namespace Signal.Core.Sharing
 {
     public interface ISharingService
     {
-        Task AssignToUser(string userId, TableEntityType entityType, string entityId, CancellationToken cancellationToken);
+        Task AssignToUserAsync(string userId, TableEntityType entityType, string entityId, CancellationToken cancellationToken);
 
-        Task AssignToUserEmail(
+        Task AssignToUserEmailAsync(
             string userEmail, 
             TableEntityType entityType, string entityId,
+            CancellationToken cancellationToken);
+
+        Task RemoveAssignmentsAsync(
+            TableEntityType entityType, 
+            string entityId,
             CancellationToken cancellationToken);
     }
 }

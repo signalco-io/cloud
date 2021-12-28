@@ -1,6 +1,5 @@
-﻿namespace Signal.Infrastructure.AzureStorage.Tables
+﻿namespace Signal.Infrastructure.AzureStorage.Tables;
+
+internal class AzureUserAssignedEntitiesTableEntry : AzureTableEntityBase
 {
-    internal class AzureUserAssignedEntitiesTableEntry : AzureTableEntityBase
-    {
-    }
 }

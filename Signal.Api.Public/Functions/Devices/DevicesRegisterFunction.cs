@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,91 +14,87 @@ using Signal.Core.Devices;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Devices
+namespace Signal.Api.Public.Functions.Devices;
+
+public class DevicesRegisterFunction
 {
-    public class DevicesRegisterFunction
+    private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IAzureStorage storage;
+    private readonly IAzureStorageDao storageDao;
+
+    public DevicesRegisterFunction(
+        IFunctionAuthenticator functionAuthenticator,
+        IAzureStorage storage,
+        IAzureStorageDao storageDao)
     {
-        private readonly IFunctionAuthenticator functionAuthenticator;
-        private readonly IAzureStorage storage;
-        private readonly IAzureStorageDao storageDao;
+        this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+    }
 
-        public DevicesRegisterFunction(
-            IFunctionAuthenticator functionAuthenticator,
-            IAzureStorage storage,
-            IAzureStorageDao storageDao)
+    [FunctionName("Devices-Register")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
+        HttpRequest req,
+        CancellationToken cancellationToken) =>
+        await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(this.functionAuthenticator, async (user, payload) =>
         {
-            this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-            this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
-        }
+            if (string.IsNullOrWhiteSpace(payload.DeviceIdentifier))
+                throw new ExpectedHttpException(
+                    HttpStatusCode.BadRequest,
+                    "DeviceIdentifier property is required.");
 
-        [FunctionName("Devices-Register")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
-            HttpRequest req,
-            CancellationToken cancellationToken) =>
-            await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(this.functionAuthenticator, async (user, payload) =>
-            {
-                if (string.IsNullOrWhiteSpace(payload.DeviceIdentifier))
-                    throw new ExpectedHttpException(
-                        HttpStatusCode.BadRequest,
-                        "DeviceIdentifier property is required.");
+            // Check if device already exists
+            var userDevices = await this.storageDao.DevicesAsync(user.UserId, cancellationToken);
+            if (userDevices.Any(ud => ud.DeviceIdentifier == payload.DeviceIdentifier))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
-                // Check if device already exists
-                var existingDeviceId = await this.storageDao.DeviceExistsAsync(
-                    user.UserId,
+            // Generate device id
+            // Check if device with new id exists (avoid collisions)
+            var deviceId = Guid.NewGuid().ToString();
+            while ((await this.storageDao.EntitiesByRowKeysAsync(ItemTableNames.Devices, new[] { deviceId }, cancellationToken)).Any())
+                deviceId = Guid.NewGuid().ToString();
+
+            // Create new device
+            await this.storage.CreateOrUpdateItemAsync(
+                ItemTableNames.Devices,
+                new DeviceInfoTableEntity(
+                    deviceId,
                     payload.DeviceIdentifier,
-                    cancellationToken);
-                if (!string.IsNullOrWhiteSpace(existingDeviceId))
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
+                    payload.Alias ?? "New device",
+                    payload.Manufacturer,
+                    payload.Model),
+                cancellationToken);
 
-                // Generate device id
-                // Check if device with new id exists (avoid collisions)
-                var deviceId = Guid.NewGuid().ToString();
-                while (await this.storageDao.DeviceExistsAsync(deviceId, cancellationToken))
-                    deviceId = Guid.NewGuid().ToString();
+            // Assign device to user
+            await this.storage.CreateOrUpdateItemAsync(
+                ItemTableNames.UserAssignedEntity(TableEntityType.Device),
+                new UserAssignedEntityTableEntry(
+                    user.UserId,
+                    deviceId),
+                cancellationToken);
 
-                // Create new device
-                await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.Devices,
-                    new DeviceInfoTableEntity(
-                        deviceId,
-                        payload.DeviceIdentifier,
-                        payload.Alias ?? "New device",
-                        payload.Manufacturer,
-                        payload.Model),
-                    cancellationToken);
+            return new DeviceRegisterResponseDto(deviceId);
+        }, cancellationToken);
 
-                // Assign device to user
-                await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.UserAssignedEntity(TableEntityType.Device),
-                    new UserAssignedEntityTableEntry(
-                        user.UserId,
-                        deviceId),
-                    cancellationToken);
+    private class DeviceRegisterDto
+    {
+        public string? DeviceIdentifier { get; set; }
 
-                return new DeviceRegisterResponseDto(deviceId);
-            }, cancellationToken);
-
-        private class DeviceRegisterDto
-        {
-            public string? DeviceIdentifier { get; set; }
-
-            public string? Alias { get; set; }
+        public string? Alias { get; set; }
             
-            public string? Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
-            public string? Model { get; set; }
-        }
+        public string? Model { get; set; }
+    }
 
-        private class DeviceRegisterResponseDto
+    private class DeviceRegisterResponseDto
+    {
+        public DeviceRegisterResponseDto(string deviceId)
         {
-            public DeviceRegisterResponseDto(string deviceId)
-            {
-                this.DeviceId = deviceId;
-            }
-
-            public string DeviceId { get; }
+            this.DeviceId = deviceId;
         }
+
+        public string DeviceId { get; }
     }
 }

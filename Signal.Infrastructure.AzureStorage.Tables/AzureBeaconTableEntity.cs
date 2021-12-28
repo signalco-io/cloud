@@ -1,14 +1,16 @@
 ﻿using System;
-using Signal.Core.Beacon;
 
-namespace Signal.Infrastructure.AzureStorage.Tables
+namespace Signal.Infrastructure.AzureStorage.Tables;
+
+internal class AzureBeaconTableEntity : AzureTableEntityBase
 {
-    internal class AzureBeaconTableEntity : AzureTableEntityBase, IBeaconTableEntity
-    {
-        public DateTime RegisteredTimeStamp { get; set; }
+    public DateTime RegisteredTimeStamp { get; set; }
 
-        public string? Version { get; set; }
+    public string? Version { get; set; }
 
-        public DateTime? StateTimeStamp { get; set; }
-    }
+    public DateTime? StateTimeStamp { get; set; }
+
+    public string? AvailableWorkerServices { get; set; }
+
+    public string? RunningWorkerServices { get; set; }
 }
