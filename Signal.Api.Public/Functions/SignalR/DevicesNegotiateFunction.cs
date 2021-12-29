@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 
@@ -22,6 +25,11 @@ public class DevicesNegotiateFunction
     }
 
     [FunctionName("SignalR-Devices-Negotiate")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" }, 
+        Description = "Negotiates SignalR connection for devices hub.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "json", typeof(SignalRConnectionInfo), 
+        Description = "SignalR connection info.")]
     public async Task<IActionResult> Negotiate(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/devices/negotiate")]
         HttpRequest req,

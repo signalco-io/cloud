@@ -1,14 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
-using Signal.Core;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Processes;
@@ -27,6 +30,10 @@ public class ProcessesRetrieveFunction
     }
 
     [FunctionName("Processes-Retrieve")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(nameof(ProcessesRetrieveFunction), "Processes", Description = "Retrieves all available processes.")]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<ProcessDto>), 
+        Description = "Array of all available processes.")]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "processes")]
         HttpRequest req,

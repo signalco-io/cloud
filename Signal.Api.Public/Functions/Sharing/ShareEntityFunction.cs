@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
@@ -39,11 +41,16 @@ public class ShareEntityFunction
     }
 
     [FunctionName("Share-Entity")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(nameof(ShareEntityFunction), "Sharing", Description = "Shared the entity with other users.")]
+    [OpenApiRequestBody("application/json", typeof(ShareRequestDto), Description = "Share one entity with one or more users.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "share/entity")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<ProcessSetDto>(cancellationToken, this.functionAuthenticator,
+        await req.UserRequest<ShareRequestDto>(cancellationToken, this.functionAuthenticator,
             async context =>
             {
                 if (context.Payload.Type == null)
@@ -71,7 +78,7 @@ public class ShareEntityFunction
                 }
             });
 
-    private class ProcessSetDto
+    private class ShareRequestDto
     {
         [Required]
         public TableEntityType? Type { get; set; }
