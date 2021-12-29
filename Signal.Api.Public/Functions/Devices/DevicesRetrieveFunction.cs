@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -12,7 +11,6 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
-using Signal.Core.Devices;
 using Signal.Core.Storage;
 using Signal.Core.Users;
 
@@ -36,9 +34,9 @@ public class DevicesRetrieveFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "devices")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest(this.functionAuthenticator, async user =>
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
         {
-            var devices = (await this.storage.DevicesAsync(user.UserId, cancellationToken)).ToList();
+            var devices = (await this.storage.DevicesAsync(context.User.UserId, cancellationToken)).ToList();
             var states = await this.storage.GetDeviceStatesAsync(devices.Select(d => d.RowKey).ToList(), cancellationToken);
             var assignedDevicesUsers = await this.storage.AssignedUsersAsync(
                 TableEntityType.Device, 
@@ -90,7 +88,7 @@ public class DevicesRetrieveFunction
                     SharedWith = users
                 };
             });
-        }, cancellationToken);
+        });
 
     private class DeviceDto
     {

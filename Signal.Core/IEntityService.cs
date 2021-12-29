@@ -11,5 +11,7 @@ namespace Signal.Core
             where TEntity : ITableEntity;
 
         Task RemoveByIdAsync(string tableName, string rowKey, CancellationToken cancellationToken);
+
+        Task<bool> IsUserAssignedAsync(string userId, TableEntityType entityType, string id, CancellationToken cancellationToken);
     }
 }

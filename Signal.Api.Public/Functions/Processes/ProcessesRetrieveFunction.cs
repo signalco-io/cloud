@@ -31,16 +31,15 @@ public class ProcessesRetrieveFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "processes")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest(this.functionAuthenticator, async user =>
-                (await this.storage.ProcessesAsync(user.UserId, cancellationToken))
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
+                (await this.storage.ProcessesAsync(context.User.UserId, cancellationToken))
                 .Select(p => new ProcessDto(
                     p.PartitionKey,
                     p.RowKey,
                     p.Alias,
                     p.IsDisabled,
                     p.ConfigurationSerialized))
-                .ToList(),
-            cancellationToken);
+                .ToList());
 
     private class ProcessDto
     {

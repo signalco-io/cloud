@@ -19,17 +19,17 @@ public class DevicesInfoUpdateFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IAzureStorage storage;
-    private readonly IAzureStorageDao storageDao;
+    private readonly IEntityService entityService;
 
     public DevicesInfoUpdateFunction(
         IFunctionAuthenticator functionAuthenticator,
         IAzureStorage storage,
-        IAzureStorageDao storageDao)
+        IEntityService entityService)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
     }
 
     [FunctionName("Devices-InfoUpdate")]
@@ -37,8 +37,9 @@ public class DevicesInfoUpdateFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/info/update")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<DeviceInfoUpdateDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<DeviceInfoUpdateDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
             if (string.IsNullOrWhiteSpace(payload.DeviceId))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
@@ -48,9 +49,7 @@ public class DevicesInfoUpdateFunction
                     HttpStatusCode.BadRequest,
                     "Alias property is required.");
 
-            // Check if user has assigned requested device
-            if (!await this.storageDao.IsUserAssignedAsync(user.UserId, TableEntityType.Device, payload.DeviceId, cancellationToken))
-                throw new ExpectedHttpException(HttpStatusCode.NotFound);
+            await context.ValidateUserAssignedAsync(this.entityService, TableEntityType.Device, payload.DeviceId);
 
             // Commit endpoints
             await this.storage.UpdateItemAsync(
@@ -61,7 +60,7 @@ public class DevicesInfoUpdateFunction
                     payload.Manufacturer,
                     payload.Model),
                 cancellationToken);
-        }, cancellationToken);
+        });
 
     private class DeviceInfoUpdateDto
     {

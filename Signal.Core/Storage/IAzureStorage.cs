@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,5 +18,7 @@ namespace Signal.Core.Storage
             string partitionKey, 
             string rowKey,
             CancellationToken cancellationToken);
+
+        Task AppendToFileAsync(string directory, string fileName, Stream data, CancellationToken cancellationToken);
     }
 }

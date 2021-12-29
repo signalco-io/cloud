@@ -30,15 +30,14 @@ public class DashboardsRetrieveFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "dashboards")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest(this.functionAuthenticator, async user =>
-                (await this.storage.DashboardsAsync(user.UserId, cancellationToken))
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
+                (await this.storage.DashboardsAsync(context.User.UserId, cancellationToken))
                 .Select(p => new DashboardsDto(
                     p.RowKey,
                     p.Name,
                     p.ConfigurationSerialized,
                     p.TimeStamp))
-                .ToList(),
-            cancellationToken);
+                .ToList());
 
     private class DashboardsDto
     {

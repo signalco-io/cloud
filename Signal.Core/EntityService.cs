@@ -14,7 +14,9 @@ namespace Signal.Core
         private readonly IAzureStorageDao storageDao;
         private readonly IAzureStorage storage;
 
-        public EntityService(IAzureStorageDao storageDao, IAzureStorage storage)
+        public EntityService(
+            IAzureStorageDao storageDao, 
+            IAzureStorage storage)
         {
             this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -66,5 +68,9 @@ namespace Signal.Core
             foreach (var item in entitiesList)
                 await this.storage.DeleteItemAsync(tableName, item.PartitionKey, item.RowKey, cancellationToken);
         }
+
+        public Task<bool> IsUserAssignedAsync(string userId, TableEntityType entityType, string id, CancellationToken cancellationToken) =>
+            this.storageDao.IsUserAssignedAsync(
+                userId, entityType, id, cancellationToken);
     }
 }

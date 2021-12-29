@@ -29,10 +29,10 @@ public class DevicesNegotiateFunction
         // This style is an example of imperative attribute binding; the mechanism for declarative binding described below does not work
         // UserId = "{headers.x-my-custom-header}" https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-concept-serverless-development-config
         // Source: https://charliedigital.com/2019/09/02/azure-functions-signalr-and-authorization/
-        await req.UserRequest(this.authenticator, async user =>
+        await req.UserRequest(cancellationToken, this.authenticator, async context =>
             await binder.BindAsync<SignalRConnectionInfo>(new SignalRConnectionInfoAttribute
             {
                 HubName = "devices",
-                UserId = user.UserId
-            }, cancellationToken), cancellationToken);
+                UserId = context.User.UserId
+            }, cancellationToken));
 }

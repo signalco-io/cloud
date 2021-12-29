@@ -34,19 +34,19 @@ public class ProcessesSetFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "processes/set")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(this.functionAuthenticator,
-            async (user, payload) => new ProcessSetResponseDto(await this.entityService.UpsertEntityAsync(
-                user.UserId,
-                payload.Id,
+        await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(cancellationToken, this.functionAuthenticator,
+            async context => new ProcessSetResponseDto(await this.entityService.UpsertEntityAsync(
+                context.User.UserId,
+                context.Payload.Id,
                 TableEntityType.Process,
                 ItemTableNames.Processes,
                 id => new ProcessTableEntity(
                     ProcessType.StateTriggered.ToString().ToLowerInvariant(),
                     id,
-                    payload.Alias ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Alias is required"),
-                    payload.IsDisabled ?? false,
-                    payload.ConfigurationSerialized),
-                cancellationToken)), cancellationToken);
+                    context.Payload.Alias ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Alias is required"),
+                    context.Payload.IsDisabled ?? false,
+                    context.Payload.ConfigurationSerialized),
+                cancellationToken)));
 
     private class ProcessSetDto
     {

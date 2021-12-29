@@ -37,8 +37,10 @@ public class DevicesRegisterFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "devices/register")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(this.functionAuthenticator, async (user, payload) =>
+        await req.UserRequest<DeviceRegisterDto, DeviceRegisterResponseDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
+            var payload = context.Payload;
+            var user = context.User;
             if (string.IsNullOrWhiteSpace(payload.DeviceIdentifier))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
@@ -49,6 +51,7 @@ public class DevicesRegisterFunction
             if (userDevices.Any(ud => ud.DeviceIdentifier == payload.DeviceIdentifier))
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
+            // TODO: Move to EntityService.GenerateIdAsync(EntityType, CancellationToken)
             // Generate device id
             // Check if device with new id exists (avoid collisions)
             var deviceId = Guid.NewGuid().ToString();
@@ -75,7 +78,7 @@ public class DevicesRegisterFunction
                 cancellationToken);
 
             return new DeviceRegisterResponseDto(deviceId);
-        }, cancellationToken);
+        });
 
     private class DeviceRegisterDto
     {
