@@ -28,6 +28,16 @@ Code
 [![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)
 [![CodeFactor](https://www.codefactor.io/repository/github/signalco-io/cloud/badge)](https://www.codefactor.io/repository/github/signalco-io/cloud)
 
+### Azure Function application settings
+
+Required settings
+
+| Name | Description | Example |
+|------|-------------|---------|
+| `AzureSignalRConnectionString` | SignalR connection string | `Endpoint=https://signalhub.service.signalr.net;AccessKey=d8s5FF5f48aS8s6s5s22+SbWvdasdaswGhs4/s4s8s7s554=;Version=1.0;` |
+| `OpenApi__Version` | OpenAPI version | `v3` |
+| `OpenApi__DocTitle` | OpenAPI document title | `Signalco Public Cloud API documentation` | 
+
 ### Azure KeyVault configuration
 
 Required secrets
@@ -37,5 +47,5 @@ Required secrets
 | `Auth0--AppIdentifier` | Auth0 App Identifier | `https://api.signal.dfnoise.com` |
 | `Auth0--Domain` | Auth0 Domain | `dfnoise.eu.auth0.com` |
 | `SignalStorageAccountConnectionString` | Azure Storage Account connection string | `DefaultEndpointsProtocol=https;AccountName=signal;AccountKey=ACCOUNT_KEY;EndpointSuffix=core.windows.net` |
-| `AzureSpeech--SubscriptionKey` | Azure Speech subscription key | `AZURE_SPEECH_SUBSCRIPTION_KEY` |
+| `AzureSpeech--SubscriptionKey` | Azure Speech subscription key | `dasdas4897dsa4dw7a4s8qd7a78a5s7a8s5a3ssdaghhy8r4` |
 | `AzureSpeech--Region` | Azure Speech region | `westeurope` |
