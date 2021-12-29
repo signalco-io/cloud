@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -28,8 +27,7 @@ public class ConductsNegotiateFunction
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(operationId: nameof(ConductsNegotiateFunction), tags: new[] { "SignalR" }, 
         Description = "Negotiates SignalR connection for conducts hub.")]
-    [OpenApiResponseWithBody(HttpStatusCode.OK, "json", typeof(SignalRConnectionInfo), 
-        Description = "SignalR connection info.")]
+    [OpenApiOkJsonResponse(typeof(SignalRConnectionInfo), Description = "SignalR connection info.")]
     public async Task<IActionResult> Negotiate(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/conducts/negotiate")]
         HttpRequest req,

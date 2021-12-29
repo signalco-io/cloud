@@ -36,8 +36,7 @@ public class ProcessesSetFunction
     [OpenApiOperation(nameof(ProcessesSetFunction), "Processes", Description = "Sets the process. This will update or create a process.")]
     [OpenApiRequestBody("application/json", typeof(ProcessSetDto), 
         Description = "Process information. When updating process, Id is required. If Id is not provided, new process will be created.")]
-    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(ProcessSetResponseDto), 
-        Description = "Response containing process ID.")]
+    [OpenApiOkJsonResponse(typeof(ProcessSetResponseDto), Description = "Response containing process ID.")]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = "processes/set")]

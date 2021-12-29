@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
@@ -33,6 +35,11 @@ public class EntityDeleteFunction
     }
 
     [FunctionName("Entity-Delete")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(nameof(EntityDeleteFunction), "Entity", Description = "Deletes the entity.")]
+    [OpenApiRequestBody("application/json", typeof(EntityDeleteDto), Description = "Information about entity to delete.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "entity/delete")]
         HttpRequest req,

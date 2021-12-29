@@ -32,8 +32,7 @@ public class ProcessesRetrieveFunction
     [FunctionName("Processes-Retrieve")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ProcessesRetrieveFunction), "Processes", Description = "Retrieves all available processes.")]
-    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(List<ProcessDto>), 
-        Description = "Array of all available processes.")]
+    [OpenApiOkJsonResponse(typeof(List<ProcessDto>), Description = "Array of all available processes.")]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "processes")]
         HttpRequest req,
