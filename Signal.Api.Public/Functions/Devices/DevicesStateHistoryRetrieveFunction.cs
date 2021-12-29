@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +10,6 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
-using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices;
@@ -21,19 +18,16 @@ public class DevicesStateHistoryRetrieveFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
-    private readonly IAzureStorageDao storageDao;
     private readonly IAzureStorageDao storage;
 
     public DevicesStateHistoryRetrieveFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
-        IAzureStorageDao storageDao,
         IAzureStorageDao storage)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 

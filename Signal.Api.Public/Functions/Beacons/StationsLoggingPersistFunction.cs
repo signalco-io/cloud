@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -50,7 +51,7 @@ public class StationsLoggingPersistFunction
                 await context.ValidateUserAssignedAsync(
                     this.entityService,
                     TableEntityType.Station,
-                    context.Payload.StationId);
+                    payload.StationId);
 
                 var entriesByDate = (payload.Entries ?? Enumerable.Empty<StationsLoggingPersistRequestDto.Entry>())
                     .Where(e => e.TimeStamp.HasValue)
@@ -62,9 +63,15 @@ public class StationsLoggingPersistFunction
                     foreach (var entry in entriesDay)
                         sb.AppendLine((string?) $"[{entry.TimeStamp:O}] ({entry.Level}) {entry.Message}");
 
-                    var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.log";
-                    var logs = sb.ToString();
-                    await this.storage.AppendToFileAsync("Logs/Stations/", fileName, logs, cancellationToken);
+                    var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.txt";
+
+                    await using var ms = new MemoryStream();
+                    await using var sw = new StreamWriter(ms, Encoding.UTF8);
+                    await sw.WriteAsync(sb, cancellationToken);
+                    await sw.FlushAsync();
+                    ms.Position = 0;
+
+                    await this.storage.AppendToFileAsync($"{DateTime.UtcNow.Year}/{DateTime.UtcNow.Month}", fileName, ms, cancellationToken);
                 }
             });
 

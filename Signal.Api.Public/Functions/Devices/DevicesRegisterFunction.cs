@@ -51,6 +51,7 @@ public class DevicesRegisterFunction
             if (userDevices.Any(ud => ud.DeviceIdentifier == payload.DeviceIdentifier))
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
+            // TODO: Move to EntityService.GenerateIdAsync(EntityType, CancellationToken)
             // Generate device id
             // Check if device with new id exists (avoid collisions)
             var deviceId = Guid.NewGuid().ToString();

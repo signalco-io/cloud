@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Signal.Core;
 using Signal.Core.Storage;
 using ITableEntity = Signal.Core.Storage.ITableEntity;
 
@@ -50,8 +52,14 @@ internal class AzureStorage : IAzureStorage
     private static Dictionary<string, object?> ObjectToDictionary(object item) => 
         item.GetType().GetProperties().ToDictionary(x => x.Name, x => x.GetValue(item));
 
-    public Task AppendToFileAsync(string directory, string fileName, string data, CancellationToken cancellationToken)
+    public async Task AppendToFileAsync(string directory, string fileName, Stream data, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var client = await this.clientFactory.GetAppendBlobClientAsync(
+            BlobContainerNames.StationLogs, 
+            $"{directory.Replace("\\", "/")}/{fileName}",
+            cancellationToken);
+
+        // TODO: Handle data sizes over 4MB
+        await client.AppendBlockAsync(data, cancellationToken: cancellationToken);
     }
 }
