@@ -43,7 +43,7 @@ public class StationsLoggingDownloadFunction
         Description = "The **blobName** parameter. Use list function to obtain available blobs.")]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stations/logging/list")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stations/logging/download")]
         HttpRequest req,
         CancellationToken cancellationToken)
     {
