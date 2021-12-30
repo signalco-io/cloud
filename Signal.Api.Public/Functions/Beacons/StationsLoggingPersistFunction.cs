@@ -40,7 +40,7 @@ public class StationsLoggingPersistFunction
 
     [FunctionName("Stations-Logging-Persist")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(StationsLoggingPersistFunction), "Station", Description = "Appends logging entries.")]
+    [OpenApiOperation(nameof(StationsLoggingPersistFunction), "Stations", Description = "Appends logging entries.")]
     [OpenApiRequestBody("application/json", typeof(StationsLoggingPersistRequestDto), Description = "The logging entries to persist per station.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
@@ -70,7 +70,7 @@ public class StationsLoggingPersistFunction
                     foreach (var entry in entriesDay)
                         sb.AppendLine((string?) $"[{entry.TimeStamp:O}] ({entry.Level}) {entry.Message}");
 
-                    var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.txt";
+                    var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.txt".SanitizeFileName();
 
                     await using var ms = new MemoryStream();
                     await using var sw = new StreamWriter(ms, Encoding.UTF8);
@@ -78,7 +78,7 @@ public class StationsLoggingPersistFunction
                     await sw.FlushAsync();
                     ms.Position = 0;
 
-                    await this.storage.AppendToFileAsync($"{DateTime.UtcNow.Year}/{DateTime.UtcNow.Month}", fileName, ms, cancellationToken);
+                    await this.storage.AppendToFileAsync(payload.StationId.SanitizeFileName(), fileName, ms, cancellationToken);
                 }
             });
 

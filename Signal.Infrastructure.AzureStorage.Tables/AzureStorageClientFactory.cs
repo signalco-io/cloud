@@ -23,7 +23,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
         this.secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
     }
 
-    private async Task<BlobContainerClient> GetBlobContainerClientAsync(string containerName, CancellationToken cancellationToken)
+    public async Task<BlobContainerClient> GetBlobContainerClientAsync(string containerName, CancellationToken cancellationToken)
     {
         // Return established client if available
         if (EstablishedBlobContainerClients.TryGetValue(containerName, out var client))

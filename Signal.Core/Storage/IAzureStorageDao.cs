@@ -46,5 +46,7 @@ namespace Signal.Core.Storage
             string tableName,
             IEnumerable<string> rowKeys,
             CancellationToken cancellationToken);
+
+        IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken);
     }
 }

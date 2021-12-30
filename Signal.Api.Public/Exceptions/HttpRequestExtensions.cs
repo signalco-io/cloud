@@ -42,7 +42,7 @@ public static class HttpRequestExtensions
                 Converters = {new TimeSpanConverter()}
             })!;
     }
-
+    
     internal static async Task<IActionResult> UserRequest<TResponse>(
         this HttpRequest req,
         CancellationToken cancellationToken,

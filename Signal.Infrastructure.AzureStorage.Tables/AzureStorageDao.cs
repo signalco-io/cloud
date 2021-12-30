@@ -194,6 +194,29 @@ internal class AzureStorageDao : IAzureStorageDao
         return entities;
     }
 
+    public async IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken)
+    {
+        var client = await this.clientFactory.GetBlobContainerClientAsync(BlobContainerNames.StationLogs, cancellationToken);
+        var blobsQuery = client.GetBlobsByHierarchyAsync(delimiter: "/", prefix: stationId, cancellationToken: cancellationToken);
+        await foreach (var blobHierarchyItem in blobsQuery)
+        {
+            // Skip deleted
+            if (blobHierarchyItem.Blob.Deleted) 
+                continue;
+
+            // Retrieve interesting data
+            var info = new BlobInfo
+            {
+                Name = blobHierarchyItem.Blob.Name,
+                CreatedTimeStamp = blobHierarchyItem.Blob.Properties.CreatedOn,
+                LastModifiedTimeStamp = blobHierarchyItem.Blob.Properties.LastModified,
+                Size = blobHierarchyItem.Blob.Properties.ContentLength
+            };
+
+            yield return info;
+        }
+    }
+
     public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(
         string userId,
         CancellationToken cancellationToken) =>
