@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Signal.Api.Common;
 using Signal.Api.Public.Auth;
@@ -24,16 +25,19 @@ public class StationsLoggingDownloadFunction
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorageDao azureStorageDao;
+    private readonly ILogger logger;
 
     public StationsLoggingDownloadFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
-        IAzureStorageDao azureStorageDao)
+        IAzureStorageDao azureStorageDao,
+        ILogger logger)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     [FunctionName("Stations-Logging-Download")]
@@ -49,28 +53,36 @@ public class StationsLoggingDownloadFunction
         HttpRequest req,
         CancellationToken cancellationToken)
     {
-        return await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
+        try
         {
-            string stationId = req.Query["stationId"];
-            if (string.IsNullOrWhiteSpace(stationId))
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "stationId is required");
-            string blobName = req.Query["blobName"];
-            if (string.IsNullOrWhiteSpace(blobName))
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "blobName is required");
+            return await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
+            {
+                string stationId = req.Query["stationId"];
+                if (string.IsNullOrWhiteSpace(stationId))
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "stationId is required");
+                string blobName = req.Query["blobName"];
+                if (string.IsNullOrWhiteSpace(blobName))
+                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "blobName is required");
 
-            await context.ValidateUserAssignedAsync(
-                this.entityService,
-                TableEntityType.Station,
-                stationId);
+                await context.ValidateUserAssignedAsync(
+                    this.entityService,
+                    TableEntityType.Station,
+                    stationId);
 
-            var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
+                var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
 
-            // Read blob
-            var ms = new MemoryStream();
-            await stream.CopyToAsync(ms, cancellationToken);
-            ms.Position = 0;
+                // Read blob
+                var ms = new MemoryStream();
+                await stream.CopyToAsync(ms, cancellationToken);
+                ms.Position = 0;
 
-            return new FileStreamResult(ms, "text/plain");
-        });
+                return new FileStreamResult(ms, "text/plain");
+            });
+        }
+        catch (Exception ex)
+        {
+            this.logger.LogError(ex, "Failed");
+            throw;
+        }
     }
 }
