@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,7 +65,12 @@ public class StationsLoggingDownloadFunction
 
             var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
 
-            return new FileStreamResult(stream, "text/plain");
+            // Read blob
+            var ms = new MemoryStream();
+            await stream.CopyToAsync(ms, cancellationToken);
+            ms.Position = 0;
+
+            return new FileStreamResult(ms, "text/plain");
         });
     }
 }
