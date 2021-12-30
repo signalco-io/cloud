@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Core;
@@ -37,6 +39,11 @@ public class StationsLoggingPersistFunction
     }
 
     [FunctionName("Stations-Logging-Persist")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(nameof(StationsLoggingPersistFunction), "Station", Description = "Appends logging entries.")]
+    [OpenApiRequestBody("application/json", typeof(StationsLoggingPersistRequestDto), Description = "The logging entries to persist per station.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "stations/logging/persist")]
         HttpRequest req,
