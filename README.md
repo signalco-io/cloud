@@ -28,6 +28,13 @@ Code
 [![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)
 [![CodeFactor](https://www.codefactor.io/repository/github/signalco-io/cloud/badge)](https://www.codefactor.io/repository/github/signalco-io/cloud)
 
+### API reference
+
+Production API 
+
+- OpenAPI v3 specs: `https://api.signalco.io/api/swagger.{extension}`
+- Swagger UI: `https://api.signalco.io/api/swagger/ui`
+
 ### Azure Function application settings
 
 Required settings
