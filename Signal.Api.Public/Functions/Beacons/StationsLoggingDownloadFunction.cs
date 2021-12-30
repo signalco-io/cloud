@@ -25,7 +25,7 @@ public class StationsLoggingDownloadFunction
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorageDao azureStorageDao;
-    private readonly ILogger logger;
+    private readonly ILogger<StationsLoggingDownloadFunction> logger;
 
     public StationsLoggingDownloadFunction(
         IFunctionAuthenticator functionAuthenticator,
