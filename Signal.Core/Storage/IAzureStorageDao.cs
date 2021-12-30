@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core.Beacon;
@@ -48,5 +49,7 @@ namespace Signal.Core.Storage
             CancellationToken cancellationToken);
 
         IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken);
+
+        Task<Stream> LoggingDownloadAsync(string blobName, CancellationToken cancellationToken);
     }
 }

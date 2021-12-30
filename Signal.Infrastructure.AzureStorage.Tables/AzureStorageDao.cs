@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Storage.Blobs.Models;
 using Signal.Core;
 using Signal.Core.Beacon;
 using Signal.Core.Dashboards;
