@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs.Models;
 using Signal.Core;
 using Signal.Core.Beacon;
 using Signal.Core.Dashboards;
@@ -13,6 +15,7 @@ using Signal.Core.Devices;
 using Signal.Core.Processes;
 using Signal.Core.Storage;
 using Signal.Core.Users;
+using BlobInfo = Signal.Core.Storage.BlobInfo;
 using ITableEntity = Azure.Data.Tables.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
@@ -192,6 +195,12 @@ internal class AzureStorageDao : IAzureStorageDao
         await foreach (var entity in entityQuery)
             entities.Add(new TableEntityKey(entity.PartitionKey, entity.RowKey));
         return entities;
+    }
+
+    public async Task<Stream> LoggingDownloadAsync(string blobName, CancellationToken cancellationToken)
+    {
+        var client = await this.clientFactory.GetAppendBlobClientAsync(BlobContainerNames.StationLogs, blobName, cancellationToken);
+        return await client.OpenReadAsync(false, cancellationToken: cancellationToken);
     }
 
     public async IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken)

@@ -70,7 +70,7 @@ public class StationsLoggingPersistFunction
                     foreach (var entry in entriesDay)
                         sb.AppendLine((string?) $"[{entry.TimeStamp:O}] ({entry.Level}) {entry.Message}");
 
-                    var fileName = $"{payload.StationId}-{entriesDay.Key:yyyyMMdd}.txt".SanitizeFileName();
+                    var fileName = $"{entriesDay.Key:yyyyMMdd}.txt";
 
                     await using var ms = new MemoryStream();
                     await using var sw = new StreamWriter(ms, Encoding.UTF8);

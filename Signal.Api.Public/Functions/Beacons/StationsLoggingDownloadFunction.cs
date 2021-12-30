@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,29 +17,30 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
-public class StationsLoggingListFunction
+public class StationsLoggingDownloadFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
-    private readonly IAzureStorageDao storageDao;
+    private readonly IAzureStorageDao azureStorageDao;
 
-    public StationsLoggingListFunction(
+    public StationsLoggingDownloadFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
-        IAzureStorageDao storageDao)
+        IAzureStorageDao azureStorageDao)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+        this.azureStorageDao = azureStorageDao ?? throw new ArgumentNullException(nameof(azureStorageDao));
     }
 
-    [FunctionName("Stations-Logging-List")]
+    [FunctionName("Stations-Logging-Download")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(StationsLoggingListFunction), "Stations")]
+    [OpenApiOperation(nameof(StationsLoggingDownloadFunction), "Stations")]
     [OpenApiParameter("stationId", In = ParameterLocation.Query, Required = true, Type = typeof(string),
-        Description = "The **StationID** parameter")]
-    [OpenApiOkJsonResponse(typeof(List<BlobInfoDto>), Description = "List of blob infos.")]
+        Description = "The **stationId** parameter")]
+    [OpenApiParameter("blobName", In = ParameterLocation.Query, Required = true, Type = typeof(string),
+        Description = "The **blobName** parameter. Use list function to obtain available blobs.")]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stations/logging/list")]
@@ -52,23 +52,18 @@ public class StationsLoggingListFunction
             string stationId = req.Query["stationId"];
             if (string.IsNullOrWhiteSpace(stationId))
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "stationId is required");
+            string blobName = req.Query["blobName"];
+            if (string.IsNullOrWhiteSpace(blobName))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "blobName is required");
 
             await context.ValidateUserAssignedAsync(
                 this.entityService,
                 TableEntityType.Station,
                 stationId);
 
-            var items = new List<BlobInfoDto>();
-            await foreach (var item in this.storageDao.LoggingListAsync(stationId, cancellationToken))
-                items.Add(new BlobInfoDto(item.Name, item.CreatedTimeStamp, item.LastModifiedTimeStamp, item.Size));
+            var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
 
-            return items;
+            return new FileStreamResult(stream, "text/plain");
         });
     }
-
-    private record BlobInfoDto(
-        string Name,
-        DateTimeOffset? CreatedTimeStamp,
-        DateTimeOffset? ModifiedTimeStamp,
-        long? Size);
 }
