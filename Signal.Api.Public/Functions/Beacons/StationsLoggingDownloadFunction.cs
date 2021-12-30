@@ -31,7 +31,7 @@ public class StationsLoggingDownloadFunction
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
         IAzureStorageDao azureStorageDao,
-        ILogger logger)
+        ILogger<StationsLoggingDownloadFunction> logger)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
