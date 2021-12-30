@@ -197,7 +197,10 @@ internal class AzureStorageDao : IAzureStorageDao
     public async IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken)
     {
         var client = await this.clientFactory.GetBlobContainerClientAsync(BlobContainerNames.StationLogs, cancellationToken);
-        var blobsQuery = client.GetBlobsByHierarchyAsync(delimiter: "/", prefix: stationId, cancellationToken: cancellationToken);
+        var blobsQuery = client.GetBlobsByHierarchyAsync(prefix: stationId, cancellationToken: cancellationToken);
+        if (blobsQuery == null)
+            yield break;
+
         await foreach (var blobHierarchyItem in blobsQuery)
         {
             // Skip deleted

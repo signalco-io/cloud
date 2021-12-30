@@ -36,8 +36,8 @@ namespace Signal.Api.Public.Functions.Beacons
 
         [FunctionName("Stations-Logging-List")]
         [OpenApiSecurityAuth0Token]
-        [OpenApiOperation(operationId: nameof(StationsLoggingListFunction), tags: new[] { "Stations" })]
-        [OpenApiParameter(name: "stationId", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **StationID** parameter")]
+        [OpenApiOperation(nameof(StationsLoggingListFunction), "Stations")]
+        [OpenApiParameter("stationId", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **StationID** parameter")]
         [OpenApiOkJsonResponse(typeof(List<BlobInfoDto>), Description = "List of blob infos.")]
         [OpenApiResponseBadRequestValidation]
         public async Task<IActionResult> Run(
