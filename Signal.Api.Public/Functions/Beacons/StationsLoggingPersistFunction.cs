@@ -90,7 +90,7 @@ public class StationsLoggingPersistFunction
 
         public class Entry
         {
-            [JsonPropertyName("T")] public DateTime? TimeStamp { get; set; }
+            [JsonPropertyName("T")] public DateTimeOffset? TimeStamp { get; set; }
 
             [JsonPropertyName("L")] public LogLevel? Level { get; set; }
 
