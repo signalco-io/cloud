@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Text;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -70,13 +72,9 @@ public class StationsLoggingDownloadFunction
                     stationId);
 
                 var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
+                var content = Encoding.UTF8.GetBytes(await new StreamReader(stream).ReadToEndAsync());
 
-                // Read blob
-                var ms = new MemoryStream();
-                await stream.CopyToAsync(ms, cancellationToken);
-                ms.Position = 0;
-
-                return new FileStreamResult(ms, "text/plain");
+                return new FileContentResult(content, "text/plain");
             });
         }
         catch (Exception ex)
