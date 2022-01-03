@@ -40,7 +40,7 @@ public class DashboardsRetrieveFunction
         {
             var dashboards = (await this.storage.DashboardsAsync(context.User.UserId, cancellationToken)).ToList();
             var entityUsers = await this.entityService.EntityUsersAsync(
-                TableEntityType.Device, 
+                TableEntityType.Dashboard, 
                 dashboards.Select(d => d.RowKey), 
                 cancellationToken);
 
