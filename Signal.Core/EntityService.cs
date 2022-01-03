@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
+using Signal.Core.Users;
 
 namespace Signal.Core
 {
@@ -20,6 +21,42 @@ namespace Signal.Core
         {
             this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
             this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        }
+
+        public async Task<Dictionary<string, IEnumerable<IUserTableEntity>>> EntityUsersAsync(TableEntityType entityType, IEnumerable<string> entityIds, CancellationToken cancellationToken)
+        {
+            var entityIdsList = entityIds.ToList();
+            var assignedDevicesUsers = await this.storageDao.AssignedUsersAsync(
+                entityType, 
+                entityIdsList,
+                cancellationToken);
+            var assignedUserIds = assignedDevicesUsers.Values.SelectMany(i => i).Distinct().ToList();
+            var assignedUsers = new Dictionary<string, IUserTableEntity>();
+            foreach (var userId in assignedUserIds)
+            {
+                var assignedUser = await this.storageDao.UserAsync(userId, cancellationToken);
+                if (assignedUser != null)
+                    assignedUsers.Add(assignedUser.RowKey, assignedUser);
+            }
+
+            var entityUsersDictionary = new Dictionary<string, IEnumerable<IUserTableEntity>>();
+            foreach (var entityId in entityIdsList)
+            {
+                var users = new List<IUserTableEntity>();
+                if (assignedDevicesUsers.TryGetValue(entityId, out var assignedDeviceUserIds))
+                {
+                    foreach (var assignedDeviceUserId in assignedDeviceUserIds)
+                    {
+                        if (assignedUsers.TryGetValue(assignedDeviceUserId, out var assignedDeviceUser))
+                        {
+                            users.Add(assignedDeviceUser);
+                        }
+                    }
+                }
+                entityUsersDictionary.Add(entityId, users);
+            }
+
+            return entityUsersDictionary;
         }
 
         public async Task<string> UpsertEntityAsync<TEntity>(string userId, string? entityId, TableEntityType entityType, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)

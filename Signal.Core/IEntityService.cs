@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core.Storage;
+using Signal.Core.Users;
 
 namespace Signal.Core
 {
@@ -13,5 +15,6 @@ namespace Signal.Core
         Task RemoveByIdAsync(string tableName, string rowKey, CancellationToken cancellationToken);
 
         Task<bool> IsUserAssignedAsync(string userId, TableEntityType entityType, string id, CancellationToken cancellationToken);
+        Task<Dictionary<string, IEnumerable<IUserTableEntity>>> EntityUsersAsync(TableEntityType entityType, IEnumerable<string> entityIds, CancellationToken cancellationToken);
     }
 }

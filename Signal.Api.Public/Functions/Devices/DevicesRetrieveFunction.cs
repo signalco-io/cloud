@@ -8,9 +8,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
 using Signal.Api.Public.Functions.Devices.Dtos;
+using Signal.Core;
 using Signal.Core.Storage;
 using Signal.Core.Users;
 
@@ -19,13 +21,16 @@ namespace Signal.Api.Public.Functions.Devices;
 public class DevicesRetrieveFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
+    private readonly IEntityService entityService;
     private readonly IAzureStorageDao storage;
 
     public DevicesRetrieveFunction(
         IFunctionAuthenticator functionAuthenticator,
+        IEntityService entityService,
         IAzureStorageDao storage)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
@@ -38,37 +43,19 @@ public class DevicesRetrieveFunction
         {
             var devices = (await this.storage.DevicesAsync(context.User.UserId, cancellationToken)).ToList();
             var states = await this.storage.GetDeviceStatesAsync(devices.Select(d => d.RowKey).ToList(), cancellationToken);
-            var assignedDevicesUsers = await this.storage.AssignedUsersAsync(
+            var entityUsers = await this.entityService.EntityUsersAsync(
                 TableEntityType.Device, 
-                devices.Select(d => d.RowKey),
+                devices.Select(d => d.RowKey), 
                 cancellationToken);
-            var assignedUserIds = assignedDevicesUsers.Values.SelectMany(i => i).Distinct().ToList();
-            var assignedUsers = new Dictionary<string, IUserTableEntity>();
-            foreach (var userId in assignedUserIds)
-            {
-                var assignedUser = await this.storage.UserAsync(userId, cancellationToken);
-                if (assignedUser != null)
-                    assignedUsers.Add(assignedUser.RowKey, assignedUser);
-            }
 
             return devices.Select(d =>
             {
-                var users = new List<UserDto>();
-                if (assignedDevicesUsers.TryGetValue(d.RowKey, out var assignedDeviceUserIds))
+                var users = entityUsers[d.RowKey].Select(u => new UserDto
                 {
-                    foreach (var assignedDeviceUserId in assignedDeviceUserIds)
-                    {
-                        if (assignedUsers.TryGetValue(assignedDeviceUserId, out var assignedDeviceUser))
-                        {
-                            users.Add(new UserDto
-                            {
-                                Id = assignedDeviceUser.RowKey,
-                                FullName = assignedDeviceUser.FullName,
-                                Email = assignedDeviceUser.Email
-                            });
-                        }
-                    }
-                }
+                    Email = u.Email,
+                    FullName = u.FullName,
+                    Id = u.RowKey
+                });
 
                 return new DeviceDto(d.RowKey, d.DeviceIdentifier, d.Alias)
                 {
@@ -114,15 +101,6 @@ public class DevicesRetrieveFunction
         public IEnumerable<DeviceContactStateDto>? States { get; set; }
 
         public IEnumerable<UserDto> SharedWith { get; set; }
-    }
-
-    private class UserDto
-    {
-        public string Id { get; set; }
-
-        public string Email { get; set; }
-
-        public string? FullName { get; set; }
     }
 
     private class DeviceContactStateDto
