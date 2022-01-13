@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -11,10 +10,8 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common;
 using Signal.Api.Public.Auth;
 using Signal.Api.Public.Exceptions;
-using Signal.Api.Public.Functions.Devices.Dtos;
 using Signal.Core;
 using Signal.Core.Storage;
-using Signal.Core.Users;
 
 namespace Signal.Api.Public.Functions.Devices;
 
@@ -59,12 +56,6 @@ public class DevicesRetrieveFunction
 
                 return new DeviceDto(d.RowKey, d.DeviceIdentifier, d.Alias)
                 {
-                    Endpoints = d.Endpoints != null
-                        ? JsonSerializer.Deserialize<IEnumerable<DeviceEndpointDto>>(d.Endpoints,
-                            new JsonSerializerOptions {PropertyNameCaseInsensitive = true})
-                        : null,
-                    Manufacturer = d.Manufacturer,
-                    Model = d.Model,
                     States = states.Where(s => s.PartitionKey == d.RowKey).Select(s => new DeviceContactStateDto
                     (
                         s.ContactName,
@@ -91,13 +82,7 @@ public class DevicesRetrieveFunction
         public string DeviceIdentifier { get; }
 
         public string Alias { get; }
-
-        public IEnumerable<DeviceEndpointDto>? Endpoints { get; set; }
-
-        public string? Manufacturer { get; set; }
-
-        public string? Model { get; set; }
-
+        
         public IEnumerable<DeviceContactStateDto>? States { get; set; }
 
         public IEnumerable<UserDto> SharedWith { get; set; }

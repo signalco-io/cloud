@@ -56,9 +56,7 @@ public class DevicesInfoUpdateFunction
                 ItemTableNames.Devices,
                 new DeviceInfoUpdateTableEntity(
                     payload.DeviceId,
-                    payload.Alias, 
-                    payload.Manufacturer,
-                    payload.Model),
+                    payload.Alias),
                 cancellationToken);
         });
 
@@ -67,9 +65,5 @@ public class DevicesInfoUpdateFunction
         public string? DeviceId { get; set; }
 
         public string? Alias { get; set; }
-
-        public string? Manufacturer { get; set; }
-
-        public string? Model { get; set; }
     }
 }

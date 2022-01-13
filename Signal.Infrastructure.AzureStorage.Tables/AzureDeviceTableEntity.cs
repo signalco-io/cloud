@@ -1,17 +1,10 @@
-﻿using Signal.Core;
-using Signal.Core.Devices;
+﻿using Signal.Core.Devices;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
-internal class AzureDeviceTableEntity : AzureTableEntityBase, IDeviceTableEntity
+internal class AzureDeviceTableEntity : AzureTableEntityBase, IDeviceInfoTableEntity
 {
     public string DeviceIdentifier { get; set; }
 
     public string Alias { get; set; }
-        
-    public string? Endpoints { get; set; }
-        
-    public string? Manufacturer { get; set; }
-        
-    public string? Model { get; set; }
 }

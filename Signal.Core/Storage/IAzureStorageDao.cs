@@ -19,7 +19,7 @@ namespace Signal.Core.Storage
 
         Task<bool> IsUserAssignedAsync(string userId, TableEntityType type, string entityId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
+        Task<IEnumerable<IDeviceInfoTableEntity>> DevicesAsync(string userId, CancellationToken cancellationToken);
 
         Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(string userId, CancellationToken cancellationToken);
 

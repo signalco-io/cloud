@@ -7,9 +7,5 @@ namespace Signal.Core.Devices
         public string DeviceIdentifier { get; set; }
 
         public string Alias { get; set; }
-
-        public string? Manufacturer { get; set; }
-
-        public string? Model { get; set; }
     }
 }

@@ -64,9 +64,7 @@ public class DevicesRegisterFunction
                 new DeviceInfoTableEntity(
                     deviceId,
                     payload.DeviceIdentifier,
-                    payload.Alias ?? "New device",
-                    payload.Manufacturer,
-                    payload.Model),
+                    payload.Alias ?? "New entity"),
                 cancellationToken);
 
             // Assign device to user
@@ -85,10 +83,6 @@ public class DevicesRegisterFunction
         public string? DeviceIdentifier { get; set; }
 
         public string? Alias { get; set; }
-            
-        public string? Manufacturer { get; set; }
-
-        public string? Model { get; set; }
     }
 
     private class DeviceRegisterResponseDto
