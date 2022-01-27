@@ -1,6 +1,6 @@
 ﻿namespace Signal.Core
 {
-    public static class SecretKeys
+    public static partial class SecretKeys
     {
         public const string StorageAccountConnectionString = "SignalStorageAccountConnectionString";
         

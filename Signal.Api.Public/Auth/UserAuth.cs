@@ -1,5 +1,4 @@
 using System;
-using Signal.Core;
 using Signal.Core.Auth;
 
 namespace Signal.Api.Public.Auth;

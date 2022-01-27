@@ -17,7 +17,7 @@ namespace Signal.Infrastructure.Secrets
         private const string KeyVaultUrl = "https://signal.vault.azure.net/";
 
         private static readonly SecretClient Client;
-        private static readonly Dictionary<string, string> Cache = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> Cache = new();
 
         static SecretsProvider()
         {
@@ -33,17 +33,31 @@ namespace Signal.Infrastructure.Secrets
         
         public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken)
         {
+            if (Cache.ContainsKey(key))
+                return Cache[key];
+
             try
             {
-                return this.configuration[key] ?? throw new Exception("Not a local secret.");
+                var secretFromConfig = this.configuration[key] ?? throw new Exception("Not a local secret.");
+                Cache[key] = secretFromConfig;
+                return secretFromConfig;
+            }
+            catch
+            {
+                // Shit, try next
+            }
+
+            try
+            {
+                var alternativeKey = key.Replace("--", ":");
+                var secretFromConfig = this.configuration[alternativeKey] ?? throw new Exception("Not a local secret (alternative name).");
+                Cache[key] = secretFromConfig;
+                return secretFromConfig;
             }
             catch
             {
                 // Shit, try in vault
             }
-
-            if (Cache.ContainsKey(key)) 
-                return Cache[key];
 
             var secret = await Client.GetSecretAsync(key, cancellationToken: cancellationToken);
             return Cache[key] = secret.Value.Value;

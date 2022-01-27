@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Signal.Core;
 using Signal.Core.Auth;
-using Signal.Core.Beacon;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 using Signal.Core.Users;
@@ -77,9 +76,9 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
             }), cancellationToken);
         if (!response.IsSuccessStatusCode)
             throw new Exception(
-                $"Token refresh failed. Reason: {await response.Content.ReadAsStringAsync()} ({response.StatusCode})");
+                $"Token refresh failed. Reason: {await response.Content.ReadAsStringAsync(cancellationToken)} ({response.StatusCode})");
 
-        var tokenResultString = await response.Content.ReadAsStringAsync();
+        var tokenResultString = await response.Content.ReadAsStringAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(tokenResultString))
             throw new Exception("Auth0 responded with empty response.");
 
