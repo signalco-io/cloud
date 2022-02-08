@@ -30,5 +30,10 @@ namespace Signal.Core
         public const string Dashboards = "dashboards";
 
         public const string Users = "users";
+
+        public static class Website
+        {
+            public const string Newsletter = "webnewsletter";
+        }
     }
 }
