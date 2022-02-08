@@ -31,6 +31,6 @@ public class HCaptchaService : IHCaptchaService
             return;
 
         // TODO: Handle errors with more specific response
-        throw new Exception("Invalid hCaptcha response.");
+        throw new Exception("Invalid hCaptcha response: " + string.Join(" ", verifyResponse?.ErrorCodesHumanized ?? Array.Empty<string>()));
     }
 }
