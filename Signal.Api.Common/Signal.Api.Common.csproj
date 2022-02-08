@@ -7,6 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.OpenApi.Core" Version="1.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="6.2.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Signal.Core\Signal.Core.csproj" />
   </ItemGroup>
 
 </Project>
