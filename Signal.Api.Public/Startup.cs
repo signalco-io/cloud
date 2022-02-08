@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Signal.Api.Common.HCaptcha;
 using Signal.Api.Public;
 using Signal.Api.Public.Auth;
 using Signal.Core;
@@ -18,7 +19,8 @@ public class Startup : FunctionsStartup
             .AddTransient<ISecretsProvider, SecretsProvider>()
             .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
             .AddAzureStorage()
-            .AddCore();
+            .AddCore()
+            .AddHCaptcha();
     }
 
     public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
