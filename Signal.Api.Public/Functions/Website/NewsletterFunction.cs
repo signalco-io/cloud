@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -33,7 +34,7 @@ namespace Signal.Api.Public.Functions.Website
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        [FunctionName("NewsletterFunction")]
+        [FunctionName("Website-Newsletter")]
         [OpenApiOperation(nameof(NewsletterFunction), "Website", Description = "Subscribe to a newsletter.")]
         [OpenApiParameter(HCaptchaHttpRequestExtensions.HCaptchaHeaderKey, In = ParameterLocation.Header, Description = "hCaptcha response.")]
         [OpenApiRequestBody("application/json", typeof(NewsletterSubscribeDto), Description = "Subscribe with email address.")]
@@ -43,7 +44,15 @@ namespace Signal.Api.Public.Functions.Website
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "website/newsletter-subscribe")] HttpRequest req,
             CancellationToken cancellationToken)
         {
-            await req.VerifyCaptchaAsync(this.hCaptchaService, cancellationToken);
+            try
+            {
+                await req.VerifyCaptchaAsync(this.hCaptchaService, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestErrorMessageResult(ex.Message);
+            }
+
             var data = await req.ReadFromJsonAsync<NewsletterSubscribeDto>(cancellationToken);
             if (string.IsNullOrWhiteSpace(data?.Email))
                 return new BadRequestResult();
