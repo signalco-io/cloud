@@ -1,10 +1,7 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Signal.Api.Common.HCaptcha;
 
@@ -20,22 +17,10 @@ public static class HCaptchaHttpRequestExtensions
     /// <returns>A Task.</returns>
     public static async Task VerifyCaptchaAsync(this HttpRequest req, IHCaptchaService service, CancellationToken cancellationToken)
     {
-        var body = await req.ReadAsStringAsync();
-        var response = JsonSerializer.Deserialize<HCaptchaResponseDto>(body)?.Response;
-        if (response == null)
-        {
-            if (!req.Headers.TryGetValue(HCaptchaHeaderKey, out var responseValue))
-                throw new InvalidOperationException("hCaptcha response not provided.");
-            response = responseValue.ToString();
-        }
+        if (!req.Headers.TryGetValue(HCaptchaHeaderKey, out var responseValues))
+            throw new InvalidOperationException("hCaptcha response not provided.");
 
+        var response = responseValues.ToString();
         await service.VerifyAsync(response, cancellationToken).ConfigureAwait(false);
-    }
-
-    [Serializable]
-    private sealed class HCaptchaResponseDto
-    {
-        [JsonPropertyName("response")]
-        public string? Response { get; set; }
     }
 }

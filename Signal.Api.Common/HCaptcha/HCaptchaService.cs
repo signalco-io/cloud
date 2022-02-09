@@ -23,9 +23,9 @@ public class HCaptchaService : IHCaptchaService
     public async Task VerifyAsync(string response, CancellationToken cancellationToken)
     {
         var verifyResponse = await this.api.Verify(
-            await this.secretsProvider.GetSecretAsync(SecretKeys.HCaptcha.SiteKey, cancellationToken),
             await this.secretsProvider.GetSecretAsync(SecretKeys.HCaptcha.Secret, cancellationToken),
             response,
+            null,
             cancellationToken);
         if (verifyResponse?.Success ?? false)
             return;
