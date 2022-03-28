@@ -13,6 +13,9 @@
         "forceConsistentCasingInFileNames": true
     },
     "files": [
-        "index.ts"
+        "index.ts",
+        "./createSignalR.ts",
+        "./createFunction.ts",
+        "./getConnectionString.ts"
     ]
 }
