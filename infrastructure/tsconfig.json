@@ -16,6 +16,9 @@
         "index.ts",
         "./createSignalR.ts",
         "./createFunction.ts",
-        "./getConnectionString.ts"
+        "./getConnectionString.ts",
+        "./createStorageAccount.ts",
+        "./createKeyVault.ts",
+        "./signedBlobReadUrl.ts"
     ]
 }
