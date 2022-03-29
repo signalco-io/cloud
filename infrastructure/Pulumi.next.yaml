@@ -1,2 +1,4 @@
 config:
   azure-native:location: westeurope
+  cloudflare:apiToken:
+    secure: AAABALiMJlzyypH90pzx9MDV06SzvQyjby/4XsgkscE4HEaJBzmvZRAcIFmKGiXPYZ7q11yAqxHwOj4mcciRTFKd6cDhUk2+

@@ -12,7 +12,7 @@
 
 ## Getting Started
 
-Visit <a aria-label="Signalco learn" href="<https://www.signalco.io/learn>">https://www.signalco.io/learn</a> to get started with Signalco.
+Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
 
 ## Development for Cloud
 
@@ -34,6 +34,35 @@ Production API
 
 - OpenAPI v3 specs: `https://api.signalco.io/api/swagger.{extension}`
 - Swagger UI: `https://api.signalco.io/api/swagger/ui`
+
+### Deploying infrastructure
+
+Build projects
+
+- `dotnet publish ./Signal.Api.Public --configuration Release`
+- `dotnet publish ./Signal.Api.Internal --configuration Release`
+- `dotnet publish ./Signalco.Cloud.Channel.GitHubApp --configuration Release`
+
+Azure (prerequestite for Pulumi)
+
+- [Install Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+  - Windows `winget install Microsoft.AzureCLI`
+- `az login`
+
+CloudFlare (prerequesite for Pulumi)
+
+- `pulumi config set --secret cloudflare:apiToken TOKEN`
+
+Pulumi
+
+- [Install Pulumi](https://www.pulumi.com/docs/get-started/install)
+  - Windows `winget install pulumi`
+- navigate into `./infrastructure`
+- `npm install`
+- `pulumi login`
+- `pulumi stack select`
+- `pulumi up --stack <STACK>`
+- `pulumi destroy` when done testing
 
 ### Azure Function application settings
 

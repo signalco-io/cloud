@@ -7,12 +7,15 @@ export function signedBlobReadUrl(blob: storage.Blob,
     account: storage.StorageAccount,
     resourceGroup: resources.ResourceGroup): pulumi.Output<string> {
     const sasStartDate = new Date();
+    sasStartDate.setUTCDate(sasStartDate.getUTCDate() - 1); // Start from yesterday
+    const sasStartDateString = `${sasStartDate.getUTCFullYear()}-${sasStartDate.getUTCMonth().toString().padStart(2, '0')}-${sasStartDate.getUTCDate().toString().padStart(2, '0')}`;
+    const sasEndDateString = `${sasStartDate.getUTCFullYear() + 5}-01-01`;
 
     const blobSAS = storage.listStorageAccountServiceSASOutput({
         accountName: account.name,
         protocols: storage.HttpProtocol.Https,
-        sharedAccessExpiryTime: `${sasStartDate.getUTCFullYear() + 5}-01-01`,
-        sharedAccessStartTime: `${sasStartDate.getUTCFullYear()}-${sasStartDate.getUTCMonth()}-${sasStartDate.getUTCDate()}`,
+        sharedAccessExpiryTime: sasEndDateString,
+        sharedAccessStartTime: sasStartDateString,
         resourceGroupName: resourceGroup.name,
         resource: storage.SignedResource.C,
         permissions: storage.Permissions.R,

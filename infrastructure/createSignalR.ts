@@ -22,8 +22,7 @@ export function createSignalR(resourceGroup: resources.ResourceGroup, namePrefix
         resourceName: "signalhub",
         sku: {
             capacity: 1,
-            name: "Standard_S1",
-            tier: "Standard",
+            name: "Free_F1", //"Standard_S1"
         },
     }, {
         protect: protect
