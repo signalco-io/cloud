@@ -19,6 +19,7 @@
         "./getConnectionString.ts",
         "./createStorageAccount.ts",
         "./createKeyVault.ts",
-        "./signedBlobReadUrl.ts"
+        "./signedBlobReadUrl.ts",
+        "./assignCustomDomain.ts"
     ]
 }

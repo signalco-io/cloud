@@ -5,6 +5,7 @@ import { createFunction } from "./createFunction";
 import { createSignalR } from "./createSignalR";
 import { createStorageAccount } from "./createStorageAccount";
 import { createKeyVault } from "./createKeyVault";
+import { assignCustomDomain } from "./assignCustomDomain";
 
 // pulumi config set azure-native:clientId <clientID> 
 // pulumi config set azure-native:clientSecret <clientSecret> --secret 
@@ -20,21 +21,13 @@ const resourceGroup = new resources.ResourceGroup("signalco-public-" + stack);
 createSignalR(resourceGroup, 'sr', shouldProtect);
 
 // TODO: Pass SignalR connection string
-const isInitial = false;
-const pubFunc = createFunction(resourceGroup, 'cpub', "next-api.signalco.io", "../Signal.Api.Public/bin/Release/net6.0/publish/", isInitial, shouldProtect);
-createFunction(resourceGroup, 'cint', undefined, "../Signal.Api.Internal/bin/Release/net6.0/publish/", isInitial, shouldProtect);
+const pubFunc = createFunction(resourceGroup, 'cpub', "../Signal.Api.Public/bin/Release/net6.0/publish/", shouldProtect);
+assignCustomDomain(resourceGroup, pubFunc.webApp, pubFunc.servicePlan, 'cpub', "next-api.signalco.io", shouldProtect);
+
+createFunction(resourceGroup, 'cint', "../Signal.Api.Internal/bin/Release/net6.0/publish/", shouldProtect);
 
 // TODO: Create with more redundancy than function storage account
 createStorageAccount(resourceGroup, 'store', shouldProtect);
 
 // TODO: Assign Functions to KeyVault, enable access to secrets
 createKeyVault(resourceGroup, "", shouldProtect);
-
-// TODO: Link cloudflare DNS to created APIs
-new cloudflare.Record("dns-cname-cpub", {
-    name: "next-api",
-    zoneId: "1f5a35e22cb52dfb6f087934cf2141a5",
-    type: "CNAME",
-    value: pubFunc.hostNames[0],
-    ttl: 1
-});

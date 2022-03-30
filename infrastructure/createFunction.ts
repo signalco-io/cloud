@@ -2,13 +2,11 @@ import * as pulumi from "@pulumi/pulumi";
 import * as web from "@pulumi/azure-native/web";
 import * as resources from "@pulumi/azure-native/resources";
 import * as storage from "@pulumi/azure-native/storage";
-import * as cloudflare from "@pulumi/cloudflare";
 import { createStorageAccount } from "./createStorageAccount";
 import { getConnectionString } from "./getConnectionString";
 import { signedBlobReadUrl } from "./signedBlobReadUrl";
-import { ManagedCertificate } from "@pulumi/azure/appservice";
 
-export function createFunction(resourceGroup: resources.ResourceGroup, namePrefix: string, domainName: string | undefined, codePath: string, isInitial: boolean, protect: boolean) {
+export function createFunction(resourceGroup: resources.ResourceGroup, namePrefix: string, codePath: string, protect: boolean) {
     const storageAccount = createStorageAccount(resourceGroup, namePrefix, protect);
     const storageConnectionString = getConnectionString(resourceGroup, storageAccount.name);
 
@@ -27,6 +25,7 @@ export function createFunction(resourceGroup: resources.ResourceGroup, namePrefi
         containerName: codeContainer.name,
         source: new pulumi.asset.FileArchive(codePath),
     });
+    const codeBlobUrl = signedBlobReadUrl(codeBlob, codeContainer, storageAccount, resourceGroup);
 
     const plan = new web.AppServicePlan(`appplan${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
@@ -37,8 +36,6 @@ export function createFunction(resourceGroup: resources.ResourceGroup, namePrefi
     }, {
         protect: protect
     });
-
-    const codeBlobUrl = signedBlobReadUrl(codeBlob, codeContainer, storageAccount, resourceGroup);
 
     const app = new web.WebApp(`func${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
@@ -64,45 +61,12 @@ export function createFunction(resourceGroup: resources.ResourceGroup, namePrefi
     }, {
         protect: protect
     });
-
-    return app.customDomainVerificationId.apply((customDomainVerificationId) =>{
-        if (domainName) {
-                const record = new cloudflare.Record(`func-dns-txt-domainverify-${namePrefix}`, {
-                    name: "asuid." + domainName,
-                    zoneId: "1f5a35e22cb52dfb6f087934cf2141a5",
-                    type: "TXT",
-                    value: customDomainVerificationId
-                }, {
-                    protect: protect
-                });
-
-                let certThumb = undefined;
-                if (!isInitial) {
-                    const cert = new web.Certificate('func-cert-' + namePrefix, {
-                        resourceGroupName: resourceGroup.name,
-                        canonicalName: domainName,
-                        serverFarmId: plan.id,
-                    }, {
-                        protect: protect,
-                        dependsOn: [record]
-                    });
-                    certThumb = cert.thumbprint;
-                }
-
-                const binding = new web.WebAppHostNameBinding(`func-hostnamebind-${namePrefix}`, {
-                    name: app.name,
-                    resourceGroupName: resourceGroup.name,
-                    hostName: domainName,
-                    hostNameType: web.HostNameType.Verified,
-                    sslState: certThumb ? web.SslState.SniEnabled : web.SslState.Disabled,
-                    customHostNameDnsRecordType: web.CustomHostNameDnsRecordType.CName,
-                    thumbprint: certThumb
-                }, {
-                    protect: protect,
-                    dependsOn: [record]
-                });
-        }
-
-        return app;
-    });
+    
+    return {
+        webApp: app,
+        servicePlan: plan,
+        storageAccount: storageAccount,
+        codeContainer: codeContainer,
+        codeBlob: codeBlob
+    }
 }
