@@ -12,13 +12,13 @@
 
 ## Getting Started
 
-Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
+Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
 
 ## Development for Cloud
 
 Deployments
 
-[![Deploy Public API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml)
+ [![Deploy Public API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-public.yml)
 
 [![Deploy Internal API to Azure Functions](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/deploy-azure-function-internal.yml)
 
@@ -63,6 +63,21 @@ Pulumi
 - `pulumi stack select`
 - `pulumi up --stack <STACK>`
 - `pulumi destroy` when done testing
+
+#### Troubleshooting
+
+##### Azure CLI warning about Microsoft Graph migration
+
+```txt
+error: Error: invocation of azure-native:authorization:getClientConfig returned an error: getting authenticated object ID: Error parsing json result from the Azure CLI: Error retrieving running Azure CLI: WARNING: The underlying Active Directory Graph API will be replaced by Microsoft Graph API in a future version of Azure CLI. Please carefully review all breaking changes introduced during this migration: https://docs.microsoft.com/cli/azure/microsoft-graph-migration
+```
+
+Followed by discussion here: <https://github.com/pulumi/pulumi-azure-native/discussions/1565>
+
+The current (2022-03-31) workaround is to either:
+
+1. Pin the az CLI to `2.33.1`
+2. Set the following global config for az CLI: `az config set core.only_show_errors=true`
 
 ### Azure Function application settings
 

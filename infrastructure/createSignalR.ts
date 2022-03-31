@@ -1,9 +1,9 @@
-import * as pulumi from "@pulumi/pulumi";
-import * as resources from "@pulumi/azure-native/resources";
-import * as signalrservice from "@pulumi/azure-native/signalrservice";
+import { interpolate } from "@pulumi/pulumi";
+import { ResourceGroup } from "@pulumi/azure-native/resources";
+import { SignalR, listSignalRKeysOutput } from "@pulumi/azure-native/signalrservice";
 
-export function createSignalR(resourceGroup: resources.ResourceGroup, namePrefix: string, protect: boolean) {
-    const signalr = new signalrservice.SignalR("signalhub-" + namePrefix, {
+export function createSignalR(resourceGroup: ResourceGroup, namePrefix: string, protect: boolean) {
+    const signalr = new SignalR("signalr-" + namePrefix, {
         cors: {
             allowedOrigins: ["*"],
         },
@@ -20,16 +20,16 @@ export function createSignalR(resourceGroup: resources.ResourceGroup, namePrefix
             },
         },
         resourceGroupName: resourceGroup.name,
-        resourceName: "signalhub",
         sku: {
             capacity: 1,
             name: "Free_F1", //"Standard_S1"
         },
     }, {
-        protect: protect
+        protect: protect,
+        // parent: resourceGroup
     });
 
-    const connectionString = pulumi.interpolate`${signalrservice.listSignalRKeysOutput({
+    const connectionString = interpolate`${listSignalRKeysOutput({
         resourceGroupName: resourceGroup.name,
         resourceName: signalr.name
     }).primaryConnectionString}`;

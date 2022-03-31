@@ -20,6 +20,10 @@
         "./createStorageAccount.ts",
         "./createKeyVault.ts",
         "./signedBlobReadUrl.ts",
-        "./assignCustomDomain.ts"
+        "./assignCustomDomain.ts",
+        "./dnsRecord.ts",
+        "./createPublicFunction.ts",
+        "./webAppIdentity.ts",
+        "./vaultSecret.ts"
     ]
 }

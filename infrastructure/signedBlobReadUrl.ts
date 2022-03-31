@@ -1,28 +1,28 @@
-import * as resources from "@pulumi/azure-native/resources";
-import * as storage from "@pulumi/azure-native/storage";
-import * as pulumi from "@pulumi/pulumi";
+import { ResourceGroup } from "@pulumi/azure-native/resources";
+import { Blob, BlobContainer, StorageAccount, SignedResource, Permissions, HttpProtocol, listStorageAccountServiceSASOutput } from "@pulumi/azure-native/storage";
+import { interpolate, Output } from "@pulumi/pulumi";
 
-export function signedBlobReadUrl(blob: storage.Blob,
-    container: storage.BlobContainer,
-    account: storage.StorageAccount,
-    resourceGroup: resources.ResourceGroup): pulumi.Output<string> {
+export function signedBlobReadUrl(blob: Blob,
+    container: BlobContainer,
+    account: StorageAccount,
+    resourceGroup: ResourceGroup): Output<string> {
     
     const sasStartDateString = '2022-03-28';
     const sasEndDateString = '2030-03-28';
 
-    const blobSAS = storage.listStorageAccountServiceSASOutput({
+    const blobSAS = listStorageAccountServiceSASOutput({
         accountName: account.name,
-        protocols: storage.HttpProtocol.Https,
+        protocols: HttpProtocol.Https,
         sharedAccessExpiryTime: sasEndDateString,
         sharedAccessStartTime: sasStartDateString,
         resourceGroupName: resourceGroup.name,
-        resource: storage.SignedResource.C,
-        permissions: storage.Permissions.R,
-        canonicalizedResource: pulumi.interpolate`/blob/${account.name}/${container.name}`,
+        resource: SignedResource.C,
+        permissions: Permissions.R,
+        canonicalizedResource: interpolate`/blob/${account.name}/${container.name}`,
         contentType: "application/json",
         cacheControl: "max-age=5",
         contentDisposition: "inline",
         contentEncoding: "deflate",
     });
-    return pulumi.interpolate`https://${account.name}.blob.core.windows.net/${container.name}/${blob.name}?${blobSAS.serviceSasToken}`;
+    return interpolate`https://${account.name}.blob.core.windows.net/${container.name}/${blob.name}?${blobSAS.serviceSasToken}`;
 }
