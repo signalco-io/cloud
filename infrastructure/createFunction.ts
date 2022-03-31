@@ -6,7 +6,12 @@ import { createStorageAccount } from "./createStorageAccount";
 import { getConnectionString } from "./getConnectionString";
 import { signedBlobReadUrl } from "./signedBlobReadUrl";
 
-export function createFunction(resourceGroup: resources.ResourceGroup, namePrefix: string, codePath: string, protect: boolean) {
+type NamedKayValuePair = {
+    name: pulumi.Input<string> | undefined,
+    value: pulumi.Input<string> | undefined
+}
+
+export function createFunction(resourceGroup: resources.ResourceGroup, namePrefix: string, codePath: string, protect: boolean, appSettings: pulumi.Input<NamedKayValuePair>[] = []) {
     const storageAccount = createStorageAccount(resourceGroup, namePrefix, protect);
     const storageConnectionString = getConnectionString(resourceGroup, storageAccount.name);
 
@@ -51,6 +56,7 @@ export function createFunction(resourceGroup: resources.ResourceGroup, namePrefi
                 { name: "WEBSITE_RUN_FROM_PACKAGE", value: codeBlobUrl },
                 { name: "OpenApi__DocTitle", value: "Signalco Cloud API" },
                 { name: "OpenApi__Version", value: "v3" },
+                ...appSettings
             ],
             http20Enabled: true,
             functionAppScaleLimit: 200,

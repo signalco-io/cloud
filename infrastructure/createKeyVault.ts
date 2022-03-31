@@ -3,7 +3,7 @@ import * as azure from "@pulumi/azure";
 
 export function createKeyVault(resourceGroup: resources.ResourceGroup, namePrefix: string, protect: boolean) {
     const current = azure.core.getClientConfig({});
-    return new azure.keyvault.KeyVault(`vault${namePrefix}`, {
+    return new azure.keyvault.KeyVault(`vault-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         tenantId: current.then(current => current.tenantId),
         skuName: "standard",
@@ -16,5 +16,7 @@ export function createKeyVault(resourceGroup: resources.ResourceGroup, namePrefi
             secretPermissions: ["Get"],
             storagePermissions: ["Get"],
         }],
+    }, {
+        protect: protect
     });
 }

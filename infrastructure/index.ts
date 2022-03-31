@@ -18,10 +18,11 @@ let stack = pulumi.getStack();
 const shouldProtect = stack === 'production';
 const resourceGroup = new resources.ResourceGroup("signalco-public-" + stack);
 
-createSignalR(resourceGroup, 'sr', shouldProtect);
+const signalr = createSignalR(resourceGroup, 'sr', shouldProtect);
 
-// TODO: Pass SignalR connection string
-const pubFunc = createFunction(resourceGroup, 'cpub', "../Signal.Api.Public/bin/Release/net6.0/publish/", shouldProtect);
+const pubFunc = createFunction(resourceGroup, 'cpub', "../Signal.Api.Public/bin/Release/net6.0/publish/", shouldProtect, [
+    { name: "AzureSignalRConnectionString", value: signalr.connectionString }
+]);
 assignCustomDomain(resourceGroup, pubFunc.webApp, pubFunc.servicePlan, 'cpub', "next-api.signalco.io", shouldProtect);
 
 createFunction(resourceGroup, 'cint', "../Signal.Api.Internal/bin/Release/net6.0/publish/", shouldProtect);
@@ -30,4 +31,6 @@ createFunction(resourceGroup, 'cint', "../Signal.Api.Internal/bin/Release/net6.0
 createStorageAccount(resourceGroup, 'store', shouldProtect);
 
 // TODO: Assign Functions to KeyVault, enable access to secrets
-createKeyVault(resourceGroup, "", shouldProtect);
+createKeyVault(resourceGroup, "kv", shouldProtect, [
+    {tenantId: '', objectId: ''}
+]);
