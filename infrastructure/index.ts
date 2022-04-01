@@ -74,3 +74,6 @@ vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--Secret', c
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--SiteKey', config.requireSecret('secret-hcaptchaSiteKey'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalStorageAccountConnectionString', storage.connectionString);
 
+export const signalRUrl = signalr.signalr.hostName;
+export const internalApiUrl = intFunc.webApp.hostNames[0];
+export const publicApiUrl = pubFunc.dnsCname.hostname;

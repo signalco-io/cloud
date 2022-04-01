@@ -2,7 +2,7 @@ config:
   azure-native:location: westeurope
   cloud-primary:domain: signalco.dev
   cloud-primary:secret-auth0ApiIdentifier:
-    secure: AAABABGvPffQZNdRG3gBGYKgN5FoQ9hNlRPRso4TjqDThRaJKtMshcfdq8m3ELSHjnw2g9mt7g==
+    secure: AAABACM7tAApwzmhg1hZQ2XdZrMqT7gOTITui3dkhwUNx57UT2e06g1zZh89ZHmEYpVk+qMEbsd0mI3y
   cloud-primary:secret-auth0ClientIdStation:
     secure: AAABAMYAxzsq8NSXqu6JcJTaoATscRBSxmR033UKuBg63Xmoe7QtShiqW/yB1FSWdx4lO7HddSAQH9klvOltcQ==
   cloud-primary:secret-auth0ClientSecretStation:

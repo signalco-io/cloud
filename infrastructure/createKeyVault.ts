@@ -60,32 +60,4 @@ export function createKeyVault(
     return {
         keyVault: vault
     };
-
-    // const current = core.getClientConfig({});
-    // return new keyvault.KeyVault(`vault-${namePrefix}`, {
-    //     resourceGroupName: resourceGroup.name,
-    //     tenantId: current.then(current => current.tenantId),
-    //     skuName: "standard",
-    //     softDeleteRetentionDays: 7,
-    //     enabledForDiskEncryption: true,
-    //     accessPolicies: [
-    //         {
-    //             tenantId: current.then(current => current.tenantId),
-    //             objectId: current.then(current => current.objectId),
-    //             keyPermissions: ["Get"],
-    //             secretPermissions: ["Get"],
-    //             storagePermissions: ["Get"],
-    //         }, 
-    //         ...policies.map(i => ({
-    //             tenantId: i.tenantId,
-    //             objectId: i.objectId,
-    //             keyPermissions: ["Get"],
-    //             secretPermissions: ["Get"],
-    //             storagePermissions: ["Get"],
-    //         }))
-    //     ],
-    // }, {
-    //     protect: protect,
-    //     // parent: resourceGroup
-    // });
 }

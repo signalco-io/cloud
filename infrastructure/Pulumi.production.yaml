@@ -1,4 +1,18 @@
 config:
   azure-native:location: westeurope
+  cloud-primary:domain: signalco.io
+  cloud-primary:secret-auth0ApiIdentifier:
+    secure: AAABAGGMP0OvSI/rrsmXlo40jHTX+06qTjwSud09Z8uK9G8W1msa0nqsNF9yLFem+5UCsIIUoQ==
+  cloud-primary:secret-auth0ClientIdStation:
+    secure: AAABAF9bKWWKTMVWnQOpwje9JoCp8c9ce/cZLOoYriLstnuH70A3kz00n16KTHN2a9fa1rHZ6XQvWWX55GIpKg==
+  cloud-primary:secret-auth0ClientSecretStation:
+    secure: AAABAE0SgY/T8LYgTm2pi6z6mu1GiK5bGj7c4jCCv//e910RpQQeZZJKud61/2dsFNdOLabADN+DotfCK2tG+gt5EWKwnroRDVUkPXtmq+8uFERUtgD7jneCPBEeVyZn
+  cloud-primary:secret-auth0Domain: dfnoise.eu.auth0.com
+  cloud-primary:secret-hcaptchaSecret:
+    secure: AAABAMvfzeLqc1tvyw4KSpVixsL8hy08wkODLSCF3qajCHvTi6GLXOeIrUYNGqbdImy9KfQlKk3gXwO1vt9dAVi/Qx3gaTRb5Po=
+  cloud-primary:secret-hcaptchaSiteKey:
+    secure: AAABAF1AfWZXqsXFMZllfG/8e5RxfbDGPDcs9JLWvpAWFi30FqX1uGKvjajI289J3ahskb2EW3r502JcEyZAwTtcPEM=
+  cloud-primary:zoneid:
+    secure: AAABAN2VoVSuH03hLA7i6aV9BM8CZpjwa8j/SrWuC9PDYFKPKVAdB8v9ovYO3+N0kaofdJ11dB8j67aeQP82ig==
   cloudflare:apiToken:
     secure: AAABANKU5Rx6Iv2c/mou/eirMx20W0tHXnF2+f2UXbiftUXbgXkWdtQBsSL5/8WqkCBicum89jN6sPp+9RgEZ2+6M70TS3gY

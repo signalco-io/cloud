@@ -14,7 +14,7 @@ namespace Signal.Infrastructure.Secrets
         private readonly IConfiguration configuration;
 
         // TODO: Move to configuration
-        private const string KeyVaultUrl = "https://signal.vault.azure.net/";
+        private const string KeyVaultUrl = "https://vault-kv8e656081.vault.azure.net/";
 
         private static readonly SecretClient Client;
         private static readonly Dictionary<string, string> Cache = new Dictionary<string, string>();
