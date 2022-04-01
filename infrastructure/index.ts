@@ -14,6 +14,7 @@ import vaultSecret from "./vaultSecret";
 */
 
 // TODO: prepare for CI/CD
+// TODO: Assign keyvault connection string to Functions
 
 // pulumi config set azure-native:clientId <clientID> 
 // pulumi config set azure-native:clientSecret <clientSecret> --secret 
