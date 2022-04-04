@@ -5,8 +5,6 @@ namespace Signal.Core
 {
     public static class ItemTableNames
     {
-        //public const string Users = "users";
-
         public static string UserAssignedEntity(TableEntityType type) =>
             type switch
             {
