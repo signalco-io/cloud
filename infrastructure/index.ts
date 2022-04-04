@@ -1,4 +1,4 @@
-import { Config, getStack } from "@pulumi/pulumi";
+import { Config, getStack, interpolate } from "@pulumi/pulumi";
 import { ResourceGroup } from "@pulumi/azure-native/resources";
 import { createFunction } from "./createFunction";
 import { createSignalR } from "./createSignalR";
@@ -7,6 +7,7 @@ import { createKeyVault } from "./createKeyVault";
 import createPublicFunction from "./createPublicFunction";
 import { webAppIdentity } from "./webAppIdentity";
 import vaultSecret from "./vaultSecret";
+import { Table } from "@pulumi/azure-native/storage";
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -14,6 +15,8 @@ import vaultSecret from "./vaultSecret";
 */
 
 // TODO: prepare for CI/CD
+// TODO: Build functions
+
 // TODO: Assign keyvault connection string to Functions
 
 // pulumi config set azure-native:clientId <clientID> 
@@ -58,9 +61,23 @@ const intFunc = createFunction(
     shouldProtect
 );
 
-// Create general storage
+// Create general storage and prepare tables
 // TODO: Create with more redundancy than function storage account
 const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
+const tableNames = [
+    'userassigneddevices', 'userassignedprocesses', 'userassigneddashboards', 'userassignedbeacons',
+    'beacons', 'devices', 'devicestates', 'devicesstateshistory', 'processes', 'dashboards', 'users',
+    'webnewsletter'
+];
+tableNames.forEach(tableName => {
+    new Table(`sa${storagePrefix}-table-${tableName}`, {
+        resourceGroupName: resourceGroup.name,
+        accountName: storage.storageAccount.name,
+        tableName: tableName
+    }, {
+        protect: shouldProtect
+    });
+});
 
 // Create and populate vault
 const vault = createKeyVault(resourceGroup, keyvaultPrefix, shouldProtect, [
@@ -74,7 +91,10 @@ vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Auth0--Domain', conf
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--Secret', config.requireSecret('secret-hcaptchaSecret'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--SiteKey', config.requireSecret('secret-hcaptchaSiteKey'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalStorageAccountConnectionString', storage.connectionString);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalcoKeyVaultUrl', interpolate`${vault.keyVault.properties.vaultUri}`);
 
 export const signalRUrl = signalr.signalr.hostName;
 export const internalApiUrl = intFunc.webApp.hostNames[0];
 export const publicApiUrl = pubFunc.dnsCname.hostname;
+
+// TODO: Add Checkly checks for deployed functions
