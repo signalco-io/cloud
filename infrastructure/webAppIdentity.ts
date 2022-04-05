@@ -1,7 +1,7 @@
-import { interpolate } from "@pulumi/pulumi";
-import { WebApp } from "@pulumi/azure-native/web";
+import { interpolate } from '@pulumi/pulumi';
+import { WebApp } from '@pulumi/azure-native/web';
 
-export function webAppIdentity(webApp: WebApp) {
+export function webAppIdentity (webApp: WebApp) {
     return webApp.identity.apply(identity => {
         return {
             tenantId: interpolate`${identity?.tenantId}`,

@@ -39,12 +39,12 @@ jobs:
           dotnet build --configuration Release
           popd
 
-      - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
-        shell: bash
-        run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}'
-          dotnet build --configuration Release
-          popd
+      # - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
+      #   shell: bash
+      #   run: |
+      #     pushd './${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}'
+      #     dotnet build --configuration Release
+      #     popd
 
       - name: "Prepare infrastructure deployment"
         run: |
@@ -56,6 +56,6 @@ jobs:
         with:
           work-dir: "./infrastructure"
           command: preview
-          stack-name: production
+          stack-name: signalco/production
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

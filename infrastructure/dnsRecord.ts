@@ -1,7 +1,7 @@
-import { Config, Output, Resource } from "@pulumi/pulumi";
-import { Record } from "@pulumi/cloudflare";
+import { Config, Output, Resource } from '@pulumi/pulumi';
+import { Record } from '@pulumi/cloudflare';
 
-export function dnsRecord(name: string, dnsName: string | Output<string>, value: string | Output<string>, type: "CNAME" | "TXT", protect: boolean, parent?: Resource) {
+export function dnsRecord (name: string, dnsName: string | Output<string>, value: string | Output<string>, type: 'CNAME' | 'TXT', protect: boolean, parent?: Resource) {
     const config = new Config();
     const zoneId = config.requireSecret('zoneid');
     return new Record(name, {
@@ -10,7 +10,7 @@ export function dnsRecord(name: string, dnsName: string | Output<string>, value:
         type: type,
         value: value
     }, {
-        protect: protect,
+        protect: protect
         // parent: parent
     });
 }

@@ -1,17 +1,16 @@
-import { Output } from "@pulumi/pulumi";
-import { ResourceGroup } from "@pulumi/azure-native/resources";
-import { Vault, SkuFamily, SkuName, KeyPermissions, SecretPermissions } from "@pulumi/azure-native/keyvault";
-import { getClientConfig } from "@pulumi/azure-native/authorization";
+import { Output } from '@pulumi/pulumi';
+import { ResourceGroup } from '@pulumi/azure-native/resources';
+import { Vault, SkuFamily, SkuName, KeyPermissions, SecretPermissions } from '@pulumi/azure-native/keyvault';
+import { getClientConfig } from '@pulumi/azure-native/authorization';
 
-export function createKeyVault(
-    resourceGroup: ResourceGroup, 
-    namePrefix: string, 
-    protect: boolean, 
+export function createKeyVault (
+    resourceGroup: ResourceGroup,
+    namePrefix: string,
+    protect: boolean,
     policies: Output<{
         tenantId: Output<string>;
         objectId: Output<string>;
     }>[] = []) {
-    
     const current = Output.create(getClientConfig());
     const vault = new Vault(`vault-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
@@ -31,7 +30,7 @@ export function createKeyVault(
                             KeyPermissions.Delete,
                             KeyPermissions.List,
                             KeyPermissions.Recover,
-                            KeyPermissions.Purge,
+                            KeyPermissions.Purge
                         ],
                         secrets: [
                             SecretPermissions.Get,
@@ -39,10 +38,10 @@ export function createKeyVault(
                             SecretPermissions.Set,
                             SecretPermissions.Delete,
                             SecretPermissions.Recover,
-                            SecretPermissions.Purge,
-                        ],
+                            SecretPermissions.Purge
+                        ]
                     },
-                    tenantId: current.tenantId,
+                    tenantId: current.tenantId
                 },
                 ...policies.map(i => ({
                     objectId: i.objectId,

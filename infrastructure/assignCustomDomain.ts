@@ -1,38 +1,38 @@
-import { Config, interpolate, log } from "@pulumi/pulumi";
-import { WebApp, AppServicePlan, WebAppHostNameBinding, Certificate, HostNameType, SslState, CustomHostNameDnsRecordType } from "@pulumi/azure-native/web";
-import { ResourceGroup } from "@pulumi/azure-native/resources";
-import { local } from "@pulumi/command";
-import { dnsRecord } from "./dnsRecord";
+import { Config, interpolate, log } from '@pulumi/pulumi';
+import { WebApp, AppServicePlan, WebAppHostNameBinding, Certificate, HostNameType, SslState, CustomHostNameDnsRecordType } from '@pulumi/azure-native/web';
+import { ResourceGroup } from '@pulumi/azure-native/resources';
+import { local } from '@pulumi/command';
+import { dnsRecord } from './dnsRecord';
 
-export function assignCustomDomain(resourceGroup: ResourceGroup, webApp: WebApp, servicePlan: AppServicePlan, namePrefix: string, subDomainName: string, protect: boolean) {
+export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp, servicePlan: AppServicePlan, namePrefix: string, subDomainName: string, protect: boolean) {
     const config = new Config();
     const fullDomainName = `${subDomainName}.${config.require('domain')}`;
-    
+
     const txtVerifyRecord = dnsRecord(
         `func-dns-txt-domainverify-${namePrefix}`,
         `asuid.${fullDomainName}`,
         interpolate`${webApp.customDomainVerificationId}`,
-        "TXT",
+        'TXT',
         protect,
         webApp);
     const cname = dnsRecord(
         `func-dns-cname-${namePrefix}`,
         fullDomainName,
         webApp.hostNames[0],
-        "CNAME",
+        'CNAME',
         protect,
         webApp
     );
 
     // Until Pulumi comes up with circular dependency solution
-    // we are creating hostname binding via Azure CLI because 
+    // we are creating hostname binding via Azure CLI because
     // it's required to create certificate, only then the
     // hostname binding with SSL cert can be configured
     const assignHostName = new local.Command(`func-hostname-assign-${namePrefix}`, {
-        create: interpolate`az webapp config hostname add --webapp-name ${webApp.name} --resource-group ${resourceGroup.name} --hostname ${fullDomainName}`,
+        create: interpolate`az webapp config hostname add --webapp-name ${webApp.name} --resource-group ${resourceGroup.name} --hostname ${fullDomainName}`
     }, {
         dependsOn: [txtVerifyRecord],
-        ignoreChanges: ["create"],
+        ignoreChanges: ['create']
         // parent: webApp
     });
 
@@ -41,18 +41,18 @@ export function assignCustomDomain(resourceGroup: ResourceGroup, webApp: WebApp,
     const cert = new Certificate(`func-cert-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         canonicalName: fullDomainName,
-        serverFarmId: servicePlan.id,
+        serverFarmId: servicePlan.id
     }, {
         protect: protect,
-        dependsOn: [assignHostName],
+        dependsOn: [assignHostName]
         // parent: webApp
     });
 
     const deleteHostName = new local.Command(`func-hostname-remove-${namePrefix}`, {
         create: interpolate`az webapp config hostname delete --webapp-name ${webApp.name} --resource-group ${resourceGroup.name} --hostname ${fullDomainName}`
     }, {
-        dependsOn: [cert], 
-        ignoreChanges: ["create"], 
+        dependsOn: [cert],
+        ignoreChanges: ['create']
         // parent: webApp
     });
 
@@ -68,7 +68,7 @@ export function assignCustomDomain(resourceGroup: ResourceGroup, webApp: WebApp,
         thumbprint: cert.thumbprint
     }, {
         dependsOn: [deleteHostName],
-        protect: protect,
+        protect: protect
         // parent: webApp
     });
 

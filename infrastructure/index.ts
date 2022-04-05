@@ -1,13 +1,13 @@
-import { Config, getStack, interpolate } from "@pulumi/pulumi";
-import { ResourceGroup } from "@pulumi/azure-native/resources";
-import { createFunction } from "./createFunction";
-import { createSignalR } from "./createSignalR";
-import { createStorageAccount } from "./createStorageAccount";
-import { createKeyVault } from "./createKeyVault";
-import createPublicFunction from "./createPublicFunction";
-import { webAppIdentity } from "./webAppIdentity";
-import vaultSecret from "./vaultSecret";
-import { Table } from "@pulumi/azure-native/storage";
+import { Config, getStack, interpolate } from '@pulumi/pulumi';
+import { ResourceGroup } from '@pulumi/azure-native/resources';
+import { createFunction } from './createFunction';
+import { createSignalR } from './createSignalR';
+import { createStorageAccount } from './createStorageAccount';
+import { createKeyVault } from './createKeyVault';
+import createPublicFunction from './createPublicFunction';
+import { webAppIdentity } from './webAppIdentity';
+import vaultSecret from './vaultSecret';
+import { Table } from '@pulumi/azure-native/storage';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -19,9 +19,9 @@ import { Table } from "@pulumi/azure-native/storage";
 
 // TODO: Assign keyvault connection string to Functions
 
-// pulumi config set azure-native:clientId <clientID> 
-// pulumi config set azure-native:clientSecret <clientSecret> --secret 
-// pulumi config set azure-native:tenantId <tenantID> 
+// pulumi config set azure-native:clientId <clientID>
+// pulumi config set azure-native:clientSecret <clientSecret> --secret
+// pulumi config set azure-native:tenantId <tenantID>
 // pulumi config set azure-native:subscriptionId <subscriptionId>
 // pulumi stack select next
 
@@ -29,13 +29,13 @@ const config = new Config();
 const stack = getStack();
 const shouldProtect = stack === 'production';
 
-const resourceGroupName = `signalco-cloud-${stack}`
-const publicFunctionPrefix = `cpub`;
+const resourceGroupName = `signalco-cloud-${stack}`;
+const publicFunctionPrefix = 'cpub';
 const publicFunctionSubDomain = stack === 'production' ? 'api' : `${stack}-api`;
-const internalFunctionPrefix = `cint`;
-const signalrPrefix = `sr`
-const storagePrefix = `store`;
-const keyvaultPrefix = `kv`;
+const internalFunctionPrefix = 'cint';
+const signalrPrefix = 'sr';
+const storagePrefix = 'store';
+const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
 
@@ -45,19 +45,19 @@ const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 const pubFunc = createPublicFunction(
     resourceGroup,
     publicFunctionPrefix,
-    "../Signal.Api.Public/bin/Release/net6.0/publish/",
+    '../Signal.Api.Public/bin/Release/net6.0/publish/',
     publicFunctionSubDomain,
     shouldProtect,
     {
-        "AzureSignalRConnectionString": signalr.connectionString
+        AzureSignalRConnectionString: signalr.connectionString
     }
 );
 
 // Create Internal function
 const intFunc = createFunction(
-    resourceGroup, 
-    internalFunctionPrefix, 
-    "../Signal.Api.Internal/bin/Release/net6.0/publish/", 
+    resourceGroup,
+    internalFunctionPrefix,
+    '../Signal.Api.Internal/bin/Release/net6.0/publish/',
     shouldProtect
 );
 
