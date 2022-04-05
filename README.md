@@ -12,7 +12,7 @@
 
 ## Getting Started
 
-Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
+Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<<<<<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>>>>>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
 
 ## Development for Cloud
 
@@ -37,11 +37,22 @@ Production API
 
 ### Deploying infrastructure
 
+#### Locally via CLI
+
 Build projects
 
 - `dotnet publish ./Signal.Api.Public --configuration Release`
 - `dotnet publish ./Signal.Api.Internal --configuration Release`
 - `dotnet publish ./Signalco.Cloud.Channel.GitHubApp --configuration Release`
+
+Pulumi
+
+- [Install Pulumi](https://www.pulumi.com/docs/get-started/install)
+  - Windows `winget install pulumi`
+- navigate into `./infrastructure`
+- `npm install`
+- `pulumi login`
+- `pulumi stack select` or `pulumi stack new` to create your new stack
 
 Azure (prerequestite for Pulumi)
 
@@ -53,16 +64,18 @@ CloudFlare (prerequesite for Pulumi)
 
 - `pulumi config set --secret cloudflare:apiToken TOKEN`
 
-Pulumi
+Deploy
 
-- [Install Pulumi](https://www.pulumi.com/docs/get-started/install)
-  - Windows `winget install pulumi`
-- navigate into `./infrastructure`
-- `npm install`
-- `pulumi login`
-- `pulumi stack select`
 - `pulumi up --stack <STACK>`
 - `pulumi destroy` when done testing
+
+#### Via GitHub Actions
+
+Required secrets for GitHub actions are:
+
+- `PULUMI_ACCESS_TOKEN` [Create a new Pulumi Access Token](https://app.pulumi.com/account/tokens) for Pulumi
+- Azure access is configured as Pulumi secret via [Service Principal](https://www.pulumi.com/registry/packages/azure-native/installation-configuration/#option-2-use-a-service-principal)
+- CloudFlare token is configure as Pulumi secret via [Provider](https://www.pulumi.com/registry/packages/cloudflare/installation-configuration/#configuring-the-provider)
 
 #### Troubleshooting
 
