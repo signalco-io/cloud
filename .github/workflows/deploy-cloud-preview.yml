@@ -59,10 +59,16 @@ jobs:
           npm run lint
           popd
 
+      - name: Extract branch name
+        shell: bash
+        run: |
+          [[ $(echo ${GITHUB_REF#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
       - uses: pulumi/actions@v3
         with:
           work-dir: "./infrastructure"
           command: preview
-          stack-name: signalco/production
+          stack-name: signalco/${{ steps.extract_branch.outputs.branch }}
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
