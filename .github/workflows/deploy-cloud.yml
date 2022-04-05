@@ -35,7 +35,7 @@ jobs:
       - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
         shell: bash
         run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}'
+          pushd './${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}'
           dotnet publish --configuration Release
           popd
 
