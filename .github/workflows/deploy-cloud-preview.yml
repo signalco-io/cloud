@@ -1,0 +1,77 @@
+# Source: https://github.com/marketplace/actions/azure-functions-action
+# This is a basic workflow to help you get started with Actions
+
+name: Preview Deploy Cloud (prod)
+
+on:
+  pull_request:
+    branches:
+      - "main"
+      - "next"
+
+env:
+  AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
+  AZURE_FUNCTIONAPP_INTERNAL_PATH: "Signal.Api.Internal"
+  AZURE_FUNCTIONAPP_GITHUB_PATH: "Signalco.Cloud.Channel.GitHubApp"
+  DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
+      # - name: "Build ${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}"
+      #   shell: bash
+      #   run: |
+      #     pushd './${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}'
+      #     dotnet publish --configuration Release
+      #     popd
+
+      - name: "Prepare infrastructure deployment"
+        run: |
+          pushd './infrastructure'
+          npm install
+          popd
+
+      - name: "Lint infrastructure"
+        run: |
+          pushd './infrastructure'
+          npm run lint
+          popd
+
+      - name: Extract branch name
+        shell: bash
+        run: |
+          [[ $(echo ${BASE_BRANCH#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${BASE_BRANCH#refs/heads/})"
+        id: extract_branch
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+
+      - uses: pulumi/actions@v3
+        with:
+          work-dir: "./infrastructure"
+          command: preview
+          stack-name: signalco/${{ steps.extract_branch.outputs.branch }}
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

@@ -11,21 +11,13 @@ namespace Signal.Infrastructure.Secrets
 {
     public class SecretsProvider : ISecretsProvider
     {
+        private const string KeyVaultUrlKey = "SignalcoKeyVaultUrl";
+
         private readonly IConfiguration configuration;
 
-        // TODO: Move to configuration
-        private const string KeyVaultUrl = "https://signal.vault.azure.net/";
-
-        private static readonly SecretClient Client;
-        private static readonly Dictionary<string, string> Cache = new Dictionary<string, string>();
-
-        static SecretsProvider()
-        {
-            Client = new SecretClient(
-                new Uri(KeyVaultUrl),
-                new DefaultAzureCredential());
-        }
-
+        private static SecretClient? client;
+        private static readonly Dictionary<string, string> Cache = new();
+        
         public SecretsProvider(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -33,6 +25,11 @@ namespace Signal.Infrastructure.Secrets
         
         public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken)
         {
+            // Check cache
+            if (Cache.ContainsKey(key))
+                return Cache[key];
+
+            // Check configuration
             try
             {
                 return this.configuration[key] ?? throw new Exception("Not a local secret.");
@@ -42,10 +39,11 @@ namespace Signal.Infrastructure.Secrets
                 // Shit, try in vault
             }
 
-            if (Cache.ContainsKey(key)) 
-                return Cache[key];
-
-            var secret = await Client.GetSecretAsync(key, cancellationToken: cancellationToken);
+            // Instantiate secrets client if not already
+            client ??= new SecretClient(
+                new Uri(this.configuration[KeyVaultUrlKey]),
+                new DefaultAzureCredential());
+            var secret = await client.GetSecretAsync(key, cancellationToken: cancellationToken);
             return Cache[key] = secret.Value.Value;
         }
     }
