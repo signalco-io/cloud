@@ -1,10 +1,12 @@
 # Source: https://github.com/marketplace/actions/azure-functions-action
 # This is a basic workflow to help you get started with Actions
 
-name: Preview Deploy Cloud
+name: Preview Deploy Cloud (prod)
 
 on:
-  - pull_request
+  pull_request:
+    branches:
+      - "main"
 
 env:
   AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
