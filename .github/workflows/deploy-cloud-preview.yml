@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - "main"
+      - "next"
 
 env:
   AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
@@ -62,8 +63,10 @@ jobs:
       - name: Extract branch name
         shell: bash
         run: |
-          [[ $(echo ${${{github.payload.pull_request.head.ref}}#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${${{github.payload.pull_request.head.ref}}#refs/heads/})"
+          [[ $(echo ${BASE_BRANCH#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${BASE_BRANCH#refs/heads/})"
         id: extract_branch
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
 
       - uses: pulumi/actions@v3
         with:
