@@ -28,21 +28,21 @@ jobs:
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}'
-          dotnet build --configuration Release
+          dotnet publish --configuration Release
           popd
 
       - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}'
-          dotnet build --configuration Release
+          dotnet publish --configuration Release
           popd
 
       # - name: "Build ${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}"
       #   shell: bash
       #   run: |
       #     pushd './${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}'
-      #     dotnet build --configuration Release
+      #     dotnet publish --configuration Release
       #     popd
 
       - name: "Prepare infrastructure deployment"
