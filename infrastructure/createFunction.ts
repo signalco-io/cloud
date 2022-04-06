@@ -1,7 +1,7 @@
 import { WebApp, AppServicePlan, SupportedTlsVersions } from '@pulumi/azure-native/web';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
 
-export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean) {
+export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean, domainName?: string) {
     const plan = new AppServicePlan(`func-appplan-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         sku: {
@@ -30,7 +30,14 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
             minTlsVersion: SupportedTlsVersions.SupportedTlsVersions_1_2,
             functionAppScaleLimit: 200,
             cors: {
-                allowedOrigins: ['*']
+                allowedOrigins: domainName
+                    ? [
+                        'https://localhost:3000',
+                        'http://localhost:3000',
+                        `https://${domainName}`
+                    ]
+                    : ['*'],
+                supportCredentials: !!domainName
             }
         }
     }, {
