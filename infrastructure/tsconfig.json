@@ -24,6 +24,8 @@
         "./dnsRecord.ts",
         "./createPublicFunction.ts",
         "./webAppIdentity.ts",
-        "./vaultSecret.ts"
+        "./vaultSecret.ts",
+        "./assignFunctionCode.ts",
+        "./assignFunctionSettings.ts"
     ]
 }

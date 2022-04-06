@@ -7,23 +7,14 @@ import { createKeyVault } from './createKeyVault';
 import createPublicFunction from './createPublicFunction';
 import { webAppIdentity } from './webAppIdentity';
 import vaultSecret from './vaultSecret';
-import { Table } from '@pulumi/azure-native/storage';
+import { Table, SkuName } from '@pulumi/azure-native/storage';
+import { assignFunctionCode } from './assignFunctionCode';
+import { assignFunctionSettings } from './assignFunctionSettings';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
  *       there is memory issued when enabled.
 */
-
-// TODO: prepare for CI/CD
-// TODO: Build functions
-
-// TODO: Assign keyvault connection string to Functions
-
-// pulumi config set azure-native:clientId <clientID>
-// pulumi config set azure-native:clientSecret <clientSecret> --secret
-// pulumi config set azure-native:tenantId <tenantID>
-// pulumi config set azure-native:subscriptionId <subscriptionId>
-// pulumi stack select next
 
 const config = new Config();
 const stack = getStack();
@@ -45,25 +36,31 @@ const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 const pubFunc = createPublicFunction(
     resourceGroup,
     publicFunctionPrefix,
-    '../Signal.Api.Public/bin/Release/net6.0/publish/',
     publicFunctionSubDomain,
-    shouldProtect,
-    {
-        AzureSignalRConnectionString: signalr.connectionString
-    }
+    shouldProtect
 );
+const pubFuncCode = assignFunctionCode(
+    resourceGroup,
+    pubFunc.webApp,
+    publicFunctionPrefix,
+    '../Signal.Api.Public/bin/Release/net6.0/publish/',
+    shouldProtect);
 
 // Create Internal function
 const intFunc = createFunction(
     resourceGroup,
     internalFunctionPrefix,
-    '../Signal.Api.Internal/bin/Release/net6.0/publish/',
     shouldProtect
 );
+const intFuncCode = assignFunctionCode(
+    resourceGroup,
+    intFunc.webApp,
+    internalFunctionPrefix,
+    '../Signal.Api.Internal/bin/Release/net6.0/publish/',
+    shouldProtect);
 
 // Create general storage and prepare tables
-// TODO: Create with more redundancy than function storage account
-const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
+const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect, undefined, shouldProtect ? SkuName.Standard_ZRS : undefined);
 const tableNames = [
     'userassigneddevices', 'userassignedprocesses', 'userassigneddashboards', 'userassignedbeacons',
     'beacons', 'devices', 'devicestates', 'devicesstateshistory', 'processes', 'dashboards', 'users',
@@ -92,6 +89,31 @@ vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--Secret', c
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--SiteKey', config.requireSecret('secret-hcaptchaSiteKey'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalStorageAccountConnectionString', storage.connectionString);
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalcoKeyVaultUrl', interpolate`${vault.keyVault.properties.vaultUri}`);
+
+// Populate function settings
+assignFunctionSettings(
+    resourceGroup,
+    pubFunc.webApp,
+    publicFunctionPrefix,
+    pubFuncCode.storageAccount.connectionString,
+    pubFuncCode.codeBlobUlr,
+    {
+        AzureSignalRConnectionString: signalr.connectionString,
+        SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`
+    },
+    shouldProtect
+);
+assignFunctionSettings(
+    resourceGroup,
+    intFunc.webApp,
+    internalFunctionPrefix,
+    intFuncCode.storageAccount.connectionString,
+    intFuncCode.codeBlobUlr,
+    {
+        SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`
+    },
+    shouldProtect
+);
 
 export const signalRUrl = signalr.signalr.hostName;
 export const internalApiUrl = intFunc.webApp.hostNames[0];
