@@ -7,7 +7,7 @@ import { createKeyVault } from './createKeyVault';
 import createPublicFunction from './createPublicFunction';
 import { webAppIdentity } from './webAppIdentity';
 import vaultSecret from './vaultSecret';
-import { Table, SkuName } from '@pulumi/azure-native/storage';
+import { Table } from '@pulumi/azure-native/storage';
 import { assignFunctionCode } from './assignFunctionCode';
 import { assignFunctionSettings } from './assignFunctionSettings';
 
@@ -60,7 +60,7 @@ const intFuncCode = assignFunctionCode(
     shouldProtect);
 
 // Create general storage and prepare tables
-const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect, undefined, shouldProtect ? SkuName.Standard_ZRS : undefined);
+const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
 const tableNames = [
     'userassigneddevices', 'userassignedprocesses', 'userassigneddashboards', 'userassignedbeacons',
     'beacons', 'devices', 'devicestates', 'devicesstateshistory', 'processes', 'dashboards', 'users',
