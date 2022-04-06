@@ -1,7 +1,4 @@
-# Source: https://github.com/marketplace/actions/azure-functions-action
-# This is a basic workflow to help you get started with Actions
-
-name: Deploy Cloud (prod)
+name: Deploy Cloud
 
 on:
   push:
