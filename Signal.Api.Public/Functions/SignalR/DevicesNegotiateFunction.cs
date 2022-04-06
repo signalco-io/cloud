@@ -25,7 +25,7 @@ public class DevicesNegotiateFunction
 
     [FunctionName("SignalR-Devices-Negotiate")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" }, 
+    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" },
         Description = "Negotiates SignalR connection for devices hub.")]
     [OpenApiOkJsonResponse(typeof(SignalRConnectionInfo), Description = "SignalR connection info.")]
     public async Task<IActionResult> Negotiate(
