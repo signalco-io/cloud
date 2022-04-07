@@ -1,4 +1,4 @@
-import { Config, Input, Output, Resource } from '@pulumi/pulumi';
+import { Config, Input, Resource } from '@pulumi/pulumi';
 import { Record } from '@pulumi/cloudflare';
 
 export function dnsRecord (name: string, dnsName: Input<string>, value: Input<string>, type: 'CNAME' | 'TXT', protect: boolean, parent?: Resource) {
