@@ -14,7 +14,6 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
         // parent: resourceGroup
     });
 
-    // TODO: Configure AppSettings via another resoure: https://www.pulumi.com/registry/packages/azure-native/api-docs/web/webappapplicationsettings/
     const app = new WebApp(`func-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         serverFarmId: plan.id,

@@ -6,7 +6,7 @@ import { dnsRecord } from './dnsRecord';
 
 export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp, servicePlan: AppServicePlan, namePrefix: string, subDomainName: string, protect: boolean) {
     const config = new Config();
-    const fullDomainName = interpolate`${subDomainName}.${config.require('domain')}`;
+    const fullDomainName = `${subDomainName}.${config.require('domain')}`;
 
     const txtVerifyRecord = dnsRecord(
         `func-dns-txt-domainverify-${namePrefix}`,

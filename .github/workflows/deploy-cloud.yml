@@ -59,6 +59,7 @@ jobs:
         with:
           work-dir: "./infrastructure"
           command: up
+          diff: true
           stack-name: signalco/${{ steps.extract_branch.outputs.branch }}
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
