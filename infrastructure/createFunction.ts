@@ -1,7 +1,8 @@
 import { WebApp, AppServicePlan, SupportedTlsVersions } from '@pulumi/azure-native/web';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
+import { Input } from '@pulumi/pulumi';
 
-export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean, domainName?: string) {
+export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean, domainName?: Input<string>) {
     const plan = new AppServicePlan(`func-appplan-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         sku: {
