@@ -1,6 +1,6 @@
 import { WebApp, AppServicePlan, SupportedTlsVersions } from '@pulumi/azure-native/web';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
-import { Input } from '@pulumi/pulumi';
+import { Input, interpolate } from '@pulumi/pulumi';
 
 export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean, domainName?: Input<string>) {
     const plan = new AppServicePlan(`func-appplan-${namePrefix}`, {
@@ -34,7 +34,7 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
                     ? [
                         'https://localhost:3000',
                         'http://localhost:3000',
-                        `https://${domainName}`
+                        interpolate`https://${domainName}`
                     ]
                     : ['*'],
                 supportCredentials: !!domainName
