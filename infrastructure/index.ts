@@ -24,7 +24,7 @@ const domainName = `${config.require('domain')}`;
 
 const resourceGroupName = `signalco-cloud-${stack}`;
 const publicFunctionPrefix = 'cpub';
-const publicFunctionSubDomain = stack === 'production' ? 'api' : `${stack}-api`;
+const publicFunctionSubDomain = 'api';
 const internalFunctionPrefix = 'cint';
 const signalrPrefix = 'sr';
 const storagePrefix = 'store';
