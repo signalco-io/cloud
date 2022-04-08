@@ -18,7 +18,7 @@ export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp
     const cname = dnsRecord(
         `func-dns-cname-${namePrefix}`,
         fullDomainName,
-        webApp.hostNames[0],
+        interpolate`${webApp.name}.azurewebsites.net`,
         'CNAME',
         protect,
         webApp

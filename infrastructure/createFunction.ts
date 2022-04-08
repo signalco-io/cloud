@@ -1,7 +1,8 @@
 import { WebApp, AppServicePlan, SupportedTlsVersions } from '@pulumi/azure-native/web';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
+import { Input, interpolate } from '@pulumi/pulumi';
 
-export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean) {
+export function createFunction (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean, domainName?: Input<string>) {
     const plan = new AppServicePlan(`func-appplan-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         sku: {
@@ -13,7 +14,6 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
         // parent: resourceGroup
     });
 
-    // TODO: Configure AppSettings via another resoure: https://www.pulumi.com/registry/packages/azure-native/api-docs/web/webappapplicationsettings/
     const app = new WebApp(`func-${namePrefix}`, {
         resourceGroupName: resourceGroup.name,
         serverFarmId: plan.id,
@@ -30,7 +30,14 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
             minTlsVersion: SupportedTlsVersions.SupportedTlsVersions_1_2,
             functionAppScaleLimit: 200,
             cors: {
-                allowedOrigins: ['*']
+                allowedOrigins: domainName
+                    ? [
+                        'https://localhost:3000',
+                        'http://localhost:3000',
+                        interpolate`https://${domainName}`
+                    ]
+                    : ['*'],
+                supportCredentials: !!domainName
             }
         }
     }, {
