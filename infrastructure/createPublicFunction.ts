@@ -1,5 +1,5 @@
 import { ResourceGroup } from '@pulumi/azure-native/resources';
-import { interpolate, Config } from '@pulumi/pulumi';
+import { Config } from '@pulumi/pulumi';
 import { assignCustomDomain } from './assignCustomDomain';
 import { createFunction } from './createFunction';
 
