@@ -31,8 +31,7 @@ export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp
     const assignHostName = new local.Command(`func-hostname-assign-${namePrefix}`, {
         create: interpolate`az webapp config hostname add --webapp-name ${webApp.name} --resource-group ${resourceGroup.name} --hostname ${fullDomainName}`
     }, {
-        dependsOn: [txtVerifyRecord],
-        ignoreChanges: ['create']
+        dependsOn: [txtVerifyRecord]
         // parent: webApp
     });
 
@@ -51,8 +50,7 @@ export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp
     const deleteHostName = new local.Command(`func-hostname-remove-${namePrefix}`, {
         create: interpolate`az webapp config hostname delete --webapp-name ${webApp.name} --resource-group ${resourceGroup.name} --hostname ${fullDomainName}`
     }, {
-        dependsOn: [cert],
-        ignoreChanges: ['create']
+        dependsOn: [cert]
         // parent: webApp
     });
 
