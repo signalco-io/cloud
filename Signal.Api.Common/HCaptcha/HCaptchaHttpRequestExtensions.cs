@@ -21,6 +21,6 @@ public static class HCaptchaHttpRequestExtensions
             throw new InvalidOperationException("hCaptcha response not provided.");
 
         var response = responseValues.ToString();
-        await service.VerifyAsync(response, cancellationToken).ConfigureAwait(false);
+        await service.VerifyAsync(response, cancellationToken);
     }
 }

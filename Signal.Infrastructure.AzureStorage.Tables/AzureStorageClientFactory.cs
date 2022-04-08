@@ -30,7 +30,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
             return client;
         
         client = new BlobContainerClient(
-            await GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), 
+            await GetConnectionStringAsync(cancellationToken), 
             containerName);
         EstablishedBlobContainerClients.TryAdd(containerName, client);
 
@@ -65,7 +65,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
 
         // Instantiate new client and persist
         client = new TableClient(
-            await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false),
+            await this.GetConnectionStringAsync(cancellationToken),
             AzureTableExtensions.EscapeKey(tableName));
         EstablishedTableClients.TryAdd(tableName, client);
 
@@ -76,5 +76,5 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
     }
 
     private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
-        await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
+        await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken);
 }

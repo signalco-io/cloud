@@ -53,7 +53,7 @@ public sealed class Auth0Authenticator
     {
         // Note: ConfigurationManager<T> has an automatic refresh interval of 1 day.
         //   The config is cached in-between refreshes, so this "asynchronous" call actually completes synchronously unless it needs to refresh.
-        var config = await this.manager.GetConfigurationAsync(cancellationToken).ConfigureAwait(false);
+        var config = await this.manager.GetConfigurationAsync(cancellationToken);
         this.parameters.IssuerSigningKeys = config.SigningKeys;
         var user = this.handler.ValidateToken(token, this.parameters, out var validatedToken);
         return (user, validatedToken);
