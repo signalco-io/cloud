@@ -19,6 +19,7 @@ import { assignFunctionSettings } from './assignFunctionSettings';
 const config = new Config();
 const stack = getStack();
 const shouldProtect = stack === 'production';
+const domainName = `${config.require('domain')}`;
 
 const resourceGroupName = `signalco-cloud-${stack}`;
 const publicFunctionPrefix = 'cpub';
@@ -33,10 +34,12 @@ const resourceGroup = new ResourceGroup(resourceGroupName);
 const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 
 // Create Public function
+const corsDomains = [`www.${domainName}`, domainName];
 const pubFunc = createPublicFunction(
     resourceGroup,
     publicFunctionPrefix,
     publicFunctionSubDomain,
+    corsDomains,
     shouldProtect
 );
 const pubFuncCode = assignFunctionCode(
