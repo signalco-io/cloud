@@ -10,6 +10,7 @@ import vaultSecret from './vaultSecret';
 import { Table } from '@pulumi/azure-native/storage';
 import { assignFunctionCode } from './assignFunctionCode';
 import { assignFunctionSettings } from './assignFunctionSettings';
+import * as insights from '@pulumi/azure-native/insights';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -48,6 +49,15 @@ const pubFuncCode = assignFunctionCode(
     publicFunctionPrefix,
     '../Signal.Api.Public/bin/Release/net6.0/publish/',
     shouldProtect);
+
+// Create app insights
+new insights.Component(`func-ai-${publicFunctionPrefix}`, {
+    kind: 'web',
+    resourceGroupName: resourceGroup.name,
+    applicationType: insights.ApplicationType.Web,
+    resourceName: pubFunc.webApp.name,
+    samplingPercentage: 100
+});
 
 // Create Internal function
 const intFunc = createFunction(
