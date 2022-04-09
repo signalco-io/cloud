@@ -27,7 +27,7 @@ public class Auth0Service
         var domain = await this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://{domain}/userinfo");
         request.Headers.Authorization = AuthenticationHeaderValue.Parse(authHeader);
-        using var result = await this.httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        using var result = await this.httpClient.SendAsync(request, cancellationToken);
         return await result.Content.ReadAsAsync<Auth0UserInfoDto>(cancellationToken);
     }
 }

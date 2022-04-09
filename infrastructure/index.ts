@@ -10,6 +10,8 @@ import vaultSecret from './vaultSecret';
 import { Table } from '@pulumi/azure-native/storage';
 import { assignFunctionCode } from './assignFunctionCode';
 import { assignFunctionSettings } from './assignFunctionSettings';
+import * as insights from '@pulumi/azure-native/insights';
+import * as checkly from '@checkly/pulumi';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -23,7 +25,7 @@ const domainName = `${config.require('domain')}`;
 
 const resourceGroupName = `signalco-cloud-${stack}`;
 const publicFunctionPrefix = 'cpub';
-const publicFunctionSubDomain = stack === 'production' ? 'api' : `${stack}-api`;
+const publicFunctionSubDomain = 'api';
 const internalFunctionPrefix = 'cint';
 const signalrPrefix = 'sr';
 const storagePrefix = 'store';
@@ -31,6 +33,8 @@ const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
 
+// TODO: Add Checkly for SignalR
+//       https://*.service.signalr.net/api/v1/health
 const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 
 // Create Public function
@@ -48,6 +52,27 @@ const pubFuncCode = assignFunctionCode(
     publicFunctionPrefix,
     '../Signal.Api.Public/bin/Release/net6.0/publish/',
     shouldProtect);
+
+// Create app insights
+new insights.Component(`func-ai-${publicFunctionPrefix}`, {
+    kind: 'web',
+    resourceGroupName: resourceGroup.name,
+    applicationType: insights.ApplicationType.Web,
+    resourceName: pubFunc.webApp.name,
+    samplingPercentage: 100
+});
+
+new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
+    name: 'API',
+    activated: true,
+    frequency: 10,
+    type: 'API',
+    locations: ['eu-west-1'],
+    request: {
+        method: 'GET',
+        url: interpolate`https://${pubFunc.dnsCname.hostname}/api/status`
+    }
+});
 
 // Create Internal function
 const intFunc = createFunction(

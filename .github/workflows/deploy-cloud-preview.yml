@@ -9,7 +9,6 @@ on:
 env:
   AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
   AZURE_FUNCTIONAPP_INTERNAL_PATH: "Signal.Api.Internal"
-  AZURE_FUNCTIONAPP_GITHUB_PATH: "Signalco.Cloud.Channel.GitHubApp"
   DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use
 
 jobs:
@@ -38,23 +37,22 @@ jobs:
           dotnet publish --configuration Release
           popd
 
-      # - name: "Build ${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}"
-      #   shell: bash
-      #   run: |
-      #     pushd './${{ env.AZURE_FUNCTIONAPP_GITHUB_PATH }}'
-      #     dotnet publish --configuration Release
-      #     popd
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
-          npm install
+          yarn install
+          pulumi plugin install resource checkly v0.0.1-alpha.3 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.3
           popd
 
       - name: "Lint infrastructure"
         run: |
           pushd './infrastructure'
-          npm run lint
+          yarn lint
           popd
 
       - name: Extract branch name
