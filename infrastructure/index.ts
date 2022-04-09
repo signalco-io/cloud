@@ -70,7 +70,7 @@ new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
     locations: ['eu-west-1'],
     request: {
         method: 'GET',
-        url: pubFunc.dnsCname.hostname
+        url: interpolate`https://${pubFunc.dnsCname.hostname}`
     }
 });
 
