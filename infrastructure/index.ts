@@ -75,9 +75,7 @@ new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
         url: interpolate`https://${pubFunc.dnsCname.hostname}/api/status`
     }
 });
-
-// Create app insights
-new insights.Component(`func-ai-${publicFunctionPrefix}`, {
+const pubFuncInsights = new insights.Component(`func-ai-${publicFunctionPrefix}`, {
     kind: 'web',
     resourceGroupName: resourceGroup.name,
     applicationType: insights.ApplicationType.Web,
@@ -151,7 +149,9 @@ assignFunctionSettings(
     pubFuncCode.codeBlobUlr,
     {
         AzureSignalRConnectionString: signalr.connectionString,
-        SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`
+        SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`,
+        APPINSIGHTS_INSTRUMENTATIONKEY: interpolate`${pubFuncInsights.instrumentationKey}`,
+        APPLICATIONINSIGHTS_CONNECTION_STRING: interpolate`${pubFuncInsights.connectionString}`
     },
     shouldProtect
 );
