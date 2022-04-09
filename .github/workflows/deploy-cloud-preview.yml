@@ -45,6 +45,11 @@ jobs:
       #     dotnet publish --configuration Release
       #     popd
 
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
@@ -55,7 +60,7 @@ jobs:
       - name: "Lint infrastructure"
         run: |
           pushd './infrastructure'
-          npm run lint
+          yarn lint
           popd
 
       - name: Extract branch name
