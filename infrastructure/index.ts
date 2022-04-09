@@ -87,6 +87,19 @@ const intFuncCode = assignFunctionCode(
     '../Signal.Api.Internal/bin/Release/net6.0/publish/',
     shouldProtect);
 
+new checkly.Check(`func-apicheck-${internalFunctionPrefix}`, {
+    name: `Internal (${stack})`,
+    activated: true,
+    frequency: 15,
+    type: 'API',
+    locations: ['eu-west-1'],
+    tags: [stack === 'production' ? 'public' : 'dev'],
+    request: {
+        method: 'GET',
+        url: interpolate`https://${intFunc.webApp.hostNames[0]}/api/status`
+    }
+});
+
 // Create general storage and prepare tables
 const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
 const tableNames = [
