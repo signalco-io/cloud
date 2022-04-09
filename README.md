@@ -12,7 +12,7 @@
 
 ## Getting Started
 
-Visit <a aria-label="Signalco learn" href="<<<<<<<<<<<<<<<<<<<<<<<<<<<<<https://www.signalco.io/learn>>>>>>>>>>>>>>>>>>>>>>>>>>>>>">https://www.signalco.io/learn</a> to get started with Signalco.
+Visit <a aria-label="Signalco learn" href="https://www.signalco.io/learn">https://www.signalco.io/learn</a> to get started with Signalco.
 
 ## Development for Cloud
 
@@ -58,11 +58,27 @@ Azure (prerequestite for Pulumi)
 
 - [Install Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
   - Windows `winget install Microsoft.AzureCLI`
-- `az login`
+- on new stack
+  - `az login`
+  - or
+    - `pulumi config set azure-native:clientId <clientID>`
+    - `pulumi config set azure-native:clientSecret <clientSecret> --secret`
+    - `pulumi config set azure-native:tenantId <tenantID>`
+    - `pulumi config set azure-native:subscriptionId <subscriptionId>`
+- stacks `next` and `production` already configured
 
 CloudFlare (prerequesite for Pulumi)
 
-- `pulumi config set --secret cloudflare:apiToken TOKEN`
+- on new stack
+  - `pulumi config set --secret cloudflare:apiToken TOKEN`
+- stacks `next` and `production` already configured
+
+Checkly (prereqesite for Pulumi)
+
+- on new stack
+  - `pulumi config set checkly:apiKey cu_xxx --secret`
+  - `pulumi config set checkly:accountId xxx`
+- stacks `next` and `production` already configured
 
 Deploy
 
@@ -75,7 +91,8 @@ Required secrets for GitHub actions are:
 
 - `PULUMI_ACCESS_TOKEN` [Create a new Pulumi Access Token](https://app.pulumi.com/account/tokens) for Pulumi
 - Azure access is configured as Pulumi secret via [Service Principal](https://www.pulumi.com/registry/packages/azure-native/installation-configuration/#option-2-use-a-service-principal)
-- CloudFlare token is configure as Pulumi secret via [Provider](https://www.pulumi.com/registry/packages/cloudflare/installation-configuration/#configuring-the-provider)
+- CloudFlare token is configured as Pulumi secret via [Provider](https://www.pulumi.com/registry/packages/cloudflare/installation-configuration/#configuring-the-provider)
+- Checkly token is configured as Pulumi secret via [API Key](https://www.pulumi.com/registry/packages/checkly/installation-configuration/#configuring-credentials)
 
 #### Troubleshooting
 

@@ -33,6 +33,8 @@ const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
 
+// TODO: Add Checkly for SignalR
+//       https://*.service.signalr.net/api/v1/health
 const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 
 // Create Public function
@@ -61,6 +63,7 @@ new insights.Component(`func-ai-${publicFunctionPrefix}`, {
 });
 
 new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
+    name: 'API',
     activated: true,
     frequency: 10,
     type: 'API',
