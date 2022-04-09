@@ -33,9 +33,19 @@ const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
 
-// TODO: Add Checkly for SignalR
-//       https://*.service.signalr.net/api/v1/health
 const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
+new checkly.Check(`signalr-check-${signalrPrefix}`, {
+    name: `SignalR (${stack})`,
+    activated: true,
+    frequency: 10,
+    type: 'API',
+    locations: ['eu-west-1'],
+    tags: [stack === 'production' ? 'public' : 'dev'],
+    request: {
+        method: 'GET',
+        url: interpolate`https://${signalr.signalr.hostName}/api/v1/health`
+    }
+});
 
 // Create Public function
 const corsDomains = [`www.${domainName}`, domainName];
@@ -53,6 +63,19 @@ const pubFuncCode = assignFunctionCode(
     '../Signal.Api.Public/bin/Release/net6.0/publish/',
     shouldProtect);
 
+new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
+    name: `API (${stack})`,
+    activated: true,
+    frequency: 5,
+    type: 'API',
+    locations: ['eu-west-1'],
+    tags: [stack === 'production' ? 'public' : 'dev', 'api'],
+    request: {
+        method: 'GET',
+        url: interpolate`https://${pubFunc.dnsCname.hostname}/api/status`
+    }
+});
+
 // Create app insights
 new insights.Component(`func-ai-${publicFunctionPrefix}`, {
     kind: 'web',
@@ -60,18 +83,6 @@ new insights.Component(`func-ai-${publicFunctionPrefix}`, {
     applicationType: insights.ApplicationType.Web,
     resourceName: pubFunc.webApp.name,
     samplingPercentage: 100
-});
-
-new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
-    name: 'API',
-    activated: true,
-    frequency: 10,
-    type: 'API',
-    locations: ['eu-west-1'],
-    request: {
-        method: 'GET',
-        url: interpolate`https://${pubFunc.dnsCname.hostname}/api/status`
-    }
 });
 
 // Create Internal function
@@ -86,6 +97,19 @@ const intFuncCode = assignFunctionCode(
     internalFunctionPrefix,
     '../Signal.Api.Internal/bin/Release/net6.0/publish/',
     shouldProtect);
+
+new checkly.Check(`func-apicheck-${internalFunctionPrefix}`, {
+    name: `API ${stack}`,
+    activated: true,
+    frequency: 15,
+    type: 'API',
+    locations: ['eu-west-1'],
+    tags: [stack === 'production' ? 'public' : 'dev'],
+    request: {
+        method: 'GET',
+        url: interpolate`https://${intFunc.webApp.hostNames[0]}/api/status`
+    }
+});
 
 // Create general storage and prepare tables
 const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
