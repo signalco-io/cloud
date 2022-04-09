@@ -12,6 +12,13 @@ updates:
     target-branch: "next"
     assignees:
       - "AleksandarDev"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/infrastructure" # Location of package manifests
+    schedule:
+      interval: "daily"
+    target-branch: "next"
+    assignees:
+      - "AleksandarDev"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
