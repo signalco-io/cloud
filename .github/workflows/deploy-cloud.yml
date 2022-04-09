@@ -46,7 +46,7 @@ jobs:
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
-          npm install
+          yarn install
           popd
 
       - name: Extract branch name
