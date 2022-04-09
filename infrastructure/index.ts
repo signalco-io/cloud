@@ -11,6 +11,7 @@ import { Table } from '@pulumi/azure-native/storage';
 import { assignFunctionCode } from './assignFunctionCode';
 import { assignFunctionSettings } from './assignFunctionSettings';
 import * as insights from '@pulumi/azure-native/insights';
+import * as checkly from '@checkly/pulumi';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -32,6 +33,8 @@ const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
 
+// TODO: Add Checkly for SignalR
+//       https://*.service.signalr.net/api/v1/health
 const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
 
 // Create Public function
@@ -57,6 +60,17 @@ new insights.Component(`func-ai-${publicFunctionPrefix}`, {
     applicationType: insights.ApplicationType.Web,
     resourceName: pubFunc.webApp.name,
     samplingPercentage: 100
+});
+
+new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
+    name: 'API',
+    activated: true,
+    frequency: 10,
+    type: 'API',
+    request: {
+        method: 'GET',
+        url: pubFunc.dnsCname.hostname
+    }
 });
 
 // Create Internal function
