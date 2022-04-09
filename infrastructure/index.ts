@@ -15,8 +15,13 @@ import * as checkly from '@checkly/pulumi';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
- *       there is memory issued when enabled.
-*/
+ *       there is memory issued when enabled. (2022/04)
+ * NOTE: checkly provider needs manual installation of plugin currently (2022/04)
+ *       which is added to deployment action
+ * NOTE: waiting for Circular dependency solution: https://github.com/pulumi/pulumi/issues/3021
+ *       current workaround is to run `az` commands for domain verification (2022/04)
+ *       - this doesn't work in CI because az is not installed and authenticated
+ */
 
 const config = new Config();
 const stack = getStack();
