@@ -46,7 +46,8 @@ jobs:
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
-          npm install
+          yarn install
+          pulumi plugin install resource checkly v0.0.1-alpha.3 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.3
           popd
 
       - name: Extract branch name
