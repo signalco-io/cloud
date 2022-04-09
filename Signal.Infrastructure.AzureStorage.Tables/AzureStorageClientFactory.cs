@@ -69,9 +69,6 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
             AzureTableExtensions.EscapeKey(tableName));
         EstablishedTableClients.TryAdd(tableName, client);
 
-        // Create table if doesn't exist
-        await client.CreateIfNotExistsAsync(cancellationToken);
-
         return client;
     }
 

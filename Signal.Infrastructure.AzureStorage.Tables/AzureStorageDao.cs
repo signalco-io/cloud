@@ -279,11 +279,15 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
+            var assignedUsers = new Dictionary<string, ICollection<string>>();
+            var entityIdsList = entityIds.ToList();
+            if (!entityIdsList.Any()) 
+                return assignedUsers;
+
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(type), cancellationToken);
             var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
-                RowsWithKeysAnyFilter(entityIds), cancellationToken: cancellationToken);
+                RowsWithKeysAnyFilter(entityIdsList), cancellationToken: cancellationToken);
 
-            var assignedUsers = new Dictionary<string, ICollection<string>>();
             await foreach (var entity in assigned)
                 if (assignedUsers.ContainsKey(entity.RowKey))
                     assignedUsers[entity.RowKey].Add(entity.PartitionKey);
