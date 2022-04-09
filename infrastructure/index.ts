@@ -59,6 +59,18 @@ new insights.Component(`func-ai-${publicFunctionPrefix}`, {
     samplingPercentage: 100
 });
 
+new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
+    name: 'API',
+    activated: true,
+    frequency: 10,
+    type: 'API',
+    locations: ['eu-west-1'],
+    request: {
+        method: 'GET',
+        url: pubFunc.dnsCname.hostname
+    }
+});
+
 // Create Internal function
 const intFunc = createFunction(
     resourceGroup,
