@@ -26,6 +26,8 @@
         "./webAppIdentity.ts",
         "./vaultSecret.ts",
         "./assignFunctionCode.ts",
-        "./assignFunctionSettings.ts"
+        "./assignFunctionSettings.ts",
+        "./createAppInsights.ts",
+        "./createAppInsights.ts"
     ]
 }
