@@ -10,8 +10,9 @@ import vaultSecret from './vaultSecret';
 import { Table } from '@pulumi/azure-native/storage';
 import { assignFunctionCode } from './assignFunctionCode';
 import { assignFunctionSettings } from './assignFunctionSettings';
-import * as insights from '@pulumi/azure-native/insights';
 import * as checkly from '@checkly/pulumi';
+import createWebAppAppInsights from './createWebAppAppInsights';
+import createAppInsights from './createAppInsights';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -80,13 +81,8 @@ new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
         url: interpolate`https://${pubFunc.dnsCname.hostname}/api/status`
     }
 });
-const pubFuncInsights = new insights.Component(`func-ai-${publicFunctionPrefix}`, {
-    kind: 'web',
-    resourceGroupName: resourceGroup.name,
-    applicationType: insights.ApplicationType.Web,
-    resourceName: pubFunc.webApp.name,
-    samplingPercentage: 100
-});
+
+const pubFuncInsights = createWebAppAppInsights(resourceGroup, publicFunctionPrefix, pubFunc.webApp);
 
 // Create Internal function
 const intFunc = createFunction(
@@ -155,8 +151,8 @@ assignFunctionSettings(
     {
         AzureSignalRConnectionString: signalr.connectionString,
         SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`,
-        APPINSIGHTS_INSTRUMENTATIONKEY: interpolate`${pubFuncInsights.instrumentationKey}`,
-        APPLICATIONINSIGHTS_CONNECTION_STRING: interpolate`${pubFuncInsights.connectionString}`
+        APPINSIGHTS_INSTRUMENTATIONKEY: interpolate`${pubFuncInsights.component.instrumentationKey}`,
+        APPLICATIONINSIGHTS_CONNECTION_STRING: interpolate`${pubFuncInsights.component.connectionString}`
     },
     shouldProtect
 );
@@ -171,6 +167,8 @@ assignFunctionSettings(
     },
     shouldProtect
 );
+
+createAppInsights(resourceGroup, 'web', 'signalco');
 
 export const signalRUrl = signalr.signalr.hostName;
 export const internalApiUrl = intFunc.webApp.hostNames[0];
