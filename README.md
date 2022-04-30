@@ -16,11 +16,9 @@ Visit <a aria-label="Signalco learn" href="https://www.signalco.io/learn">https:
 
 ### Status
 
-[![Deploy Production](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml/badge.svg?branch=main)](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml)
-[![Deploy Development](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml/badge.svg?branch=next)](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml)
-[![CodeQL](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)
-[![CodeFactor](https://www.codefactor.io/repository/github/signalco-io/cloud/badge)](https://www.codefactor.io/repository/github/signalco-io/cloud)
+| Production | Next |
+|------------|------| 
+| [![Deploy Production](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml/badge.svg?branch=main)](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml)<br/>[![CodeQL](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/signalco-io/cloud/actions/workflows/codeql-analysis.yml)<br/>[![Maintainability](https://api.codeclimate.com/v1/badges/47b77031e67ff69bb053/maintainability)](https://codeclimate.com/github/signalco-io/cloud/maintainability)<br/>[![CodeFactor](https://www.codefactor.io/repository/github/signalco-io/cloud/badge)](https://www.codefactor.io/repository/github/signalco-io/cloud) | [![Deploy Development](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml/badge.svg?branch=next)](https://github.com/signalco-io/cloud/actions/workflows/deploy-cloud.yml) |
 
 ## Development for Cloud
 
