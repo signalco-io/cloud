@@ -21,6 +21,6 @@
         "@pulumi/azure-native": "^1.63.0",
         "@pulumi/cloudflare": "^4.5.0",
         "@pulumi/command": "^0.1.0",
-        "@pulumi/pulumi": "^3.30.0"
+        "@pulumi/pulumi": "^3.31.0"
     }
 }
