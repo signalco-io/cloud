@@ -14,7 +14,7 @@ namespace Signal.Api.Public.Exceptions;
 
 public static class HttpRequestExtensions
 {
-    public class TimeSpanConverter : JsonConverter<TimeSpan>
+    private class TimeSpanConverter : JsonConverter<TimeSpan>
     {
         public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -28,7 +28,7 @@ public static class HttpRequestExtensions
         }
     }
 
-    public static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
+    internal static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
     {
         var requestContent = await req.ReadAsStringAsync();
         if (string.IsNullOrWhiteSpace(requestContent))
@@ -68,11 +68,11 @@ public static class HttpRequestExtensions
         CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
         Func<UserRequestContextWithPayload<TPayload>, Task> executionBody) =>
-        UserRequest<TPayload>(req, cancellationToken, authenticator, async context =>
+        UserRequest<TPayload>(req, authenticator, async context =>
         {
             await executionBody(context);
             return new OkResult();
-        });
+        }, cancellationToken);
 
     internal static Task<IActionResult> UserRequest<TPayload, TResponse>(
         this HttpRequest req,
@@ -84,9 +84,9 @@ public static class HttpRequestExtensions
 
     private static async Task<IActionResult> UserRequest<TPayload>(
         this HttpRequest req,
-        CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
-        Func<UserRequestContextWithPayload<TPayload>, Task<IActionResult>> executionBody)
+        Func<UserRequestContextWithPayload<TPayload>, Task<IActionResult>> executionBody,
+        CancellationToken cancellationToken)
     {
         try
         {
