@@ -1,4 +1,5 @@
 config:
+  aws:region: eu-west-1
   azure-native:clientId: 92261697-6976-49ea-a6b0-82e81b393e1c
   azure-native:clientSecret:
     secure: AAABADxj9xKtX9JVQ/+Au7ppqN2KlNfUHKCsOzP7FOAL+V+NzGUk5RNU9rdcVurVuhNJVk1MGGbK9Oh3sZrCsySn
