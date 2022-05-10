@@ -68,7 +68,7 @@ export default function createSes (prefix: string, subdomain: string) {
             mailFromDomain: pulumi.interpolate`bounce.${sesDomainIdentity.domain}`
         });
 
-    dnsRecord(`${prefix}-ses-mail-from-mx-record`, mailFrom.mailFromDomain, `10 feedback-smtp.${sesRegion}.amazonses.com`, 'MX', false);
+    dnsRecord(`${prefix}-ses-mail-from-mx-record`, `bounce.${subdomain}`, `feedback-smtp.${sesRegion}.amazonses.com`, 'MX', false);
     dnsRecord(`${prefix}-spf`, mailFrom.mailFromDomain, 'v=spf1 include:amazonses.com -all', 'TXT', false);
     dnsRecord(`${prefix}-ses-dmarc`, `_dmarc.${subdomain}`, 'v=DMARC1; p=none; rua=mailto:contact@signalco.io; fo=1;', 'TXT', false);
 
@@ -83,6 +83,7 @@ export default function createSes (prefix: string, subdomain: string) {
 
     return {
         smtpUsername: sesSmtpUsername,
-        smtpPassword: sesSmtpPassword
+        smtpPassword: sesSmtpPassword,
+        smtpServer: `email-smtp.${sesRegion}.amazonaws.com`
     };
 }
