@@ -75,7 +75,7 @@ Production API
   - stacks `next` and `production` are already configured
 - Configure (pick one method)
   - _(recommended)_ create file `.aws/credentials` in your home directory
-  - set environment variables
+  - set environment variables (for CI/CD)
     - Windows:
       - `$env:AWS_ACCESS_KEY_ID = "<YOUR_ACCESS_KEY_ID>"`
       - `$env:AWS_SECRET_ACCESS_KEY = "<YOUR_SECRET_ACCESS_KEY>"`
