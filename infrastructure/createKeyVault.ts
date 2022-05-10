@@ -53,7 +53,7 @@ export function createKeyVault (
             ]
         }
     }, {
-        protect: protect
+        protect
     });
 
     return {

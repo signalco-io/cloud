@@ -32,7 +32,7 @@ export function assignFunctionCode (resourceGroup: ResourceGroup, app: WebApp, n
 
     return {
         storageAccount: account,
-        codeBlob: codeBlob,
+        codeBlob,
         codeBlobUlr: codeBlobUrl
     };
 }

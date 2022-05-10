@@ -6,12 +6,12 @@ export function dnsRecord (name: string, dnsName: Input<string>, value: Input<st
     const zoneId = config.requireSecret('zoneid');
     return new Record(name, {
         name: dnsName,
-        zoneId: zoneId,
-        type: type,
-        value: value,
+        zoneId,
+        type,
+        value,
         priority: type === 'MX' ? 10 : undefined
     }, {
-        protect: protect
+        protect
         // parent: parent
     });
 }

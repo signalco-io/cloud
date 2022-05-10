@@ -14,7 +14,7 @@ export function createStorageAccount (resourceGroup: ResourceGroup, namePrefix: 
         },
         kind: Kind.StorageV2
     }, {
-        protect: protect
+        protect
         // parent: parent ?? resourceGroup
     });
 

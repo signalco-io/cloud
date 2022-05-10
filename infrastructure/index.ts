@@ -122,7 +122,7 @@ tableNames.forEach(tableName => {
     new Table(`sa${storagePrefix}-table-${tableName}`, {
         resourceGroupName: resourceGroup.name,
         accountName: storage.storageAccount.name,
-        tableName: tableName
+        tableName
     }, {
         protect: shouldProtect
     });
