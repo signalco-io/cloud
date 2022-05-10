@@ -61,6 +61,7 @@ export default function createSes (prefix: string, subdomain: string) {
     dnsRecord(`${prefix}-verify`, interpolate`_amazonses.${sesDomainIdentity.domain}`, sesDomainIdentity.verificationToken, 'TXT', false);
 
     // MailFrom
+    const mailFromDomain = sesDomainIdentity.domain;
     const mailFrom = new aws.ses.MailFrom(
         `${prefix}-ses-mail-from`,
         {
@@ -84,6 +85,7 @@ export default function createSes (prefix: string, subdomain: string) {
     return {
         smtpUsername: sesSmtpUsername,
         smtpPassword: sesSmtpPassword,
-        smtpServer: `email-smtp.${sesRegion}.amazonaws.com`
+        smtpServer: `email-smtp.${sesRegion}.amazonaws.com`,
+        smtpFromDomain: mailFromDomain
     };
 }

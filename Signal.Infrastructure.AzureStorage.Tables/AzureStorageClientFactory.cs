@@ -57,7 +57,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
         return client;
     }
 
-    public async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken)
+    public async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken = default)
     {
         // Return established client if available
         if (EstablishedTableClients.TryGetValue(tableName, out var client))
@@ -72,6 +72,6 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
         return client;
     }
 
-    private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
+    private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default) =>
         await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken);
 }
