@@ -25,7 +25,7 @@ export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string,
             name: 'Free_F1' // "Standard_S1"
         }
     }, {
-        protect: protect
+        protect
         // parent: resourceGroup
     });
 
@@ -35,7 +35,7 @@ export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string,
     }).primaryConnectionString}`;
 
     return {
-        signalr: signalr,
-        connectionString: connectionString
+        signalr,
+        connectionString
     };
 }

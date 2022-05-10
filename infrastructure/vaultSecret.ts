@@ -8,11 +8,11 @@ export default function vaultSecret (resourceGroup: ResourceGroup, vault: Vault,
         vaultName: vault.name,
         secretName: name,
         properties: {
-            value: value
+            value
         }
     });
 
     return {
-        secret: secret
+        secret
     };
 }

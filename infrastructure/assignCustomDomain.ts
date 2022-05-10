@@ -42,7 +42,7 @@ export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp
         canonicalName: fullDomainName,
         serverFarmId: servicePlan.id
     }, {
-        protect: protect,
+        protect,
         dependsOn: [assignHostName]
         // parent: webApp
     });
@@ -66,14 +66,14 @@ export function assignCustomDomain (resourceGroup: ResourceGroup, webApp: WebApp
         thumbprint: cert.thumbprint
     }, {
         dependsOn: [deleteHostName],
-        protect: protect
+        protect
         // parent: webApp
     });
 
     return {
         dnsTxtVerify: txtVerifyRecord,
         dnsCname: cname,
-        cert: cert,
-        binding: binding
+        cert,
+        binding
     };
 }
