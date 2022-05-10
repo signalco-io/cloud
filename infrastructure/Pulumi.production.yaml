@@ -21,6 +21,7 @@ config:
     secure: AAABAMvfzeLqc1tvyw4KSpVixsL8hy08wkODLSCF3qajCHvTi6GLXOeIrUYNGqbdImy9KfQlKk3gXwO1vt9dAVi/Qx3gaTRb5Po=
   cloud-primary:secret-hcaptchaSiteKey:
     secure: AAABAF1AfWZXqsXFMZllfG/8e5RxfbDGPDcs9JLWvpAWFi30FqX1uGKvjajI289J3ahskb2EW3r502JcEyZAwTtcPEM=
+  cloud-primary:ses-region: eu-west-1
   cloud-primary:zoneid:
     secure: AAABAN2VoVSuH03hLA7i6aV9BM8CZpjwa8j/SrWuC9PDYFKPKVAdB8v9ovYO3+N0kaofdJ11dB8j67aeQP82ig==
   cloudflare:apiToken:
