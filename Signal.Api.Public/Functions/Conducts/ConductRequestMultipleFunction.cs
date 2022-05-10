@@ -44,7 +44,7 @@ public class ConductRequestMultipleFunction
     [FunctionName("Conducts-RequestMultiple")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ConductRequestMultipleFunction), "Conducts", Description = "Requests multiple conducts to be executed.")]
-    [OpenApiRequestBody("application/json", typeof(List<ConductRequestDto>), Description = "Collection of conducts to execute.")]
+    [OpenApiRequestBody("application/json", typeof(List<ConductRequestMultipleDto>), Description = "Collection of conducts to execute.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
@@ -52,10 +52,10 @@ public class ConductRequestMultipleFunction
         HttpRequest req,
         [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<List<ConductRequestDto>>(cancellationToken, this.functionAuthenticator, async context =>
+        await req.UserRequest<List<ConductRequestMultipleDto>>(cancellationToken, this.functionAuthenticator, async context =>
         {
             var payload = context.Payload;
-            var usersConducts = new Dictionary<string, ICollection<ConductRequestDto>>();
+            var usersConducts = new Dictionary<string, ICollection<ConductRequestMultipleDto>>();
             foreach (var conduct in payload)
             {
                 if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
@@ -120,9 +120,9 @@ public class ConductRequestMultipleFunction
                     }, cancellationToken);
             }
         });
-    
+
     [Serializable]
-    private class ConductRequestDto
+    private class ConductRequestMultipleDto
     {
         [Required]
         public string? DeviceId { get; set; }
