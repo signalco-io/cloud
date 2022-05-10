@@ -81,7 +81,7 @@ public class ConductRequestMultipleFunction
                                     createRequest.Title,
                                     createRequest.Content,
                                     NotificationContentType.Text),
-                                default,
+                                new NotificationOptions(true),
                                 cancellationToken);
                         }
                     }
