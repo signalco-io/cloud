@@ -1,4 +1,5 @@
 config:
+  aws:region: eu-west-1
   azure-native:clientId: 92261697-6976-49ea-a6b0-82e81b393e1c
   azure-native:clientSecret:
     secure: AAABAEscAnqyq7GzSORl83/reqxPXpW7AiV6qHWviDwGd03K4SjKZ2f/buYvdzxfn9EvIxt3+jqEGyzzymr85rye
@@ -20,6 +21,7 @@ config:
     secure: AAABAMJXbme1rRLsVwaAVXTtrYqBhcmmfLICCr0mJLhGMwlF1z8Phs1u1yoJSq136dj8TrD2Ydco5sAP6+ETWOAlZDFrQ492KkQ=
   cloud-primary:secret-hcaptchaSiteKey:
     secure: AAABAKLPquKFTwMLZWWu0L3xg8ZZ4YqZnVELd2neKlViJQ9BBu730/H2GepcfdWDpQib02GnVSJZ8HbxWixUzWE1jwA=
+  cloud-primary:ses-region: eu-west-1
   cloud-primary:zoneid:
     secure: AAABACrv5fJbGdQBkKEIwC1TMQbqEKliXocv5gGQtk7BJ5U7k4CfpThQNjxS9Rg4cY3uOgXj+TreDQDHZ1SoaQ==
   cloudflare:apiToken:

@@ -13,6 +13,7 @@ import { assignFunctionSettings } from './assignFunctionSettings';
 import * as checkly from '@checkly/pulumi';
 import createWebAppAppInsights from './createWebAppAppInsights';
 import createAppInsights from './createAppInsights';
+import createSes from './createSes';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -126,6 +127,9 @@ tableNames.forEach(tableName => {
         protect: shouldProtect
     });
 });
+
+// Create AWS SES service
+const ses = createSes(`ses-${stack}`, 'notification');
 
 // Create and populate vault
 const vault = createKeyVault(resourceGroup, keyvaultPrefix, shouldProtect, [
