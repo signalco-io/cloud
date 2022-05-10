@@ -58,7 +58,6 @@ export default function createSes (prefix: string, subdomain: string) {
     const sesDomainIdentity = new aws.ses.DomainIdentity(`${prefix}-domainIdentity`, {
         domain: `${subdomain}.${baseDomain}`
     });
-    dnsRecord(`${prefix}-verify`, interpolate`_amazonses.${sesDomainIdentity.domain}`, sesDomainIdentity.verificationToken, 'TXT', false);
 
     // MailFrom
     const mailFromDomain = sesDomainIdentity.domain;
