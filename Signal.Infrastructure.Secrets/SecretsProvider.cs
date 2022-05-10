@@ -23,7 +23,7 @@ namespace Signal.Infrastructure.Secrets
             this.configuration = configuration;
         }
         
-        public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken)
+        public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken = default)
         {
             // Check cache
             if (Cache.ContainsKey(key))

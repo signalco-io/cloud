@@ -5,6 +5,6 @@ namespace Signal.Core
 {
     public interface ISecretsProvider
     {
-        Task<string> GetSecretAsync(string key, CancellationToken cancellationToken);
+        Task<string> GetSecretAsync(string key, CancellationToken cancellationToken = default);
     }
 }

@@ -32,7 +32,7 @@ namespace Signal.Core.Storage
 
         Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(string userId, CancellationToken cancellationToken);
 
-        Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken);
+        Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken = default);
 
         Task<string?> UserIdByEmailAsync(string userEmail, CancellationToken cancellationToken);
 

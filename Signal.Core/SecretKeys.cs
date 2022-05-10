@@ -28,5 +28,16 @@
 
             public const string Region = "AzureSpeech--Region";
         }
+
+        public static class SmtpNotification
+        {
+            public const string Username = "SmtpNotificationUsername";
+
+            public const string Password = "SmtpNotificationPassword";
+
+            public const string Server = "SmtpNotificationServerUrl";
+
+            public const string FromDomain = "SmtpNotificationFromDomain";
+        }
     }
 }

@@ -86,7 +86,7 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken)
+    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
