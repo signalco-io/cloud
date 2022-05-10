@@ -16,7 +16,7 @@ export function assignFunctionSettings (resourceGroup: ResourceGroup, app: WebAp
             ...appSettings
         }
     }, {
-        protect: protect
+        protect
         // parent: app
     });
 

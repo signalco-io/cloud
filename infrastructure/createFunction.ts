@@ -10,7 +10,7 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
             tier: 'Dynamic'
         }
     }, {
-        protect: protect
+        protect
         // parent: resourceGroup
     });
 
@@ -41,7 +41,7 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
             }
         }
     }, {
-        protect: protect
+        protect
         // parent: plan
     });
 

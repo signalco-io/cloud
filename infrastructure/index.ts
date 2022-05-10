@@ -13,6 +13,7 @@ import { assignFunctionSettings } from './assignFunctionSettings';
 import * as checkly from '@checkly/pulumi';
 import createWebAppAppInsights from './createWebAppAppInsights';
 import createAppInsights from './createAppInsights';
+import createSes from './createSes';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -121,11 +122,14 @@ tableNames.forEach(tableName => {
     new Table(`sa${storagePrefix}-table-${tableName}`, {
         resourceGroupName: resourceGroup.name,
         accountName: storage.storageAccount.name,
-        tableName: tableName
+        tableName
     }, {
         protect: shouldProtect
     });
 });
+
+// Create AWS SES service
+const ses = createSes(`ses-${stack}`, 'notification');
 
 // Create and populate vault
 const vault = createKeyVault(resourceGroup, keyvaultPrefix, shouldProtect, [
@@ -140,6 +144,10 @@ vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--Secret', c
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'HCaptcha--SiteKey', config.requireSecret('secret-hcaptchaSiteKey'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalStorageAccountConnectionString', storage.connectionString);
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SignalcoKeyVaultUrl', interpolate`${vault.keyVault.properties.vaultUri}`);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationServerUrl', ses.smtpServer);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationFromDomain', ses.smtpFromDomain);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationUsername', ses.smtpUsername);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationPassword', ses.smtpPassword);
 
 // Populate function settings
 assignFunctionSettings(
