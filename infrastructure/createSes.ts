@@ -4,7 +4,6 @@ import { interpolate } from '@pulumi/pulumi';
 import { dnsRecord } from './dnsRecord';
 
 export default function createSes (prefix: string, subdomain: string) {
-    const stack = pulumi.getStack();
     const config = new pulumi.Config();
     const baseDomain = config.require('domain');
     const sesRegion = config.require('ses-region');
@@ -18,7 +17,7 @@ export default function createSes (prefix: string, subdomain: string) {
     );
 
     // Policy
-    const allowedFromAddress = stack === 'production' ? `*@${baseDomain}` : `*@${stack}.${baseDomain}`;
+    const allowedFromAddress = `*@${subdomain}.${baseDomain}`;
     new aws.iam.UserPolicy(
         `${prefix}-ses-policy`,
         {
