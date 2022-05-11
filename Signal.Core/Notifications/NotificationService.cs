@@ -44,7 +44,7 @@ internal class NotificationService : INotificationService
             }
             catch
             {
-                // TODO: Log failed to send notification
+                throw;
             }
         }
     }
