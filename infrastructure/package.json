@@ -8,7 +8,7 @@
     "devDependencies": {
         "@types/node": "^17",
         "@typescript-eslint/eslint-plugin": "^5.24.0",
-        "@typescript-eslint/parser": "^5.24.0",
+        "@typescript-eslint/parser": "^5.25.0",
         "eslint": "^8.15.0",
         "eslint-config-standard": "^17.0.0",
         "eslint-plugin-import": "^2.26.0",
