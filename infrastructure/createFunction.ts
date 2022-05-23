@@ -32,8 +32,10 @@ export function createFunction (resourceGroup: ResourceGroup, namePrefix: string
             cors: {
                 allowedOrigins: cors
                     ? [
-                        'https://localhost:3000',
-                        'http://localhost:3000',
+                        'https://localhost:3000', // Next.js
+                        'http://localhost:3000', // Next.js
+                        'http://localhost:6006', // Storybook
+                        'http://localhost:6006', // Storybook
                         ...cors.map(c => interpolate`https://${c}`)
                     ]
                     : ['*'],
