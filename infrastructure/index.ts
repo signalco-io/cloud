@@ -39,8 +39,9 @@ const storagePrefix = 'store';
 const keyvaultPrefix = 'kv';
 
 const resourceGroup = new ResourceGroup(resourceGroupName);
+const corsDomains = [`www.${domainName}`, domainName];
 
-const signalr = createSignalR(resourceGroup, signalrPrefix, shouldProtect);
+const signalr = createSignalR(resourceGroup, signalrPrefix, corsDomains, shouldProtect);
 new checkly.Check(`signalr-check-${signalrPrefix}`, {
     name: `SignalR (${stack})`,
     activated: true,
@@ -55,7 +56,6 @@ new checkly.Check(`signalr-check-${signalrPrefix}`, {
 });
 
 // Create Public function
-const corsDomains = [`www.${domainName}`, domainName];
 const pubFunc = createPublicFunction(
     resourceGroup,
     publicFunctionPrefix,
