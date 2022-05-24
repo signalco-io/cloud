@@ -2,10 +2,19 @@ import { interpolate } from '@pulumi/pulumi';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
 import { SignalR, listSignalRKeysOutput } from '@pulumi/azure-native/signalrservice';
 
-export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string, protect: boolean) {
+export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string, cors?: Input<string>[], protect: boolean) {
     const signalr = new SignalR('signalr-' + namePrefix, {
         cors: {
-            allowedOrigins: ['*']
+            allowedOrigins: cors
+                ? [
+                    'https://localhost:3000', // Next.js
+                    'http://localhost:3000', // Next.js
+                    'https://localhost:6006', // Storybook
+                    'http://localhost:6006', // Storybook
+                    ...cors.map(c => interpolate`https://${c}`)
+                ]
+                : ['*'],
+            supportCredentials: !!cors
         },
         kind: 'SignalR',
         networkACLs: {
