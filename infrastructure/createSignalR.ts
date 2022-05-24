@@ -1,4 +1,4 @@
-import { interpolate } from '@pulumi/pulumi';
+import { Input, interpolate } from '@pulumi/pulumi';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
 import { SignalR, listSignalRKeysOutput } from '@pulumi/azure-native/signalrservice';
 
