@@ -2,7 +2,7 @@ import { Input, interpolate } from '@pulumi/pulumi';
 import { ResourceGroup } from '@pulumi/azure-native/resources';
 import { SignalR, listSignalRKeysOutput } from '@pulumi/azure-native/signalrservice';
 
-export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string, cors?: Input<string>[], protect: boolean) {
+export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string, cors: Input<string>[], protect: boolean) {
     const signalr = new SignalR('signalr-' + namePrefix, {
         cors: {
             allowedOrigins: cors
