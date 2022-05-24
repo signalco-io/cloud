@@ -13,8 +13,7 @@ export function createSignalR (resourceGroup: ResourceGroup, namePrefix: string,
                     'http://localhost:6006', // Storybook
                     ...cors.map(c => interpolate`https://${c}`)
                 ]
-                : ['*'],
-            supportCredentials: !!cors
+                : ['*']
         },
         kind: 'SignalR',
         networkACLs: {
