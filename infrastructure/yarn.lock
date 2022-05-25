@@ -143,10 +143,10 @@
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
-"@pulumi/cloudflare@^4.5.0":
-  version "4.6.0"
-  resolved "https://registry.yarnpkg.com/@pulumi/cloudflare/-/cloudflare-4.6.0.tgz#0c60dc2f78d199ccfdde60306c77545a79e0a9bb"
-  integrity sha512-UvcQTSz38m7qBwKcaWzrPYGClcc+x5vSTqOeJPqFJbE785InT8yCN9DlzC6mOrKikOR7HlkJ7jthBwKbDLk4mw==
+"@pulumi/cloudflare@^4.7.0":
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/@pulumi/cloudflare/-/cloudflare-4.7.0.tgz#43e46140acc9b5c5c1c555677f878a3648550354"
+  integrity sha512-QrSxPbGgDSkQBNVZysBzJqeDgimBnVQoDoX8ynQy29WC1i7knBpA150XFErthxZb3II4fLVyDKv2/EizI4CbeA==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
