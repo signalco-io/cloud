@@ -37,7 +37,8 @@ Production API
 
 - `dotnet publish ./Signal.Api.Public --configuration Release`
 - `dotnet publish ./Signal.Api.Internal --configuration Release`
-- `dotnet publish ./Signalco.Cloud.Channel.GitHubApp --configuration Release`
+- `dotnet publish ./Signalco.Channel.GitHubApp --configuration Release`
+- `dotnet publish ./Signalco.Channel.Slack --configuration Release`
 
 ##### **Pulumi (required for Deploy step)**
 

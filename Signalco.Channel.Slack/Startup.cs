@@ -1,15 +1,13 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Signal.Api.Common.Auth;
-using Signal.Api.Common.HCaptcha;
-using Signal.Api.Public;
 using Signal.Core;
-using Signal.Infrastructure.AzureStorage.Tables;
 using Signal.Infrastructure.Secrets;
+using Signalco.Channel.Slack;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
-namespace Signal.Api.Public;
+namespace Signalco.Channel.Slack;
 
 public class Startup : FunctionsStartup
 {
@@ -18,9 +16,7 @@ public class Startup : FunctionsStartup
         builder.Services
             .AddTransient<ISecretsProvider, SecretsProvider>()
             .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
-            .AddAzureStorage()
-            .AddCore()
-            .AddHCaptcha();
+            .AddCore();
     }
 
     public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)

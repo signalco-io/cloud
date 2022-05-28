@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Signal.Core.Auth;
 
-namespace Signal.Api.Public.Auth;
+namespace Signal.Api.Common.Auth;
 
 public interface IFunctionAuthenticator
 {

@@ -1,9 +1,9 @@
 using System.Threading;
 using Signal.Core.Auth;
 
-namespace Signal.Api.Public.Exceptions;
+namespace Signal.Api.Common.Exceptions;
 
-internal class UserRequestContextWithPayload<TPayload> : UserRequestContext
+public class UserRequestContextWithPayload<TPayload> : UserRequestContext
 {
     public TPayload Payload { get; }
 

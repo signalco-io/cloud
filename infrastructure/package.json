@@ -6,7 +6,7 @@
         "lint": "eslint **/*.ts"
     },
     "devDependencies": {
-        "@types/node": "^17",
+        "@types/node": "^17.0.36",
         "@typescript-eslint/eslint-plugin": "^5.26.0",
         "@typescript-eslint/parser": "^5.26.0",
         "eslint": "^8.16.0",
@@ -22,7 +22,7 @@
         "@pulumi/aws": "^5.5.0",
         "@pulumi/azure-native": "^1.64.1",
         "@pulumi/cloudflare": "^4.7.0",
-        "@pulumi/command": "^0.1.0",
-        "@pulumi/pulumi": "^3.33.1"
+        "@pulumi/command": "^0.2.0",
+        "@pulumi/pulumi": "^3.33.2"
     }
 }

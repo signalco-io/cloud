@@ -1,8 +1,7 @@
 using System;
-using Signal.Core;
 using Signal.Core.Auth;
 
-namespace Signal.Api.Public.Auth;
+namespace Signal.Api.Common.Auth;
 
 public class UserAuth : IUserAuth
 {
@@ -10,8 +9,8 @@ public class UserAuth : IUserAuth
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(userId));
-            
-        this.UserId = userId;
+
+        UserId = userId;
     }
 
     public string UserId { get; }
