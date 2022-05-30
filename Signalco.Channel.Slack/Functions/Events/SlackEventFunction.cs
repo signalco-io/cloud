@@ -1,8 +1,6 @@
 using System;
-using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,22 +10,19 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Signal.Api.Common;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
-using Signal.Core.Exceptions;
-using Signalco.Channel.Slack.Secrets;
 
 namespace Signalco.Channel.Slack.Functions.Events
 {
     public class SlackEventFunction
     {
-        private readonly ISecretsProvider secrets;
+        private readonly ISlackRequestHandler slackRequestHandler;
         private readonly ILogger<SlackEventFunction> logger;
 
         public SlackEventFunction(
-            ISecretsProvider secrets,
+            ISlackRequestHandler slackRequestHandler,
             ILogger<SlackEventFunction> log)
         {
-            this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
+            this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
             logger = log ?? throw new ArgumentNullException(nameof(log));
         }
 
@@ -37,9 +32,10 @@ namespace Signalco.Channel.Slack.Functions.Events
         [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
         [OpenApiResponseBadRequestValidation]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "hooks/event")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "hooks/event")] HttpRequest req,
+            CancellationToken cancellationToken)
         {
-            await VerifyFromSlack(req);
+            await this.slackRequestHandler.VerifyFromSlack(req, cancellationToken);
 
             var eventReq = await req.ReadAsJsonAsync<EventRequestDto>();
             switch (eventReq.Type)
@@ -53,27 +49,6 @@ namespace Signalco.Channel.Slack.Functions.Events
                 default:
                     this.logger.LogWarning("Unknown event request type {Type}", eventReq.Type);
                     return new BadRequestResult();
-            }
-        }
-
-        private async Task VerifyFromSlack(HttpRequest req)
-        {
-            var signature = req.Headers["X-Slack-Signature"];
-            var timeStamp = req.Headers["X-Slack-Request-Timestamp"];
-            var signingSecret = await this.secrets.GetSecretAsync(SlackSecretKeys.SigningSecret);
-            var content = await req.ReadAsStringAsync();
-
-            var signBaseString = $"v0:{timeStamp}:{content}";
-
-            var encoding = new UTF8Encoding();
-            using var hmac = new HMACSHA256(encoding.GetBytes(signingSecret));
-            var hash = hmac.ComputeHash(encoding.GetBytes(signBaseString));
-            var hashString = $"v0={BitConverter.ToString(hash).Replace("-", "").ToLower(CultureInfo.InvariantCulture)}";
-
-            if (hashString != signature)
-            {
-                this.logger.LogWarning("Slack signature not matching content");
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Signature not valid");
             }
         }
 
