@@ -50,24 +50,6 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: "Install latest pulumi"
-        shell: bash
-        run: |
-          curl -fsSL https://get.pulumi.com | sh
-
-      - name: "Prepare infrastructure deployment"
-        run: |
-          pushd './infrastructure'
-          yarn install
-          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
-          popd
-
-      - name: "Lint infrastructure"
-        run: |
-          pushd './infrastructure'
-          yarn lint
-          popd
-
       - name: Extract branch name
         shell: bash
         run: |
@@ -79,6 +61,10 @@ jobs:
       - shell: bash
         run: |
           pushd './infrastructure'
+          curl -fsSL https://get.pulumi.com | sh
+          yarn install
+          yarn lint
+          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
           /home/runner/.pulumi/bin/pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }} --yes
           popd
         env:
