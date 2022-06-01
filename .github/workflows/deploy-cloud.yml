@@ -48,6 +48,11 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: "Install latest pulumi"
+        shell: bash
+        run: |
+          curl -fsSL https://get.pulumi.com | sh
+
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
