@@ -52,13 +52,12 @@ jobs:
         shell: bash
         run: |
           curl -fsSL https://get.pulumi.com | sh
-          /home/runner/.pulumi/bin/pulumi
 
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
           yarn install
-          pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
+          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
           popd
 
       - name: Extract branch name
@@ -70,7 +69,7 @@ jobs:
       - shell: bash
         run: |
           pushd './infrastructure'
-          pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }}
+          /home/runner/.pulumi/bin/pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }} --yes
           popd
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
