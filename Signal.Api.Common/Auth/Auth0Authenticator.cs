@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Signal.Api.Public.Auth;
+namespace Signal.Api.Common.Auth;
 
 /// <summary>
 /// A type that authenticates users against an Auth0 account.

@@ -14,6 +14,7 @@ import * as checkly from '@checkly/pulumi';
 import createWebAppAppInsights from './createWebAppAppInsights';
 import createAppInsights from './createAppInsights';
 import createSes from './createSes';
+import createChannelFunction from './createChannelFunction';
 
 /*
  * NOTE: `parent` configuration is currently disabled for all resources because
@@ -69,7 +70,6 @@ const pubFuncCode = assignFunctionCode(
     publicFunctionPrefix,
     '../Signal.Api.Public/bin/Release/net6.0/publish/',
     shouldProtect);
-
 new checkly.Check(`func-apicheck-${publicFunctionPrefix}`, {
     name: `API (${stack})`,
     activated: true,
@@ -111,6 +111,9 @@ new checkly.Check(`func-apicheck-${internalFunctionPrefix}`, {
     }
 });
 
+// Generate channels
+const slackFunc = createChannelFunction('slack', resourceGroup, shouldProtect);
+
 // Create general storage and prepare tables
 const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
 const tableNames = [
@@ -134,7 +137,8 @@ const ses = createSes(`ses-${stack}`, 'notification');
 // Create and populate vault
 const vault = createKeyVault(resourceGroup, keyvaultPrefix, shouldProtect, [
     webAppIdentity(pubFunc.webApp),
-    webAppIdentity(intFunc.webApp)
+    webAppIdentity(intFunc.webApp),
+    webAppIdentity(slackFunc.webApp)
 ]);
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Auth0--ApiIdentifier', config.requireSecret('secret-auth0ApiIdentifier'));
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Auth0--ClientId--Station', config.requireSecret('secret-auth0ClientIdStation'));
@@ -148,6 +152,9 @@ vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationServ
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationFromDomain', ses.smtpFromDomain);
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationUsername', ses.smtpUsername);
 vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'SmtpNotificationPassword', ses.smtpPassword);
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Slack--SigningSecret', config.requireSecret('secret-slackSigningSecret'));
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Slack--ClientId', config.require('secret-slackClientId'));
+vaultSecret(resourceGroup, vault.keyVault, keyvaultPrefix, 'Slack--ClientSecret', config.requireSecret('secret-slackClientSecret'));
 
 // Populate function settings
 assignFunctionSettings(
@@ -176,10 +183,26 @@ assignFunctionSettings(
     shouldProtect
 );
 
+// Populate channel function settings
+assignFunctionSettings(
+    resourceGroup,
+    slackFunc.webApp,
+    'channelslack',
+    slackFunc.storageAccount.connectionString,
+    slackFunc.codeBlobUlr,
+    {
+        SignalcoKeyVaultUrl: interpolate`${vault.keyVault.properties.vaultUri}`,
+        APPINSIGHTS_INSTRUMENTATIONKEY: interpolate`${pubFuncInsights.component.instrumentationKey}`,
+        APPLICATIONINSIGHTS_CONNECTION_STRING: interpolate`${pubFuncInsights.component.connectionString}`
+    },
+    shouldProtect
+);
+
 createAppInsights(resourceGroup, 'web', 'signalco');
 
 export const signalRUrl = signalr.signalr.hostName;
 export const internalApiUrl = intFunc.webApp.hostNames[0];
 export const publicApiUrl = pubFunc.dnsCname.hostname;
-
-// TODO: Add Checkly checks for deployed functions
+export const channelsUrls = [
+    slackFunc.dnsCname.hostname
+];

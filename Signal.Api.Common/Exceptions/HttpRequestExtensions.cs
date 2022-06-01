@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Signal.Api.Public.Auth;
+using Signal.Api.Common.Auth;
 using Signal.Core.Exceptions;
 
-namespace Signal.Api.Public.Exceptions;
+namespace Signal.Api.Common.Exceptions;
 
 public static class HttpRequestExtensions
 {
@@ -28,7 +28,7 @@ public static class HttpRequestExtensions
         }
     }
 
-    internal static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
+    public static async Task<T> ReadAsJsonAsync<T>(this HttpRequest req)
     {
         var requestContent = await req.ReadAsStringAsync();
         if (string.IsNullOrWhiteSpace(requestContent))
@@ -42,8 +42,8 @@ public static class HttpRequestExtensions
                 Converters = {new TimeSpanConverter()}
             })!;
     }
-    
-    internal static async Task<IActionResult> UserRequest<TResponse>(
+
+    public static async Task<IActionResult> UserRequest<TResponse>(
         this HttpRequest req,
         CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
@@ -63,7 +63,7 @@ public static class HttpRequestExtensions
         }
     }
 
-    internal static Task<IActionResult> UserRequest<TPayload>(
+    public static Task<IActionResult> UserRequest<TPayload>(
         this HttpRequest req,
         CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
@@ -74,7 +74,7 @@ public static class HttpRequestExtensions
             return new OkResult();
         }, cancellationToken);
 
-    internal static Task<IActionResult> UserRequest<TPayload, TResponse>(
+    public static Task<IActionResult> UserRequest<TPayload, TResponse>(
         this HttpRequest req,
         CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,

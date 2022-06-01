@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@checkly/pulumi@^0.0.1-alpha.6":
-  version "0.0.1-alpha.6"
-  resolved "https://registry.yarnpkg.com/@checkly/pulumi/-/pulumi-0.0.1-alpha.6.tgz#a0cf35d5cc4c84abfd0d8fbb595dea7dda219b3b"
-  integrity sha512-zxaCduqlBwxGwOxdrAc2IcyjIWn/c5gk+QyxeYRmKHj1cv+9appU4FHYAuySW+a1HU0P3Vz18wdOcqNnfHLLaA==
+"@checkly/pulumi@0.0.1-alpha.9":
+  version "0.0.1-alpha.9"
+  resolved "https://registry.yarnpkg.com/@checkly/pulumi/-/pulumi-0.0.1-alpha.9.tgz#102babe53f6850d099a1cacb67486fe39b8017a4"
+  integrity sha512-YhAf+4gRfjf2XB0r2BtWvlp++JNR+ZT8+5YZ7yHHOYkC78nCF+ZpC5nK8EvNAGaTpFS6nURraPh7zKOojksHwQ==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 

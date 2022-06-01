@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Devices;
 using Signal.Core.Exceptions;
@@ -19,17 +19,17 @@ namespace Signal.Api.Public.Functions.Devices;
 public class DevicesRegisterFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
-    private readonly IAzureStorage storage;
     private readonly IAzureStorageDao storageDao;
+    private readonly IEntityService entityService;
 
     public DevicesRegisterFunction(
         IFunctionAuthenticator functionAuthenticator,
-        IAzureStorage storage,
-        IAzureStorageDao storageDao)
+        IAzureStorageDao storageDao,
+        IEntityService entityService)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
     }
 
     [FunctionName("Devices-Register")]
@@ -51,30 +51,17 @@ public class DevicesRegisterFunction
             if (userDevices.Any(ud => ud.DeviceIdentifier == payload.DeviceIdentifier))
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Device already exists.");
 
-            // TODO: Move to EntityService.GenerateIdAsync(EntityType, CancellationToken)
-            // Generate device id
-            // Check if device with new id exists (avoid collisions)
-            var deviceId = Guid.NewGuid().ToString();
-            while ((await this.storageDao.EntitiesByRowKeysAsync(ItemTableNames.Devices, new[] { deviceId }, cancellationToken)).Any())
-                deviceId = Guid.NewGuid().ToString();
-
-            // Create new device
-            await this.storage.CreateOrUpdateItemAsync(
+            var deviceId = await this.entityService.UpsertAsync(
+                user.UserId,
+                null,
+                TableEntityType.Device,
                 ItemTableNames.Devices,
-                new DeviceInfoTableEntity(
-                    deviceId,
+                id => new DeviceInfoTableEntity(
+                    id,
                     payload.DeviceIdentifier,
                     payload.Alias ?? "New device",
                     payload.Manufacturer,
                     payload.Model),
-                cancellationToken);
-
-            // Assign device to user
-            await this.storage.CreateOrUpdateItemAsync(
-                ItemTableNames.UserAssignedEntity(TableEntityType.Device),
-                new UserAssignedEntityTableEntry(
-                    user.UserId,
-                    deviceId),
                 cancellationToken);
 
             return new DeviceRegisterResponseDto(deviceId);

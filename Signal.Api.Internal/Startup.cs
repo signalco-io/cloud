@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using Signal.Api.Internal;
 using Signal.Core;
 using Signal.Infrastructure.AzureStorage.Tables;
@@ -14,7 +13,8 @@ public class Startup : FunctionsStartup
     public override void Configure(IFunctionsHostBuilder builder)
     {
         builder.Services
-            .AddTransient<ISecretsProvider, SecretsProvider>()
+            .AddCore()
+            .AddSecrets()
             .AddAzureStorage();
     }
 

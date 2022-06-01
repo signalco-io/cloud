@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Signal.Core.Exceptions;
 
-namespace Signal.Api.Public.Auth;
+namespace Signal.Api.Common.Auth;
 
 public sealed class AuthenticationExpectedHttpException : ExpectedHttpException
 {

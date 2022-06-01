@@ -7,9 +7,9 @@ using Signal.Core.Auth;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Exceptions;
+namespace Signal.Api.Common.Exceptions;
 
-internal class UserRequestContext
+public class UserRequestContext
 {
     public UserRequestContext(IUserAuth user, CancellationToken cancellationToken)
     {
