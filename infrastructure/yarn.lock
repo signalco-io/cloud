@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@checkly/pulumi@^0.0.1-alpha.6":
-  version "0.0.1-alpha.6"
-  resolved "https://registry.yarnpkg.com/@checkly/pulumi/-/pulumi-0.0.1-alpha.6.tgz#a0cf35d5cc4c84abfd0d8fbb595dea7dda219b3b"
-  integrity sha512-zxaCduqlBwxGwOxdrAc2IcyjIWn/c5gk+QyxeYRmKHj1cv+9appU4FHYAuySW+a1HU0P3Vz18wdOcqNnfHLLaA==
+"@checkly/pulumi@0.0.1-alpha.9":
+  version "0.0.1-alpha.9"
+  resolved "https://registry.yarnpkg.com/@checkly/pulumi/-/pulumi-0.0.1-alpha.9.tgz#102babe53f6850d099a1cacb67486fe39b8017a4"
+  integrity sha512-YhAf+4gRfjf2XB0r2BtWvlp++JNR+ZT8+5YZ7yHHOYkC78nCF+ZpC5nK8EvNAGaTpFS6nURraPh7zKOojksHwQ==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
@@ -158,28 +158,6 @@
     "@pulumi/pulumi" "^3.0.0"
 
 "@pulumi/pulumi@^3.0.0", "@pulumi/pulumi@^3.33.2":
-  version "3.33.2"
-  resolved "https://registry.yarnpkg.com/@pulumi/pulumi/-/pulumi-3.33.2.tgz#d4e78a3d032cea997395dd89a504dd7dc4d6f4f4"
-  integrity sha512-qWtbz5njw32EBUvTAYIryQPATxP9EVwlg9A1DmN4Di33KLvH+6vnARKQLgBM+fCHSugfZmNPjHOZLSUb+A4KIg==
-  dependencies:
-    "@grpc/grpc-js" "~1.3.8"
-    "@logdna/tail-file" "^2.0.6"
-    "@pulumi/query" "^0.3.0"
-    google-protobuf "^3.5.0"
-    ini "^2.0.0"
-    js-yaml "^3.14.0"
-    minimist "^1.2.6"
-    normalize-package-data "^2.4.0"
-    protobufjs "^6.8.6"
-    read-package-tree "^5.3.1"
-    require-from-string "^2.0.1"
-    semver "^6.1.0"
-    source-map-support "^0.4.16"
-    ts-node "^7.0.1"
-    typescript "~3.7.3"
-    upath "^1.1.0"
-
-"@pulumi/pulumi@^3.33.2":
   version "3.33.2"
   resolved "https://registry.yarnpkg.com/@pulumi/pulumi/-/pulumi-3.33.2.tgz#d4e78a3d032cea997395dd89a504dd7dc4d6f4f4"
   integrity sha512-qWtbz5njw32EBUvTAYIryQPATxP9EVwlg9A1DmN4Di33KLvH+6vnARKQLgBM+fCHSugfZmNPjHOZLSUb+A4KIg==
