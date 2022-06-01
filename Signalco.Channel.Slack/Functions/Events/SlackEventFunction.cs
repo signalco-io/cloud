@@ -11,60 +11,56 @@ using Microsoft.Extensions.Logging;
 using Signal.Api.Common;
 using Signal.Api.Common.Exceptions;
 
-namespace Signalco.Channel.Slack.Functions.Events
+namespace Signalco.Channel.Slack.Functions.Events;
+
+public class SlackEventFunction
 {
-    public class SlackEventFunction
+    private readonly ISlackRequestHandler slackRequestHandler;
+    private readonly ILogger<SlackEventFunction> logger;
+
+    public SlackEventFunction(
+        ISlackRequestHandler slackRequestHandler,
+        ILogger<SlackEventFunction> log)
     {
-        private readonly ISlackRequestHandler slackRequestHandler;
-        private readonly ILogger<SlackEventFunction> logger;
+        this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
+        logger = log ?? throw new ArgumentNullException(nameof(log));
+    }
 
-        public SlackEventFunction(
-            ISlackRequestHandler slackRequestHandler,
-            ILogger<SlackEventFunction> log)
+    [FunctionName("Slack-Event")]
+    [OpenApiOperation(nameof(SlackEventFunction), "Slack", "Event", Description = "Deletes the entity.")]
+    [OpenApiRequestBody("application/json", typeof(EventRequestDto), Description = "Base model that provides content type information.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiResponseBadRequestValidation]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "hooks/event")] HttpRequest req,
+        CancellationToken cancellationToken)
+    {
+        await this.slackRequestHandler.VerifyFromSlack(req, cancellationToken);
+
+        var eventReq = await req.ReadAsJsonAsync<EventRequestDto>();
+        switch (eventReq.Type)
         {
-            this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
-            logger = log ?? throw new ArgumentNullException(nameof(log));
-        }
-
-        [FunctionName("Slack-Event")]
-        [OpenApiOperation(nameof(SlackEventFunction), "Slack", "Event", Description = "Deletes the entity.")]
-        [OpenApiRequestBody("application/json", typeof(EventRequestDto), Description = "Base model that provides content type information.")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
-        [OpenApiResponseBadRequestValidation]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "hooks/event")] HttpRequest req,
-            CancellationToken cancellationToken)
-        {
-            await this.slackRequestHandler.VerifyFromSlack(req, cancellationToken);
-
-            var eventReq = await req.ReadAsJsonAsync<EventRequestDto>();
-            switch (eventReq.Type)
-            {
-                case "url_verification":
-                    var verifyRequest = await req.ReadAsJsonAsync<EventUrlVerificationRequestDto>();
-                    return new OkObjectResult(new
-                    {
-                        challenge = verifyRequest.Challenge
-                    });
-                default:
-                    this.logger.LogWarning("Unknown event request type {Type}", eventReq.Type);
-                    return new BadRequestResult();
-            }
-        }
-
-        [Serializable]
-        private class EventRequestDto
-        {
-            public string? Type { get; set; }
-        }
-
-        [Serializable]
-        private class EventUrlVerificationRequestDto : EventRequestDto
-        {
-            public string? Token { get; set; }
-
-            public string? Challenge { get; set; }
+            case "url_verification":
+                var verifyRequest = await req.ReadAsJsonAsync<EventUrlVerificationRequestDto>();
+                return new OkObjectResult(new
+                {
+                    challenge = verifyRequest.Challenge
+                });
+            default:
+                this.logger.LogWarning("Unknown event request type {Type}", eventReq.Type);
+                return new BadRequestResult();
         }
     }
-}
 
+    [Serializable]
+    private class EventRequestDto
+    {
+        public string? Type { get; set; }
+    }
+
+    [Serializable]
+    private class EventUrlVerificationRequestDto : EventRequestDto
+    {
+        public string? Challenge { get; set; }
+    }
+}

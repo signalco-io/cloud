@@ -35,7 +35,7 @@ public class DashboardsSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
+            async context => new DashboardSetResponseDto(await this.entityService.UpsertAsync(
                 context.User.UserId,
                 context.Payload.Id,
                 TableEntityType.Dashboard,

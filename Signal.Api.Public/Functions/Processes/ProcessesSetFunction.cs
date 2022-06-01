@@ -43,7 +43,7 @@ public class ProcessesSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new ProcessSetResponseDto(await this.entityService.UpsertEntityAsync(
+            async context => new ProcessSetResponseDto(await this.entityService.UpsertAsync(
                 context.User.UserId,
                 context.Payload.Id,
                 TableEntityType.Process,

@@ -9,50 +9,54 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Extensions.Logging;
 using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core;
+using Signal.Core.Devices;
 using Signal.Core.Exceptions;
+using Signal.Core.Storage;
 using Signalco.Channel.Slack.Secrets;
 
 namespace Signalco.Channel.Slack.Functions.Auth;
 
 public class SlackOauthAccessFunction
 {
-    private readonly ISecretsProvider secrets;
+    private readonly ISecretsManager secrets;
     private readonly ISlackRequestHandler slackRequestHandler;
     private readonly IFunctionAuthenticator authenticator;
-    private readonly ILogger<SlackOauthAccessFunction> logger;
+    private readonly IEntityService entityService;
+    private readonly IAzureStorage storage;
 
     public SlackOauthAccessFunction(
-        ISecretsProvider secrets,
+        ISecretsManager secrets,
         ISlackRequestHandler slackRequestHandler,
         IFunctionAuthenticator authenticator,
-        ILogger<SlackOauthAccessFunction> log)
+        IEntityService entityService,
+        IAzureStorage storage)
     {
         this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
         this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
-        logger = log ?? throw new ArgumentNullException(nameof(log));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
+        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
     [FunctionName("Slack-Auth-OauthAccess")]
-    [OpenApiOperation(nameof(SlackOauthAccessFunction), "Slack", "Auth", Description = "Handles OAuth access.")]
-    [OpenApiRequestBody("application/json", typeof(OAuthAccessRequestDto), Description = "Base model that provides content type information.")]
-    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiOperation(nameof(SlackOauthAccessFunction), "Slack", "Auth", Description = "Creates new Slack channel.")]
+    [OpenApiRequestBody("application/json", typeof(OAuthAccessRequestDto), Description = "OAuth code returned by Slack.")]
+    [OpenApiOkJsonResponse(typeof(AccessResponseDto))]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "hooks/event")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/access")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         await this.slackRequestHandler.VerifyFromSlack(req, cancellationToken);
-        return await req.UserRequest<OAuthAccessRequestDto>(cancellationToken, authenticator, async context =>
+        return await req.UserRequest<OAuthAccessRequestDto, AccessResponseDto>(cancellationToken, authenticator, async context =>
         {
+            // Resolve access token using temporary OAuth user code
             var clientId = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientId, cancellationToken);
             var clientSecret = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientSecret, cancellationToken);
-
             using var client = new HttpClient();
             var accessResponse = await client.PostAsJsonAsync("https://slack.com/api/oauth.v2.access", new
             {
@@ -66,10 +70,32 @@ public class SlackOauthAccessFunction
             if (access.TokenType != "bot")
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, $"Token type not supported: {access.TokenType}");
 
-            // TODO: Persist to KeyVault with unique ID (generated)
-            // TODO: Create channel entity
-            // TODO: Create channel contact - auth token with ID
-            // TODO: Return channel entity id (so we can redirect to instance)
+            // Persist to KeyVault with unique ID (generated)
+            var accessSecretKey = Guid.NewGuid().ToString();
+            await this.secrets.SetAsync(accessSecretKey, access.AccessToken, cancellationToken);
+
+            // Create channel entity
+            var channelId = await this.entityService.UpsertAsync(
+                context.User.UserId,
+                null,
+                TableEntityType.Device,
+                ItemTableNames.Devices,
+                id => new DeviceTableEntity(id, "slack", "Slack", null, null, null),
+                cancellationToken);
+
+            // Create channel contact - auth token with ID
+            // TODO: Use entity service
+            await this.storage.CreateOrUpdateItemAsync(
+                ItemTableNames.DeviceStates,
+                new DeviceStateTableEntity(
+                    channelId,
+                    "slack",
+                    "accessToken",
+                    accessSecretKey,
+                    DateTime.UtcNow),
+                cancellationToken);
+
+            return new AccessResponseDto(channelId);
         });
     }
     
@@ -91,8 +117,8 @@ public class SlackOauthAccessFunction
 
         [JsonPropertyName("token_type")]
         public string TokenType { get; set; }
-
-        [JsonPropertyName("scope")]
-        public string Scope { get; set; }
     }
+
+    [Serializable]
+    private record AccessResponseDto(string id);
 }

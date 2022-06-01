@@ -5,7 +5,6 @@ using Signal.Core;
 using Signal.Infrastructure.Secrets;
 using Signalco.Channel.Slack;
 using Signalco.Channel.Slack.Functions;
-using Signalco.Channel.Slack.Functions.Events;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -16,10 +15,10 @@ public class Startup : FunctionsStartup
     public override void Configure(IFunctionsHostBuilder builder)
     {
         builder.Services
-            .AddTransient<ISecretsProvider, SecretsProvider>()
+            .AddSecrets()
+            .AddCore()
             .AddTransient<ISlackRequestHandler, SlackRequestHandler>()
-            .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
-            .AddCore();
+            .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>();
     }
 
     public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)

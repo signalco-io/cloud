@@ -59,7 +59,7 @@ namespace Signal.Core
             return entityUsersDictionary;
         }
 
-        public async Task<string> UpsertEntityAsync<TEntity>(string userId, string? entityId, TableEntityType entityType, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)
+        public async Task<string> UpsertAsync<TEntity>(string userId, string? entityId, TableEntityType entityType, string tableName, Func<string, TEntity> entityFunc, CancellationToken cancellationToken)
             where TEntity : ITableEntity
         {
             // Check if existing entity was requested but not assigned
@@ -76,7 +76,7 @@ namespace Signal.Core
             }
 
             // Create entity
-            var id = entityId ?? Guid.NewGuid().ToString();
+            var id = entityId ?? await this.GenerateEntityIdAsync(tableName, cancellationToken);
             await this.storage.CreateOrUpdateItemAsync(
                 tableName,
                 entityFunc(id),
@@ -94,6 +94,14 @@ namespace Signal.Core
             }
 
             return id;
+        }
+
+        private async Task<string> GenerateEntityIdAsync(string tableName, CancellationToken cancellationToken = default)
+        {
+            var newId = Guid.NewGuid().ToString();
+            while ((await this.storageDao.EntitiesByRowKeysAsync(tableName, new[] { newId }, cancellationToken)).Any())
+                newId = Guid.NewGuid().ToString();
+            return newId;
         }
 
         public async Task RemoveByIdAsync(string tableName, string rowKey, CancellationToken cancellationToken)

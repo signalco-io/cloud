@@ -16,10 +16,10 @@ public class Startup : FunctionsStartup
     public override void Configure(IFunctionsHostBuilder builder)
     {
         builder.Services
-            .AddTransient<ISecretsProvider, SecretsProvider>()
-            .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
-            .AddAzureStorage()
             .AddCore()
+            .AddSecrets()
+            .AddAzureStorage()
+            .AddSingleton<IFunctionAuthenticator, FunctionAuth0Authenticator>()
             .AddHCaptcha();
     }
 
