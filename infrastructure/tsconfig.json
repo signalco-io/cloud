@@ -28,6 +28,7 @@
         "./assignFunctionCode.ts",
         "./assignFunctionSettings.ts",
         "./createAppInsights.ts",
-        "./createAppInsights.ts"
+        "./createAppInsights.ts",
+        "./apiStatusCheck.ts"
     ]
 }
