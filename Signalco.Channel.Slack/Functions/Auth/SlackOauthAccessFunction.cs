@@ -49,10 +49,8 @@ public class SlackOauthAccessFunction
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth/access")] HttpRequest req,
-        CancellationToken cancellationToken)
-    {
-        await this.slackRequestHandler.VerifyFromSlack(req, cancellationToken);
-        return await req.UserRequest<OAuthAccessRequestDto, AccessResponseDto>(cancellationToken, authenticator, async context =>
+        CancellationToken cancellationToken) =>
+        await req.UserRequest<OAuthAccessRequestDto, AccessResponseDto>(cancellationToken, authenticator, async context =>
         {
             // Resolve access token using temporary OAuth user code
             var clientId = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientId, cancellationToken);
@@ -97,8 +95,7 @@ public class SlackOauthAccessFunction
 
             return new AccessResponseDto(channelId);
         });
-    }
-    
+
     [Serializable]
     private class OAuthAccessRequestDto
     {
