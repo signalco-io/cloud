@@ -24,8 +24,8 @@ config:
   cloud-primary:secret-slackClientId: "3583799076214.3603772455633"
   cloud-primary:secret-slackClientSecret:
     secure: AAABAKriVWYtOM8hD+B63qG/CG3eEgnmO3pXaUv8JJKjWbRTU1R+dncr7sTxSDK4GbVND0WNfD5J9W9k2W9yuQ==
-  cloud-primary:secret-slackSignaingSecret:
-    secure: AAABALVwC7UATvYyArFnYdoyM+yDyqAIzO3yEpqVyUfw2HxKbIPa9kxlNqzHyibBwhtiqAMQKv6xszb/7Uxq/w==
+  cloud-primary:secret-slackSigningSecret:
+    secure: AAABAErUzgz8D2edkQH5+QBuO+oPMCR698VX7aa0LPlBpWdb/7CdsVvOEPGQRlKkCElEi4sdvbYbIK+zlIgtJA==
   cloud-primary:ses-region: eu-west-1
   cloud-primary:zoneid:
     secure: AAABAN2VoVSuH03hLA7i6aV9BM8CZpjwa8j/SrWuC9PDYFKPKVAdB8v9ovYO3+N0kaofdJ11dB8j67aeQP82ig==
