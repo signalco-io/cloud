@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,19 +56,21 @@ public class SlackOauthAccessFunction
         CancellationToken cancellationToken) =>
         await req.UserRequest<OAuthAccessRequestDto, AccessResponseDto>(cancellationToken, authenticator, async context =>
         {
+            if (string.IsNullOrWhiteSpace(context.Payload.Code) ||
+                string.IsNullOrWhiteSpace(context.Payload.RedirectUrl))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Required fields are missing");
+
             // Resolve access token using temporary OAuth user code
             var clientId = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientId, cancellationToken);
             var clientSecret = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientSecret, cancellationToken);
             using var client = new HttpClient();
-            var accessResponse = await client.PostAsJsonAsync("https://slack.com/api/oauth.v2.access", new
-            {
-                code = context.Payload.Code,
-                client_id = clientId,
-                client_secret = clientSecret
-            }, cancellationToken);
-            var access = await accessResponse.Content.ReadAsAsync<OAuthAccessResponseDto>(cancellationToken);
-            if (!access.Ok)
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Got not OK response from Slack, check your code and try again.");
+            var accessResponse =
+                await client.PostAsync(
+                    $"https://slack.com/api/oauth.v2.access?code={context.Payload.Code}&redirect_uri={context.Payload.RedirectUrl}&client_id={clientId}&client_secret={clientSecret}",
+                    null, cancellationToken);
+            var access = await accessResponse.Content.ReadFromJsonAsync<OAuthAccessResponseDto>(cancellationToken: cancellationToken);
+            if (access is not {Ok: true})
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, $"Got not OK response from Slack: {access?.Error ?? "NO_ERROR"}, check your code and try again.");
             if (access.TokenType != "bot")
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, $"Token type not supported: {access.TokenType}");
 
@@ -101,6 +107,9 @@ public class SlackOauthAccessFunction
     {
         [JsonPropertyName("code")]
         public string? Code { get; set; }
+
+        [JsonPropertyName("redirectUrl")]
+        public string? RedirectUrl { get; set; }
     }
 
     [Serializable]
@@ -114,6 +123,12 @@ public class SlackOauthAccessFunction
 
         [JsonPropertyName("token_type")]
         public string TokenType { get; set; }
+
+        [JsonPropertyName("error")]
+        public string? Error { get; set; }
+
+        [JsonPropertyName("warning")]
+        public string? Warning { get; set; }
     }
 
     [Serializable]
