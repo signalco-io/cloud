@@ -79,8 +79,8 @@ public static class HttpRequestExtensions
         CancellationToken cancellationToken,
         IFunctionAuthenticator authenticator,
         Func<UserRequestContextWithPayload<TPayload>, Task<TResponse>> executionBody) =>
-        UserRequest<TPayload>(req, cancellationToken, authenticator, async context =>
-            new OkObjectResult(await executionBody(context)));
+        UserRequest<TPayload>(req, authenticator, async context => 
+            new OkObjectResult(await executionBody(context)), cancellationToken);
 
     private static async Task<IActionResult> UserRequest<TPayload>(
         this HttpRequest req,

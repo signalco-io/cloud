@@ -1,9 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -52,21 +58,33 @@ public class SlackOauthAccessFunction
         CancellationToken cancellationToken) =>
         await req.UserRequest<OAuthAccessRequestDto, AccessResponseDto>(cancellationToken, authenticator, async context =>
         {
+            if (string.IsNullOrWhiteSpace(context.Payload.Code) ||
+                string.IsNullOrWhiteSpace(context.Payload.RedirectUrl))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Required fields are missing");
+
             // Resolve access token using temporary OAuth user code
             var clientId = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientId, cancellationToken);
             var clientSecret = await this.secrets.GetSecretAsync(SlackSecretKeys.ClientSecret, cancellationToken);
             using var client = new HttpClient();
-            var accessResponse = await client.PostAsJsonAsync("https://slack.com/api/oauth.v2.access", new
-            {
-                code = context.Payload.Code,
-                client_id = clientId,
-                client_secret = clientSecret
-            }, cancellationToken);
-            var access = await accessResponse.Content.ReadAsAsync<OAuthAccessResponseDto>(cancellationToken);
-            if (!access.Ok)
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Got not OK response from Slack, check your code and try again.");
+            var accessResponse = await client.PostAsync(
+                "https://slack.com/api/oauth.v2.access",
+                new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("code", context.Payload.Code),
+                    new KeyValuePair<string, string>("redirect_uri", context.Payload.RedirectUrl),
+                    new KeyValuePair<string, string>("client_id", clientId),
+                    new KeyValuePair<string, string>("client_secret", clientSecret)
+                }),
+                cancellationToken);
+            var access = await accessResponse.Content.ReadFromJsonAsync<OAuthAccessResponseDto>(cancellationToken: cancellationToken);
+            if (access is not {Ok: true})
+                throw new ExpectedHttpException(
+                    HttpStatusCode.BadRequest,
+                    $"Got not OK response from Slack: {access?.Error ?? "NO_ERROR"}, check your code and try again.");
             if (access.TokenType != "bot")
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, $"Token type not supported: {access.TokenType}");
+                throw new ExpectedHttpException(
+                    HttpStatusCode.BadRequest, 
+                    $"Token type not supported: {access.TokenType}");
 
             // Persist to KeyVault with unique ID (generated)
             var accessSecretKey = Guid.NewGuid().ToString();
@@ -93,6 +111,29 @@ public class SlackOauthAccessFunction
                     DateTime.UtcNow),
                 cancellationToken);
 
+            await this.storage.CreateOrUpdateItemAsync(
+                ItemTableNames.DeviceStates,
+                new DeviceStateTableEntity(
+                    channelId,
+                    "slack",
+                    "botUserId",
+                    access.BotUserId,
+                    DateTime.UtcNow),
+                cancellationToken);
+
+            if (access.Team != null)
+            {
+                await this.storage.CreateOrUpdateItemAsync(
+                    ItemTableNames.DeviceStates,
+                    new DeviceStateTableEntity(
+                        channelId,
+                        "slack",
+                        "team",
+                        JsonSerializer.Serialize(access.Team),
+                        DateTime.UtcNow),
+                    cancellationToken);
+            }
+
             return new AccessResponseDto(channelId);
         });
 
@@ -101,6 +142,9 @@ public class SlackOauthAccessFunction
     {
         [JsonPropertyName("code")]
         public string? Code { get; set; }
+
+        [JsonPropertyName("redirectUrl")]
+        public string? RedirectUrl { get; set; }
     }
 
     [Serializable]
@@ -114,8 +158,38 @@ public class SlackOauthAccessFunction
 
         [JsonPropertyName("token_type")]
         public string TokenType { get; set; }
+
+        [JsonPropertyName("error")]
+        public string? Error { get; set; }
+
+        [JsonPropertyName("warning")]
+        public string? Warning { get; set; }
+
+        [JsonPropertyName("bot_user_id")]
+        public string? BotUserId { get; set; }
+
+        [JsonPropertyName("team")]
+        public TeamDto? Team { get; set; }
+
+        [Serializable]
+        public class TeamDto
+        {
+            [JsonPropertyName("id")]
+            public string? Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string? Name { get; set; }
+        }
     }
 
     [Serializable]
-    private record AccessResponseDto(string id);
+    private class AccessResponseDto
+    {
+        public string Id { get; set; }
+
+        public AccessResponseDto(string id)
+        {
+            this.Id = id;
+        }
+    }
 }
