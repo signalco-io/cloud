@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Signal.Api.Common\Signal.Api.Common.csproj" />
+    <ProjectReference Include="..\Signal.Infrastructure.AzureStorage.Tables\Signal.Infrastructure.AzureStorage.Tables.csproj" />
     <ProjectReference Include="..\Signal.Infrastructure.Secrets\Signal.Infrastructure.Secrets.csproj" />
   </ItemGroup>
   <ItemGroup>
