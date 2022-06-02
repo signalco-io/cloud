@@ -14,9 +14,16 @@ public class SecretsManager : SecretsProvider, ISecretsManager
 
     public async Task SetAsync(string key, string secret, CancellationToken cancellationToken = default)
     {
-        var currentSecret = await this.GetSecretAsync(key, cancellationToken: cancellationToken);
-        if (currentSecret== secret) 
-            return;
+        try
+        {
+            var currentSecret = await this.GetSecretAsync(key, cancellationToken: cancellationToken);
+            if (currentSecret == secret)
+                return;
+        }
+        catch
+        {
+            // No secret
+        }
 
         await this.Client().SetSecretAsync(key, secret, cancellationToken);
     }

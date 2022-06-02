@@ -47,7 +47,7 @@ export function createKeyVault (
                     objectId: i.objectId,
                     tenantId: i.tenantId,
                     permissions: {
-                        secrets: [SecretPermissions.Get]
+                        secrets: [SecretPermissions.Get, SecretPermissions.Set]
                     }
                 }))
             ]
