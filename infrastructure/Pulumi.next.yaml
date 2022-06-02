@@ -21,6 +21,11 @@ config:
     secure: AAABAMJXbme1rRLsVwaAVXTtrYqBhcmmfLICCr0mJLhGMwlF1z8Phs1u1yoJSq136dj8TrD2Ydco5sAP6+ETWOAlZDFrQ492KkQ=
   cloud-primary:secret-hcaptchaSiteKey:
     secure: AAABAKLPquKFTwMLZWWu0L3xg8ZZ4YqZnVELd2neKlViJQ9BBu730/H2GepcfdWDpQib02GnVSJZ8HbxWixUzWE1jwA=
+  cloud-primary:secret-slackClientId: "3583799076214.3603772455633"
+  cloud-primary:secret-slackClientSecret:
+    secure: AAABAOlQ6CUESIGun16dSV6dA1ptIiXsK9c5dOcC7w2KrkEiZd678Uh462Rv3lsAjRR5sxee6gFcxeOhBZ7DOw==
+  cloud-primary:secret-slackSigningSecret:
+    secure: AAABAJUl1Zv1taMtfkgQ123bwmfSW4qdCEG+QXNnAGAeOQotIyXNgO1jI8iZ/RpdlhPBSBEbT+X69W+2lpJGOA==
   cloud-primary:ses-region: eu-west-1
   cloud-primary:zoneid:
     secure: AAABACrv5fJbGdQBkKEIwC1TMQbqEKliXocv5gGQtk7BJ5U7k4CfpThQNjxS9Rg4cY3uOgXj+TreDQDHZ1SoaQ==

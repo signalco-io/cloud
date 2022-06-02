@@ -12,12 +12,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Signal.Core;
 using Signal.Core.Auth;
-using Signal.Core.Beacon;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 using Signal.Core.Users;
 
-namespace Signal.Api.Public.Auth;
+namespace Signal.Api.Common.Auth;
 
 public class FunctionAuth0Authenticator : IFunctionAuthenticator
 {

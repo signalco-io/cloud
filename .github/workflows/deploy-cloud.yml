@@ -7,6 +7,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
   AZURE_FUNCTIONAPP_INTERNAL_PATH: "Signal.Api.Internal"
+  AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH: "Signalco.Channel.Slack"
   DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use
 
 jobs:
@@ -35,16 +36,28 @@ jobs:
           dotnet publish --configuration Release
           popd
 
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
       - uses: actions/cache@v3
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
+      - name: "Install latest pulumi"
+        shell: bash
+        run: |
+          curl -fsSL https://get.pulumi.com | sh
+
       - name: "Prepare infrastructure deployment"
         run: |
           pushd './infrastructure'
           yarn install
-          pulumi plugin install resource checkly v0.0.1-alpha.3 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.3
+          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
           popd
 
       - name: Extract branch name
@@ -53,11 +66,11 @@ jobs:
           [[ $(echo ${GITHUB_REF#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
 
-      - uses: pulumi/actions@v3
-        with:
-          work-dir: "./infrastructure"
-          command: up
-          stack-name: signalco/${{ steps.extract_branch.outputs.branch }}
+      - shell: bash
+        run: |
+          pushd './infrastructure'
+          /home/runner/.pulumi/bin/pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }} --yes
+          popd
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
