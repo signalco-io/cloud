@@ -111,7 +111,7 @@ public class ConductRequestMultipleFunction
                                 new AuthenticationHeaderValue("Bearer", accessToken);
                             await client.PostAsJsonAsync("https://slack.com/api/chat.postMessage", new
                             {
-                                text = "Hello from cloud",
+                                text = sendMessagePayload?.Text,
                                 channel = sendMessagePayload?.ChannelId
                             }, cancellationToken);
                         }
