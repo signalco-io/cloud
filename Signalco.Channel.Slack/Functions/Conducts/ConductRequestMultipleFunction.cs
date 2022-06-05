@@ -101,6 +101,7 @@ public class ConductRequestMultipleFunction
                         }
 
                         // Execute action according to contact name
+                        // TODO: Add support for conduct delay
                         if (conductRequest.ContactName == "sendMessage")
                         {
                             var sendMessagePayload = JsonSerializer.Deserialize<SendMessagePayload>(conductRequest.ValueSerialized ?? "");

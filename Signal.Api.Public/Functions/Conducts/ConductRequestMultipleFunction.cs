@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +68,7 @@ public class ConductRequestMultipleFunction
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
-                if (conduct.DeviceId == "cloud")
+                if (conduct.DeviceId == "cloud") // TODO: Use channel discovery/router
                 {
                     // Handle notification create conduct
                     if (conduct.ChannelName == "notification" && 
@@ -86,6 +88,16 @@ public class ConductRequestMultipleFunction
                                 cancellationToken);
                         }
                     }
+                }
+                else if (conduct.ChannelName == "slack") // TODO: Use channel discovery/router
+                {
+                    using var client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("Authorization", req.Headers.Authorization[0]);
+                    await client.PostAsJsonAsync("https://slack.channel.api.signalco.io/api/conducts/request-multiple",
+                        new List<ConductRequestMultipleDto>
+                        {
+                            conduct
+                        }, cancellationToken);
                 }
                 else
                 {
