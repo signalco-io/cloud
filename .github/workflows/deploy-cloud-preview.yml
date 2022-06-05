@@ -65,7 +65,7 @@ jobs:
           yarn install
           yarn lint
           /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.9 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.9
-          /home/runner/.pulumi/bin/pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }} --yes
+          /home/runner/.pulumi/bin/pulumi preview --stack signalco/${{ steps.extract_branch.outputs.branch }}
           popd
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
