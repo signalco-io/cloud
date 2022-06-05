@@ -101,6 +101,7 @@ public class ConductRequestMultipleFunction
                         }
 
                         // Execute action according to contact name
+                        // TODO: Add support for conduct delay
                         if (conductRequest.ContactName == "sendMessage")
                         {
                             var sendMessagePayload = JsonSerializer.Deserialize<SendMessagePayload>(conductRequest.ValueSerialized ?? "");
@@ -110,7 +111,7 @@ public class ConductRequestMultipleFunction
                                 new AuthenticationHeaderValue("Bearer", accessToken);
                             await client.PostAsJsonAsync("https://slack.com/api/chat.postMessage", new
                             {
-                                text = "Hello from cloud",
+                                text = sendMessagePayload?.Text,
                                 channel = sendMessagePayload?.ChannelId
                             }, cancellationToken);
                         }
