@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,11 +95,9 @@ public class ConductRequestMultipleFunction
                 {
                     using var client = new HttpClient();
                     client.DefaultRequestHeaders.Add("Authorization", req.Headers.Authorization[0]);
-                    await client.PostAsJsonAsync("https://slack.channel.api.signalco.io/api/conducts/request-multiple",
-                        new List<ConductRequestMultipleDto>
-                        {
-                            conduct
-                        }, cancellationToken);
+                    await client.PostAsync("https://slack.channel.api.signalco.io/api/conducts/request-multiple",
+                        new StringContent(JsonSerializer.Serialize(new List<ConductRequestMultipleDto> {conduct}),
+                            Encoding.UTF8, "application/json"), cancellationToken);
                 }
                 else
                 {
