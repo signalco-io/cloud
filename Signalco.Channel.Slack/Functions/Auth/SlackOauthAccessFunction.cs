@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -91,22 +92,24 @@ public class SlackOauthAccessFunction
             await this.secrets.SetAsync(accessSecretKey, access.AccessToken, cancellationToken);
 
             // Create channel entity
+            var alias = string.Join(" - ", new[] {"Slack", access.Team?.Name}.Where(i => i != null));
             var channelId = await this.entityService.UpsertAsync(
                 context.User.UserId,
                 null,
                 TableEntityType.Device,
                 ItemTableNames.Devices,
-                id => new DeviceTableEntity(id, "slack", "Slack", null, null, null),
+                id => new DeviceTableEntity(id, "slack", alias, null, null, null),
                 cancellationToken);
 
             // Create channel contact - auth token with ID
             // TODO: Use entity service
+            // TODO: Update existing slack channel if having matching already (match by team and bot user id)
             await this.storage.CreateOrUpdateItemAsync(
                 ItemTableNames.DeviceStates,
                 new DeviceStateTableEntity(
                     channelId,
-                    "slack",
-                    "accessToken",
+                    KnownChannels.Slack,
+                    KnownContacts.AccessToken,
                     accessSecretKey,
                     DateTime.UtcNow),
                 cancellationToken);
@@ -115,8 +118,8 @@ public class SlackOauthAccessFunction
                 ItemTableNames.DeviceStates,
                 new DeviceStateTableEntity(
                     channelId,
-                    "slack",
-                    "botUserId",
+                    KnownChannels.Slack,
+                    KnownContacts.BotUserId,
                     access.BotUserId,
                     DateTime.UtcNow),
                 cancellationToken);
@@ -127,8 +130,8 @@ public class SlackOauthAccessFunction
                     ItemTableNames.DeviceStates,
                     new DeviceStateTableEntity(
                         channelId,
-                        "slack",
-                        "team",
+                        KnownChannels.Slack,
+                        KnownContacts.Team,
                         JsonSerializer.Serialize(access.Team),
                         DateTime.UtcNow),
                     cancellationToken);
