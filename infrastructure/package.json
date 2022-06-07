@@ -15,7 +15,7 @@
         "eslint-plugin-n": "^15.2.1",
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-promise": "^6.0.0",
-        "typescript": "^4.7.2"
+        "typescript": "^4.7.3"
     },
     "dependencies": {
         "@checkly/pulumi": "0.0.1-alpha.9",
