@@ -1,11 +1,10 @@
-﻿namespace Signal.Core.Storage
+﻿namespace Signal.Core.Storage;
+
+public enum TableEntityType
 {
-    public enum TableEntityType
-    {
-        Unknown = 0,
-        Device,
-        Process,
-        Dashboard,
-        Station
-    }
+    Unknown = 0,
+    Device,
+    Process,
+    Dashboard,
+    Station
 }

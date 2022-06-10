@@ -1,12 +1,11 @@
 using AutoMapper;
 
-namespace Signal.Core
+namespace Signal.Core;
+
+public static class IMapperExtensions
 {
-    public static class IMapperExtensions
+    public static T MapTo<T>(this object obj, IMapper mapper)
     {
-        public static T MapTo<T>(this object obj, IMapper mapper)
-        {
-            return mapper.Map<T>(obj);
-        }
+        return mapper.Map<T>(obj);
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace Signal.Core.Devices
+﻿namespace Signal.Core.Devices;
+
+public enum DeviceStateDataType
 {
-    public enum DeviceStateDataType
-    {
-        Unknown,
-        Boolean,
-        Decimal,
-        Integer,
-        String
-    }
+    Unknown,
+    Boolean,
+    Decimal,
+    Integer,
+    String
 }

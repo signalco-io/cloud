@@ -1,6 +1,5 @@
-﻿namespace Signal.Core.Storage
+﻿namespace Signal.Core.Storage;
+
+public interface ITableEntity : ITableEntityKey
 {
-    public interface ITableEntity : ITableEntityKey
-    {
-    }
 }
