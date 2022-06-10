@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -30,20 +27,17 @@ namespace Signalco.Channel.Slack.Functions.Auth;
 public class SlackOauthAccessFunction
 {
     private readonly ISecretsManager secrets;
-    private readonly ISlackRequestHandler slackRequestHandler;
     private readonly IFunctionAuthenticator authenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorage storage;
 
     public SlackOauthAccessFunction(
         ISecretsManager secrets,
-        ISlackRequestHandler slackRequestHandler,
         IFunctionAuthenticator authenticator,
         IEntityService entityService,
         IAzureStorage storage)
     {
         this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
-        this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -98,7 +92,7 @@ public class SlackOauthAccessFunction
                 null,
                 TableEntityType.Device,
                 ItemTableNames.Devices,
-                id => new DeviceTableEntity(id, "slack", alias, null, null, null),
+                id => new DeviceInfoTableEntity(id, "slack", alias),
                 cancellationToken);
 
             // Create channel contact - auth token with ID
