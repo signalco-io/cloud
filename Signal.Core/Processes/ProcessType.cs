@@ -1,7 +1,6 @@
-﻿namespace Signal.Core.Processes
+﻿namespace Signal.Core.Processes;
+
+public enum ProcessType
 {
-    public enum ProcessType
-    {
-        StateTriggered
-    }
+    StateTriggered
 }

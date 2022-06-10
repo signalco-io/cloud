@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Signal.Infrastructure.AzureSpeech
+namespace Signal.Infrastructure.AzureSpeech;
+
+internal interface IVoiceSynthesizer
 {
-    internal interface IVoiceSynthesizer
-    {
-        Task<byte[]> TextToAudioAsync(string text, CancellationToken cancellationToken);
-    }
+    Task<byte[]> TextToAudioAsync(string text, CancellationToken cancellationToken);
 }

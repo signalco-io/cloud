@@ -2,17 +2,16 @@
 using Signal.Core.Notifications;
 using Signal.Core.Sharing;
 
-namespace Signal.Core
+namespace Signal.Core;
+
+public static class CoreExtensions
 {
-    public static class CoreExtensions
+    public static IServiceCollection AddCore(this IServiceCollection services)
     {
-        public static IServiceCollection AddCore(this IServiceCollection services)
-        {
-            return services
-                .AddTransient<INotificationSmtpService, NotificationSmtpService>()
-                .AddTransient<INotificationService, NotificationService>()
-                .AddTransient<ISharingService, SharingService>()
-                .AddTransient<IEntityService, EntityService>();
-        }
+        return services
+            .AddTransient<INotificationSmtpService, NotificationSmtpService>()
+            .AddTransient<INotificationService, NotificationService>()
+            .AddTransient<ISharingService, SharingService>()
+            .AddTransient<IEntityService, EntityService>();
     }
 }

@@ -1,15 +1,14 @@
-﻿namespace Signal.Core
+﻿namespace Signal.Core;
+
+public class UserAssignedEntityTableEntry : IUserAssignedEntityTableEntry
 {
-    public class UserAssignedEntityTableEntry : IUserAssignedEntityTableEntry
+    public UserAssignedEntityTableEntry(string userId, string entityId)
     {
-        public UserAssignedEntityTableEntry(string userId, string entityId)
-        {
-            this.PartitionKey = userId;
-            this.RowKey = entityId;
-        }
-
-        public string PartitionKey { get; }
-
-        public string RowKey { get; }
+        this.PartitionKey = userId;
+        this.RowKey = entityId;
     }
+
+    public string PartitionKey { get; }
+
+    public string RowKey { get; }
 }

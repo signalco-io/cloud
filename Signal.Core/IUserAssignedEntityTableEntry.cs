@@ -1,8 +1,7 @@
 ﻿using Signal.Core.Storage;
 
-namespace Signal.Core
+namespace Signal.Core;
+
+public interface IUserAssignedEntityTableEntry : ITableEntity
 {
-    public interface IUserAssignedEntityTableEntry : ITableEntity
-    {
-    }
 }

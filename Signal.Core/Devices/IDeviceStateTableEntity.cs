@@ -1,16 +1,15 @@
 ﻿using System;
 using Signal.Core.Storage;
 
-namespace Signal.Core.Devices
+namespace Signal.Core.Devices;
+
+public interface IDeviceStateTableEntity : ITableEntity
 {
-    public interface IDeviceStateTableEntity : ITableEntity
-    {
-        string ChannelName { get; }
+    string ChannelName { get; }
         
-        string ContactName { get; }
+    string ContactName { get; }
         
-        string? ValueSerialized { get; }
+    string? ValueSerialized { get; }
         
-        DateTime TimeStamp { get; }
-    }
+    DateTime TimeStamp { get; }
 }

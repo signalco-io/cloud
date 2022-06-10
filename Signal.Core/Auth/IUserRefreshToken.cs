@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace Signal.Core.Auth
-{
-    public interface IUserRefreshToken
-    {
-        string AccessToken { get; }
+namespace Signal.Core.Auth;
 
-        DateTime Expire { get; }
-    }
+public interface IUserRefreshToken
+{
+    string AccessToken { get; }
+
+    DateTime Expire { get; }
 }

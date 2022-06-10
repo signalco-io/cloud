@@ -1,7 +1,6 @@
-﻿namespace Signal.Core.Devices
+﻿namespace Signal.Core.Devices;
+
+public interface IDeviceTableEntity : IDeviceInfoTableEntity
 {
-    public interface IDeviceTableEntity : IDeviceInfoTableEntity
-    {
-        public string? Endpoints { get; set; }
-    }
+    public string? Endpoints { get; set; }
 }
