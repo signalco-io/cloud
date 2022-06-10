@@ -1,10 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Signal.Core
+namespace Signal.Core;
+
+public interface IVoiceService
 {
-    public interface IVoiceService
-    {
-        Task<byte[]> TextToAudioAsync(string text, CancellationToken cancellationToken);
-    }
+    Task<byte[]> TextToAudioAsync(string text, CancellationToken cancellationToken);
 }

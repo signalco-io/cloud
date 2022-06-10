@@ -8,8 +8,8 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Common;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 
 namespace Signal.Api.Public.Functions.SignalR;
 
@@ -25,7 +25,7 @@ public class DevicesNegotiateFunction
 
     [FunctionName("SignalR-Devices-Negotiate")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" }, 
+    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" },
         Description = "Negotiates SignalR connection for devices hub.")]
     [OpenApiOkJsonResponse(typeof(SignalRConnectionInfo), Description = "SignalR connection info.")]
     public async Task<IActionResult> Negotiate(

@@ -30,7 +30,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
             return client;
         
         client = new BlobContainerClient(
-            await GetConnectionStringAsync(cancellationToken).ConfigureAwait(false), 
+            await GetConnectionStringAsync(cancellationToken), 
             containerName);
         EstablishedBlobContainerClients.TryAdd(containerName, client);
 
@@ -57,7 +57,7 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
         return client;
     }
 
-    public async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken)
+    public async Task<TableClient> GetTableClientAsync(string tableName, CancellationToken cancellationToken = default)
     {
         // Return established client if available
         if (EstablishedTableClients.TryGetValue(tableName, out var client))
@@ -65,16 +65,13 @@ public class AzureStorageClientFactory : IAzureStorageClientFactory
 
         // Instantiate new client and persist
         client = new TableClient(
-            await this.GetConnectionStringAsync(cancellationToken).ConfigureAwait(false),
+            await this.GetConnectionStringAsync(cancellationToken),
             AzureTableExtensions.EscapeKey(tableName));
         EstablishedTableClients.TryAdd(tableName, client);
-
-        // Create table if doesn't exist
-        await client.CreateIfNotExistsAsync(cancellationToken);
 
         return client;
     }
 
-    private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken) =>
-        await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken).ConfigureAwait(false);
+    private async Task<string> GetConnectionStringAsync(CancellationToken cancellationToken = default) =>
+        await this.secretsProvider.GetSecretAsync(SecretKeys.StorageAccountConnectionString, cancellationToken);
 }

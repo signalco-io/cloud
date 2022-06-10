@@ -1,0 +1,28 @@
+{
+    "name": "cloud-primary",
+    "private": true,
+    "license": "../LICENSE",
+    "scripts": {
+        "lint": "eslint **/*.ts"
+    },
+    "devDependencies": {
+        "@types/node": "17.0.41",
+        "@typescript-eslint/eslint-plugin": "5.27.1",
+        "@typescript-eslint/parser": "5.27.1",
+        "eslint": "8.17.0",
+        "eslint-config-standard": "17.0.0",
+        "eslint-plugin-import": "2.26.0",
+        "eslint-plugin-n": "15.2.2",
+        "eslint-plugin-node": "11.1.0",
+        "eslint-plugin-promise": "6.0.0",
+        "typescript": "4.7.3"
+    },
+    "dependencies": {
+        "@checkly/pulumi": "0.0.1-alpha.10",
+        "@pulumi/aws": "5.7.2",
+        "@pulumi/azure-native": "1.65.0",
+        "@pulumi/cloudflare": "4.7.0",
+        "@pulumi/command": "0.2.0",
+        "@pulumi/pulumi": "3.34.1"
+    }
+}

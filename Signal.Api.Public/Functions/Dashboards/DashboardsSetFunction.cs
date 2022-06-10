@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Dashboards;
 using Signal.Core.Exceptions;
@@ -35,7 +35,7 @@ public class DashboardsSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new DashboardSetResponseDto(await this.entityService.UpsertEntityAsync(
+            async context => new DashboardSetResponseDto(await this.entityService.UpsertAsync(
                 context.User.UserId,
                 context.Payload.Id,
                 TableEntityType.Dashboard,

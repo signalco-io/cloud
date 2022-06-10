@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Signal.Core
+namespace Signal.Core;
+
+public static class IEnumerableExtensions
 {
-    public static class IEnumerableExtensions
-    {
-        public static async Task<IEnumerable<TResult>> SelectManyAsync<TSource, TResult>(
-            this IEnumerable<TSource> collection,
-            Func<TSource, Task<IEnumerable<TResult>>> action) =>
-            (await Task.WhenAll(collection.Select(action))).SelectMany(i => i);
-    }
+    public static async Task<IEnumerable<TResult>> SelectManyAsync<TSource, TResult>(
+        this IEnumerable<TSource> collection,
+        Func<TSource, Task<IEnumerable<TResult>>> action) =>
+        (await Task.WhenAll(collection.Select(action))).SelectMany(i => i);
 }

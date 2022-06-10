@@ -9,8 +9,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Signal.Api.Common;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Processes;
@@ -43,7 +43,7 @@ public class ProcessesSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new ProcessSetResponseDto(await this.entityService.UpsertEntityAsync(
+            async context => new ProcessSetResponseDto(await this.entityService.UpsertAsync(
                 context.User.UserId,
                 context.Payload.Id,
                 TableEntityType.Process,

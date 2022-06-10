@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Storage;
 
@@ -41,8 +41,8 @@ public class DevicesRetrieveFunction
             var devices = (await this.storage.DevicesAsync(context.User.UserId, cancellationToken)).ToList();
             var states = await this.storage.GetDeviceStatesAsync(devices.Select(d => d.RowKey).ToList(), cancellationToken);
             var entityUsers = await this.entityService.EntityUsersAsync(
-                TableEntityType.Device, 
-                devices.Select(d => d.RowKey), 
+                TableEntityType.Device,
+                devices.Select(d => d.RowKey),
                 cancellationToken);
 
             return devices.Select(d =>
@@ -82,7 +82,7 @@ public class DevicesRetrieveFunction
         public string DeviceIdentifier { get; }
 
         public string Alias { get; }
-        
+
         public IEnumerable<DeviceContactStateDto>? States { get; set; }
 
         public IEnumerable<UserDto> SharedWith { get; set; }

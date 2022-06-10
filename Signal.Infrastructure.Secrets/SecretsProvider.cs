@@ -7,46 +7,49 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Signal.Core;
 
-namespace Signal.Infrastructure.Secrets
+namespace Signal.Infrastructure.Secrets;
+
+public class SecretsProvider : ISecretsProvider
 {
-    public class SecretsProvider : ISecretsProvider
-    {
-        private readonly IConfiguration configuration;
+    private const string KeyVaultUrlKey = "SignalcoKeyVaultUrl";
 
-        // TODO: Move to configuration
-        private const string KeyVaultUrl = "https://signal.vault.azure.net/";
+    private readonly Lazy<IConfiguration> configuration;
 
-        private static readonly SecretClient Client;
-        private static readonly Dictionary<string, string> Cache = new Dictionary<string, string>();
-
-        static SecretsProvider()
-        {
-            Client = new SecretClient(
-                new Uri(KeyVaultUrl),
-                new DefaultAzureCredential());
-        }
-
-        public SecretsProvider(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
+    // TODO: Use in-memory cache instead of static
+    // TODO: Expire cached items
+    private static SecretClient? client;
+    private static readonly Dictionary<string, string> Cache = new();
         
-        public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken)
+    public SecretsProvider(Lazy<IConfiguration> configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    protected SecretClient Client()
+    {
+        return client ??= new SecretClient(
+            new Uri(this.configuration.Value[KeyVaultUrlKey]),
+            new DefaultAzureCredential());
+    }
+
+    public async Task<string> GetSecretAsync(string key, CancellationToken cancellationToken = default)
+    {
+        // Check cache
+        if (Cache.ContainsKey(key))
+            return Cache[key];
+
+        // Check configuration
+        try
         {
-            try
-            {
-                return this.configuration[key] ?? throw new Exception("Not a local secret.");
-            }
-            catch
-            {
-                // Shit, try in vault
-            }
-
-            if (Cache.ContainsKey(key)) 
-                return Cache[key];
-
-            var secret = await Client.GetSecretAsync(key, cancellationToken: cancellationToken);
-            return Cache[key] = secret.Value.Value;
+            return this.configuration.Value[key] ?? throw new Exception("Not a local secret.");
         }
+        catch
+        {
+            // Shit, try in vault
+        }
+
+        // Instantiate secrets client if not already
+        var secret = await this.Client().GetSecretAsync(key, cancellationToken: cancellationToken);
+        return Cache[key] = secret.Value.Value;
     }
 }

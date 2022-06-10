@@ -1,0 +1,73 @@
+name: Preview Deploy Cloud
+
+on:
+  pull_request:
+    branches:
+      - "main"
+      - "next"
+
+env:
+  AZURE_FUNCTIONAPP_PUBLIC_PATH: "Signal.Api.Public"
+  AZURE_FUNCTIONAPP_INTERNAL_PATH: "Signal.Api.Internal"
+  AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH: "Signalco.Channel.Slack"
+  DOTNET_VERSION: "6.0.x" # set this to the dotnet version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@v3
+
+      - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PUBLIC_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_INTERNAL_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
+      - name: "Build ${{ env.AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH }}"
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_CHANNEL_SLACK_PATH }}'
+          dotnet publish --configuration Release
+          popd
+
+      - uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Extract branch name
+        shell: bash
+        run: |
+          [[ $(echo ${BASE_BRANCH#refs/heads/}) = "main" ]] && echo "##[set-output name=branch;]production" || echo "##[set-output name=branch;]$(echo ${BASE_BRANCH#refs/heads/})"
+        id: extract_branch
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+
+      - shell: bash
+        run: |
+          pushd './infrastructure'
+          curl -fsSL https://get.pulumi.com | sh
+          yarn install
+          yarn lint
+          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.10 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.10
+          /home/runner/.pulumi/bin/pulumi preview --stack signalco/${{ steps.extract_branch.outputs.branch }}
+          popd
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

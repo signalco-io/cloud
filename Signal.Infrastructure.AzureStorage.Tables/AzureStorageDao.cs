@@ -39,8 +39,8 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.DevicesStatesHistory, cancellationToken)
-                .ConfigureAwait(false);
+            var client =
+                await this.clientFactory.GetTableClientAsync(ItemTableNames.DevicesStatesHistory, cancellationToken);
             var history = client.QueryAsync<AzureDeviceStateHistoryTableEntity>(entry =>
                 entry.PartitionKey == $"{deviceId}-{channelName}-{contactName}");
 
@@ -73,8 +73,7 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken)
-                .ConfigureAwait(false);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
             var query = client.QueryAsync<AzureUserTableEntity>(u => u.Email == userEmail);
             await foreach (var match in query)
                 return match.RowKey;
@@ -86,12 +85,11 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken)
+    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken)
-                .ConfigureAwait(false);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
             return (await client.GetEntityAsync<AzureUserTableEntity>(
                 UserSources.GoogleOauth,
                 userId,
@@ -125,8 +123,7 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken)
-                .ConfigureAwait(false);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken);
             var statesAsync = client.QueryAsync<AzureDeviceStateTableEntity>(PartitionsAnyFilter(deviceIds));
             var states = new List<IDeviceStateTableEntity>();
             await foreach (var state in statesAsync)
@@ -168,7 +165,7 @@ internal class AzureStorageDao : IAzureStorageDao
             return Enumerable.Empty<TEntity>();
 
         // Query user assigned entities
-        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken).ConfigureAwait(false);
+        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
         var entityQuery = client.QueryAsync<TAzureTableEntity>(
             string.IsNullOrWhiteSpace(partitionFilter)
                 ? RowsWithKeysAnyFilter(assignedEntityIds)
@@ -187,7 +184,7 @@ internal class AzureStorageDao : IAzureStorageDao
         IEnumerable<string> rowKeys,
         CancellationToken cancellationToken)
     {
-        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken).ConfigureAwait(false);
+        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
         var entityQuery = client.QueryAsync<TableEntity>(RowsWithKeysAnyFilter(rowKeys), cancellationToken: cancellationToken);
 
         var entities = new List<ITableEntityKey>();
@@ -259,8 +256,7 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken)
-                .ConfigureAwait(false);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken);
             var assignment = await client.GetEntityAsync<AzureUserAssignedEntitiesTableEntry>(
                 userId, entityId, cancellationToken: cancellationToken);
             return assignment.Value != null;
@@ -278,11 +274,15 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(type), cancellationToken).ConfigureAwait(false);
-            var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
-                RowsWithKeysAnyFilter(entityIds), cancellationToken: cancellationToken);
-
             var assignedUsers = new Dictionary<string, ICollection<string>>();
+            var entityIdsList = entityIds.ToList();
+            if (!entityIdsList.Any()) 
+                return assignedUsers;
+
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(type), cancellationToken);
+            var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
+                RowsWithKeysAnyFilter(entityIdsList), cancellationToken: cancellationToken);
+
             await foreach (var entity in assigned)
                 if (assignedUsers.ContainsKey(entity.RowKey))
                     assignedUsers[entity.RowKey].Add(entity.PartitionKey);
@@ -316,7 +316,7 @@ internal class AzureStorageDao : IAzureStorageDao
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken).ConfigureAwait(false);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken);
             var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
                 entry => entry.PartitionKey == userId,
                 cancellationToken: cancellationToken);

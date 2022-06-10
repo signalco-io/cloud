@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Signal.Core;
 
-namespace Signal.Infrastructure.Secrets
+namespace Signal.Infrastructure.Secrets;
+
+public static class SecretsExtensions
 {
-    public static class SecretsExtensions
+    public static IServiceCollection AddSecrets(this IServiceCollection services)
     {
-        public static void AddSecrets(this IServiceCollection services)
-        {
-            services.AddTransient<ISecretsProvider, SecretsProvider>();
-        }
+        return services
+            .AddTransient<ISecretsProvider, SecretsProvider>()
+            .AddTransient<ISecretsManager, SecretsManager>();
     }
 }

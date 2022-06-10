@@ -28,15 +28,14 @@ internal class AzureStorage : IAzureStorage
     {
         var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
         var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
-        await client.UpdateEntityAsync(azureItem, ETag.All, TableUpdateMode.Merge, cancellationToken)
-            .ConfigureAwait(false);
+        await client.UpdateEntityAsync(azureItem, ETag.All, TableUpdateMode.Merge, cancellationToken);
     }
 
     public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
     {
         var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
         var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
-        await client.UpsertEntityAsync(azureItem, TableUpdateMode.Merge, cancellationToken).ConfigureAwait(false);
+        await client.UpsertEntityAsync(azureItem, TableUpdateMode.Merge, cancellationToken);
     }
 
     public async Task DeleteItemAsync(

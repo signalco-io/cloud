@@ -5,54 +5,53 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Signal.Core.Storage;
 
-namespace Signal.Core.Beacon
+namespace Signal.Core.Beacon;
+
+public interface IBeaconService
 {
-    public interface IBeaconService
+    Task RegisterAsync(string email, CancellationToken cancellationToken);
+}
+
+internal class BeaconService : IBeaconService
+{
+    private readonly ILogger<BeaconService> logger;
+
+
+    public BeaconService(ILogger<BeaconService> logger)
     {
-        Task RegisterAsync(string email, CancellationToken cancellationToken);
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    internal class BeaconService : IBeaconService
+
+    public async Task RegisterAsync(string email, CancellationToken cancellationToken)
     {
-        private readonly ILogger<BeaconService> logger;
-
-
-        public BeaconService(ILogger<BeaconService> logger)
+        try
         {
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            // TODO: Add to beacons table
+
+            throw new NotImplementedException();
         }
-
-
-        public async Task RegisterAsync(string email, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            try
-            {
-                // TODO: Add to beacons table
-
-                throw new NotImplementedException();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogWarning(ex, "Failed to register beacon to email {BeaconRegisterEmail}.", email);
-            }
+            this.logger.LogWarning(ex, "Failed to register beacon to email {BeaconRegisterEmail}.", email);
         }
     }
+}
 
-    public interface IBeaconRegistrationTableEntity : ITableEntity
-    {
-        DateTime? RequestDateTime { get; set; }
-    }
+public interface IBeaconRegistrationTableEntity : ITableEntity
+{
+    DateTime? RequestDateTime { get; set; }
+}
 
-    public interface IBeaconTableEntity : ITableEntity
-    {
-        public DateTime RegisteredTimeStamp { get; set; }
+public interface IBeaconTableEntity : ITableEntity
+{
+    public DateTime RegisteredTimeStamp { get; set; }
 
-        string? Version { get; set; }
+    string? Version { get; set; }
 
-        DateTime? StateTimeStamp { get; set; }
+    DateTime? StateTimeStamp { get; set; }
 
-        IEnumerable<string> AvailableWorkerServices { get; set; }
+    IEnumerable<string> AvailableWorkerServices { get; set; }
 
-        IEnumerable<string> RunningWorkerServices { get; set; }
-    }
+    IEnumerable<string> RunningWorkerServices { get; set; }
 }

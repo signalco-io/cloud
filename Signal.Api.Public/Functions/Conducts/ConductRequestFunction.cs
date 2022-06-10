@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Signal.Api.Public.Auth;
-using Signal.Api.Public.Exceptions;
+using Signal.Api.Common;
+using Signal.Api.Common.Auth;
+using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
@@ -35,6 +37,11 @@ public class ConductRequestFunction
     }
 
     [FunctionName("Conducts-Request")]
+    [OpenApiSecurityAuth0Token]
+    [OpenApiOperation(nameof(ConductRequestFunction), "Conducts", Description = "Requests conduct to be executed.")]
+    [OpenApiRequestBody("application/json", typeof(ConductRequestDto), Description = "The conduct to execute.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
+    [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request")]
         HttpRequest req,
