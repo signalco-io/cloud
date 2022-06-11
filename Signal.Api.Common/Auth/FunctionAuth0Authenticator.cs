@@ -120,7 +120,6 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
 
                 // Create user entity
                 await this.azureStorage.UpsertAsync(
-                    ItemTableNames.Users,
                     new User(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
                     cancellationToken);
             }

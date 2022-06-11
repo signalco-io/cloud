@@ -1,5 +1,4 @@
-﻿using Signal.Core;
-using Signal.Core.Contacts;
+﻿using Signal.Core.Contacts;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 

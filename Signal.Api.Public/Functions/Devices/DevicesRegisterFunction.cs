@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,11 +8,10 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
-using Signal.Core.Devices;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
+using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Devices;
 

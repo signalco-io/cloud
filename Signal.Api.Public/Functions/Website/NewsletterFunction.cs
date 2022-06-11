@@ -13,8 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Signal.Api.Common;
 using Signal.Api.Common.HCaptcha;
-using Signal.Core;
 using Signal.Core.Storage;
+using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Website;
 

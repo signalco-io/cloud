@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Signal.Core;
 using Signal.Core.Contacts;
 using Signal.Core.Storage;
 using Signal.Core.Storage.Blobs;
@@ -147,8 +145,6 @@ internal class AzureStorageDao : IAzureStorageDao
 
     private async Task<IEnumerable<TEntity>> GetUserAssignedAsync<TEntity, TAzureTableEntity>(
         string userId, 
-        TableEntityType type,
-        string tableName,
         string? partitionFilter,
         Func<TAzureTableEntity, TEntity> entityMap,
         CancellationToken cancellationToken) 
@@ -222,34 +218,7 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(
-        string userId,
-        CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IProcessTableEntity, AzureProcessTableEntity>(
-            userId,
-            TableEntityType.Process,
-            ItemTableNames.Processes,
-            null,
-            process => new ProcessTableEntity(
-                process.PartitionKey, 
-                process.RowKey,
-                process.Alias, 
-                process.IsDisabled, 
-                process.ConfigurationSerialized),
-            cancellationToken);
-
-    public async Task<IEnumerable<IDeviceInfoTableEntity>> DevicesAsync(string userId,
-        CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IDeviceInfoTableEntity, AzureDeviceTableEntity>(
-            userId,
-            TableEntityType.Device,
-            ItemTableNames.Devices,
-            "device",
-            device => new DeviceInfoTableEntity(
-                device.RowKey, device.DeviceIdentifier, device.Alias),
-            cancellationToken);
-
-    public async Task<bool> IsUserAssignedAsync(string userId, TableEntityType data, string entityId, CancellationToken cancellationToken)
+    public async Task<bool> IsUserAssignedAsync(string userId, string entityId, CancellationToken cancellationToken)
     {
         try
         {
@@ -292,22 +261,6 @@ internal class AzureStorageDao : IAzureStorageDao
             return new Dictionary<string, ICollection<string>>();
         }
     }
-
-    public async Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IBeaconTableEntity, AzureBeaconTableEntity>(
-            userId,
-            TableEntityType.Station,
-            ItemTableNames.Beacons,
-            null,
-            beacon => new BeaconTableEntity(beacon.PartitionKey, beacon.RowKey)
-            {
-                RegisteredTimeStamp = beacon.RegisteredTimeStamp,
-                Version = beacon.Version,
-                StateTimeStamp = beacon.StateTimeStamp,
-                AvailableWorkerServices = beacon.AvailableWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.AvailableWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>(),
-                RunningWorkerServices = beacon.RunningWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.RunningWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>()
-            },
-            cancellationToken);
 
     private async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
     {

@@ -17,7 +17,6 @@ using Signal.Api.Common.Exceptions;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Sharing;
-using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Sharing;
 

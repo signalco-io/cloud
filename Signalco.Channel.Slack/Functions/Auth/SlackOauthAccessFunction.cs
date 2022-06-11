@@ -16,12 +16,11 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
-using Signal.Core.Devices;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Secrets;
 using Signal.Core.Storage;
+using Signal.Infrastructure.AzureStorage.Tables;
 using Signalco.Channel.Slack.Secrets;
 
 namespace Signalco.Channel.Slack.Functions.Auth;
