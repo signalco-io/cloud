@@ -18,9 +18,9 @@ using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Conducts;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
+using Signal.Core.Secrets;
 
 namespace Signalco.Channel.Slack.Functions.Conducts;
 

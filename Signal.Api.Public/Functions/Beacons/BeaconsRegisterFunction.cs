@@ -58,7 +58,7 @@ public class BeaconsRegisterFunction
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Beacon already registered.");
 
             // Create or update existing item
-            await this.storage.CreateOrUpdateItemAsync(ItemTableNames.Beacons,
+            await this.storage.UpsertAsync(ItemTableNames.Beacons,
                 new BeaconItem(user.UserId, payload.BeaconId)
                 {
                     RegisteredTimeStamp = DateTime.UtcNow

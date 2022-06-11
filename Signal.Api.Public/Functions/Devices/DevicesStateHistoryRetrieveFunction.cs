@@ -9,7 +9,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
+using Signal.Core.Entities;
 using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Devices;

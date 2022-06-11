@@ -1,23 +1,18 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Signal.Core.Entities;
+using Signal.Core.Sharing;
 
 namespace Signal.Core.Storage;
 
 public interface IAzureStorage
 {
-    Task UpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken)
-        where T : ITableEntity;
+    Task UpsertAsync(IEntity entity, CancellationToken cancellationToken = default);
 
-    Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken)
-        where T : ITableEntity;
+    Task UpsertAsync(IUserAssignedEntity userAssignment, CancellationToken cancellationToken = default);
 
-    Task DeleteItemAsync(
-        string tableName, 
-        string partitionKey, 
-        string rowKey,
-        CancellationToken cancellationToken);
+    Task RemoveEntityAsync(string id, CancellationToken cancellationToken = default);
 
     Task AppendToFileAsync(string directory, string fileName, Stream data, CancellationToken cancellationToken);
 }

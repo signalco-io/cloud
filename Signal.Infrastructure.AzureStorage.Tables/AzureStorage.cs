@@ -4,11 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 using Azure.Data.Tables;
-using Signal.Core;
 using Signal.Core.Storage;
-using ITableEntity = Signal.Core.Storage.ITableEntity;
+using Signal.Core.Storage.Blobs;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
@@ -23,22 +21,15 @@ internal class AzureStorage : IAzureStorage
         this.clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
     }
         
-
-    public async Task UpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
-    {
-        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
-        var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
-        await client.UpdateEntityAsync(azureItem, ETag.All, TableUpdateMode.Merge, cancellationToken);
-    }
-
-    public async Task CreateOrUpdateItemAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
+    
+    public async Task UpsertAsync<T>(string tableName, T item, CancellationToken cancellationToken) where T : ITableEntity
     {
         var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
         var azureItem = new TableEntity(ObjectToDictionary(item)).EscapeKeys();
         await client.UpsertEntityAsync(azureItem, TableUpdateMode.Merge, cancellationToken);
     }
 
-    public async Task DeleteItemAsync(
+    public async Task DeleteAsync(
         string tableName, 
         string partitionKey, 
         string rowKey,

@@ -61,7 +61,7 @@ public class NewsletterFunction
         // Don't report errors so bots can't guess-attack
         try
         {
-            await storage.CreateOrUpdateItemAsync(
+            await storage.UpsertAsync(
                 ItemTableNames.Website.Newsletter,
                 new NewsletterTableEntity(data.Email.ToUpperInvariant()),
                 cancellationToken);

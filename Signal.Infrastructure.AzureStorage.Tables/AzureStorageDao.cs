@@ -8,13 +8,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Signal.Core;
-using Signal.Core.Beacon;
-using Signal.Core.Dashboards;
-using Signal.Core.Devices;
-using Signal.Core.Processes;
+using Signal.Core.Contacts;
 using Signal.Core.Storage;
+using Signal.Core.Storage.Blobs;
 using Signal.Core.Users;
-using BlobInfo = Signal.Core.Storage.BlobInfo;
+using BlobInfo = Signal.Core.Storage.Blobs.BlobInfo;
 using ITableEntity = Azure.Data.Tables.ITableEntity;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
@@ -30,7 +28,7 @@ internal class AzureStorageDao : IAzureStorageDao
     }
 
 
-    public async Task<IEnumerable<IDeviceStateHistoryTableEntity>> GetDeviceStateHistoryAsync(
+    public async Task<IEnumerable<IContactHistoryItem>> GetDeviceStateHistoryAsync(
         string deviceId,
         string channelName,
         string contactName,
@@ -51,7 +49,7 @@ internal class AzureStorageDao : IAzureStorageDao
                 correctedDuration = TimeSpan.FromDays(30);
 
             // Fetch all until reaching requested duration
-            var items = new List<IDeviceStateHistoryTableEntity>();
+            var items = new List<IContactHistoryItem>();
             var startDateTime = DateTime.UtcNow - correctedDuration;
             await foreach (var data in history)
             {
@@ -65,7 +63,7 @@ internal class AzureStorageDao : IAzureStorageDao
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return Enumerable.Empty<IDeviceStateHistoryTableEntity>();
+            return Enumerable.Empty<IContactHistoryItem>();
         }
     }
 
@@ -74,7 +72,7 @@ internal class AzureStorageDao : IAzureStorageDao
         try
         {
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
-            var query = client.QueryAsync<AzureUserTableEntity>(u => u.Email == userEmail);
+            var query = client.QueryAsync<AzureUser>(u => u.Email == userEmail);
             await foreach (var match in query)
                 return match.RowKey;
             return null;
@@ -85,12 +83,12 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<IUser?> UserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
-            return (await client.GetEntityAsync<AzureUserTableEntity>(
+            return (await client.GetEntityAsync<AzureUser>(
                 UserSources.GoogleOauth,
                 userId,
                 cancellationToken: cancellationToken)).Value;
@@ -117,15 +115,15 @@ internal class AzureStorageDao : IAzureStorageDao
             cancellationToken);
         
 
-    public async Task<IEnumerable<IDeviceStateTableEntity>> GetDeviceStatesAsync(
+    public async Task<IEnumerable<IContact>> GetDeviceStatesAsync(
         IEnumerable<string> deviceIds,
         CancellationToken cancellationToken)
     {
         try
         {
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken);
-            var statesAsync = client.QueryAsync<AzureDeviceStateTableEntity>(PartitionsAnyFilter(deviceIds));
-            var states = new List<IDeviceStateTableEntity>();
+            var statesAsync = client.QueryAsync<AzureContact>(PartitionsAnyFilter(deviceIds));
+            var states = new List<IContact>();
             await foreach (var state in statesAsync)
                 if (state != null)
                     states.Add(state);
@@ -133,7 +131,7 @@ internal class AzureStorageDao : IAzureStorageDao
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return Enumerable.Empty<IDeviceStateTableEntity>();
+            return Enumerable.Empty<IContact>();
         }
     }
         
@@ -213,9 +211,8 @@ internal class AzureStorageDao : IAzureStorageDao
                 continue;
 
             // Retrieve interesting data
-            var info = new BlobInfo
+            var info = new BlobInfo(blobHierarchyItem.Blob.Name)
             {
-                Name = blobHierarchyItem.Blob.Name,
                 CreatedTimeStamp = blobHierarchyItem.Blob.Properties.CreatedOn,
                 LastModifiedTimeStamp = blobHierarchyItem.Blob.Properties.LastModified,
                 Size = blobHierarchyItem.Blob.Properties.ContentLength

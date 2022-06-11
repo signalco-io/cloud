@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
-using Signal.Core;
+using Signal.Core.Secrets;
 
 namespace Signal.Infrastructure.Secrets;
 

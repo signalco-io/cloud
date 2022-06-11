@@ -10,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Signal.Core;
 using Signal.Core.Auth;
 using Signal.Core.Exceptions;
+using Signal.Core.Secrets;
 using Signal.Core.Storage;
 using Signal.Core.Users;
 
@@ -119,9 +119,9 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "User info doesn't contain email.");
 
                 // Create user entity
-                await this.azureStorage.CreateOrUpdateItemAsync(
+                await this.azureStorage.UpsertAsync(
                     ItemTableNames.Users,
-                    new UserEntity(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
+                    new User(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
                     cancellationToken);
             }
 

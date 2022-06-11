@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CognitiveServices.Speech;
-using Signal.Core;
+using Signal.Core.Secrets;
 
 namespace Signal.Infrastructure.AzureSpeech;
 

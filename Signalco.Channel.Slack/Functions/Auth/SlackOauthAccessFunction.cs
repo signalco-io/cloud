@@ -18,7 +18,9 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Devices;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
+using Signal.Core.Secrets;
 using Signal.Core.Storage;
 using Signalco.Channel.Slack.Secrets;
 
@@ -98,9 +100,9 @@ public class SlackOauthAccessFunction
             // Create channel contact - auth token with ID
             // TODO: Use entity service
             // TODO: Update existing slack channel if having matching already (match by team and bot user id)
-            await this.storage.CreateOrUpdateItemAsync(
+            await this.storage.UpsertAsync(
                 ItemTableNames.DeviceStates,
-                new DeviceStateTableEntity(
+                new Contact(
                     channelId,
                     KnownChannels.Slack,
                     KnownContacts.AccessToken,
@@ -108,9 +110,9 @@ public class SlackOauthAccessFunction
                     DateTime.UtcNow),
                 cancellationToken);
 
-            await this.storage.CreateOrUpdateItemAsync(
+            await this.storage.UpsertAsync(
                 ItemTableNames.DeviceStates,
-                new DeviceStateTableEntity(
+                new Contact(
                     channelId,
                     KnownChannels.Slack,
                     KnownContacts.BotUserId,
@@ -120,9 +122,9 @@ public class SlackOauthAccessFunction
 
             if (access.Team != null)
             {
-                await this.storage.CreateOrUpdateItemAsync(
+                await this.storage.UpsertAsync(
                     ItemTableNames.DeviceStates,
-                    new DeviceStateTableEntity(
+                    new Contact(
                         channelId,
                         KnownChannels.Slack,
                         KnownContacts.Team,

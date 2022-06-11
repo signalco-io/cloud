@@ -10,6 +10,7 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Devices;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 

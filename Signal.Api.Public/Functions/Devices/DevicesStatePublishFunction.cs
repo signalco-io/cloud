@@ -13,6 +13,7 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core;
 using Signal.Core.Devices;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
@@ -59,9 +60,9 @@ public class DevicesStatePublishFunction
             // TODO: Assign to device's ignore states if not assigned in config (update device for state visibility)
 
             // Persist as current state
-            var updateCurrentStateTask = this.storage.CreateOrUpdateItemAsync(
+            var updateCurrentStateTask = this.storage.UpsertAsync(
                 ItemTableNames.DeviceStates,
-                new DeviceStateTableEntity(
+                new Contact(
                     payload.DeviceId,
                     payload.ChannelName,
                     payload.ContactName,
@@ -78,9 +79,9 @@ public class DevicesStatePublishFunction
             {
                 // Persist to history 
                 // TODO: persist only if given contact is marked for history tracking
-                persistHistoryTask = this.storage.CreateOrUpdateItemAsync(
+                persistHistoryTask = this.storage.UpsertAsync(
                     ItemTableNames.DevicesStatesHistory,
-                    new DeviceStateHistoryTableEntity(
+                    new ContactHistoryItem(
                         payload.DeviceId,
                         payload.ChannelName,
                         payload.ContactName,

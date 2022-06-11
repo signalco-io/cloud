@@ -1,9 +1,9 @@
 ﻿using Signal.Core;
-using Signal.Core.Devices;
+using Signal.Core.Contacts;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
-internal class AzureDeviceStateHistoryTableEntity : AzureTableEntityBase, IDeviceStateHistoryTableEntity
+internal class AzureDeviceStateHistoryTableEntity : AzureTableEntityBase, IContactHistoryItem
 {
     public string PartitionKey { get; set; }
 
