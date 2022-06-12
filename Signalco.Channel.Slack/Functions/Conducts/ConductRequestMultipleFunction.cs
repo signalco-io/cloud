@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -17,6 +18,7 @@ using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Conducts;
 using Signal.Api.Common.Exceptions;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 using Signal.Core.Secrets;
@@ -28,17 +30,20 @@ public class ConductRequestMultipleFunction
     private readonly IFunctionAuthenticator authenticator;
     private readonly IAzureStorageDao storageDao;
     private readonly ISecretsProvider secrets;
+    private readonly IEntityService entityService;
     private readonly ILogger<ConductRequestMultipleFunction> logger;
 
     public ConductRequestMultipleFunction(
         IFunctionAuthenticator authenticator,
         IAzureStorageDao storageDao,
         ISecretsProvider secrets,
+        IEntityService entityService,
         ILogger<ConductRequestMultipleFunction> logger)
     {
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -64,6 +69,11 @@ public class ConductRequestMultipleFunction
                 {
                     try
                     {
+                        if (string.IsNullOrWhiteSpace(conductRequest.DeviceId))
+                        {
+                            this.logger.LogWarning("Entity not specified.");
+                            continue;
+                        }
                         if (conductRequest.ChannelName != KnownChannels.Slack)
                         {
                             this.logger.LogWarning("Not supported channel name {channelName}", conductRequest.ChannelName);
@@ -71,8 +81,7 @@ public class ConductRequestMultipleFunction
                         }
 
                         // Retrieve user channel with matching id
-                        var userDevices = await this.storageDao.DevicesAsync(context.User.UserId, cancellationToken);
-                        var matchingChannel = userDevices.FirstOrDefault(d => d.RowKey == conductRequest.DeviceId);
+                        var matchingChannel = await this.entityService.GetAsync(conductRequest.DeviceId, cancellationToken);
                         if (matchingChannel == null)
                         {
                             this.logger.LogWarning("Channel with id {channelId} not found", conductRequest.DeviceId);
@@ -80,14 +89,13 @@ public class ConductRequestMultipleFunction
                         }
 
                         // Resolve accessToken from channel contact via SecretsProvider                    
-                        var contacts = await storageDao.GetDeviceStatesAsync(new[] { matchingChannel.RowKey }, cancellationToken);
-                        var accessTokenContact =
-                            contacts.FirstOrDefault(c => c.ContactName == KnownContacts.AccessToken);
+                        var contacts = await this.entityService.ContactsAsync(matchingChannel.Id, cancellationToken);
+                        var accessTokenContact = contacts.FirstOrDefault(c => c.ContactName == KnownContacts.AccessToken);
                         if (accessTokenContact == null || string.IsNullOrWhiteSpace(accessTokenContact.ValueSerialized))
                         {
                             this.logger.LogWarning(
                                 "Channel {channelId} doesn't have assigned access token contact or access token value.",
-                                matchingChannel.RowKey);
+                                matchingChannel.Id);
                             continue;
                         }
                         var accessToken = await this.secrets.GetSecretAsync(accessTokenContact.ValueSerialized, cancellationToken);
@@ -95,7 +103,7 @@ public class ConductRequestMultipleFunction
                         {
                             this.logger.LogWarning(
                                 "Channel {channelId} assigned access token is invalid.",
-                                matchingChannel.RowKey);
+                                matchingChannel.Id);
                             continue;
                         }
 

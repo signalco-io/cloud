@@ -8,5 +8,5 @@ public interface IContactHistoryItem
 
     string? ValueSerialized { get; }
 
-    DateTimeOffset? Timestamp { get; }
+    DateTime Timestamp { get; }
 }

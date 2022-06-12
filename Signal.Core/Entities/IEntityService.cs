@@ -9,9 +9,15 @@ namespace Signal.Core.Entities;
 
 public interface IEntityService
 {
+    Task<IEntity?> GetAsync(string entityId, CancellationToken cancellationToken = default);
+
     Task<string> UpsertAsync(string userId, string? id, Func<string, IEntity> entityFunc, CancellationToken cancellationToken);
 
-    public Task<IDictionary<string, IContact>> ContactsAsync(
+    public Task<IEnumerable<IContact>> ContactsAsync(
+        string entityId,
+        CancellationToken cancellationToken);
+
+    public Task<IEnumerable<IContact>> ContactsAsync(
         IEnumerable<string> entityIds,
         CancellationToken cancellationToken);
 

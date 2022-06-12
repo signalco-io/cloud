@@ -6,5 +6,6 @@ public enum EntityType
     Device,
     Dashboard,
     Process,
-    Station
+    Station,
+    Channel
 }

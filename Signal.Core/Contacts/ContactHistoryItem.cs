@@ -18,5 +18,5 @@ public class ContactHistoryItem : IContactHistoryItem
 
     public string? ValueSerialized { get; }
 
-    public DateTimeOffset? Timestamp { get; }
+    public DateTime Timestamp { get; }
 }

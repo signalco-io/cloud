@@ -1,17 +1,53 @@
 ﻿using System;
+using Azure.Data.Tables;
 using Signal.Core.Contacts;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
-internal class AzureContact : AzureTableEntityBase, IContact
+[Serializable]
+internal class AzureContact : AzureTableEntityBase
 {
-    public string DeviceIdentifier { get; set; }
-        
-    public string ChannelName { get; set; }
-        
-    public string ContactName { get; set; }
+    public string? Name { get; set; }
         
     public string? ValueSerialized { get; set; }
 
     public DateTime TimeStamp { get; set; }
+
+    public AzureContact() : base(string.Empty, string.Empty)
+    {
+    }
+
+    protected AzureContact(string partitionKey, string rowKey) : base(partitionKey, rowKey)
+    {
+    }
+
+    public static AzureContact FromContact(IContact contact)
+    {
+        return new AzureContact(contact.EntityId, $"{contact.ChannelName}-{contact.ContactName}")
+        {
+            Name = contact.ContactName,
+            ValueSerialized = contact.ValueSerialized,
+            TimeStamp = contact.TimeStamp
+        };
+    }
+
+    public static AzureContact FromContactPointer(IContactPointer contactPointer)
+    {
+        return new AzureContact(contactPointer.EntityId, $"{contactPointer.ChannelName}-{contactPointer.ContactName}")
+        {
+            Name = contactPointer.ContactName,
+            TimeStamp = DateTime.UtcNow
+        };
+    }
+
+    public static IContact ToContact(AzureContact contact)
+    {
+        var channelContactSplit = contact.RowKey.Split("-");
+        return new Contact(
+            contact.PartitionKey, 
+            channelContactSplit[0], 
+            channelContactSplit[1],
+            contact.ValueSerialized, 
+            contact.TimeStamp);
+    }
 }

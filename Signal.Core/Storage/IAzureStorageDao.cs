@@ -12,9 +12,15 @@ namespace Signal.Core.Storage;
 
 public interface IAzureStorageDao
 {
-    Task<IEnumerable<IEntity>> EntitiesAsync(string userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<IEntity>> UserEntitiesAsync(string userId, CancellationToken cancellationToken = default);
 
-    public Task<IDictionary<string, IContact>> ContactsAsync(
+    Task<IEntity?> GetAsync(string entityId, CancellationToken cancellationToken);
+
+    public Task<IEnumerable<IContact>> ContactsAsync(
+        string entityId,
+        CancellationToken cancellationToken);
+
+    public Task<IEnumerable<IContact>> ContactsAsync(
         IEnumerable<string> entityIds,
         CancellationToken cancellationToken);
 
@@ -29,7 +35,7 @@ public interface IAzureStorageDao
 
     Task<string?> UserIdByEmailAsync(string userEmail, CancellationToken cancellationToken);
 
-    public Task<Dictionary<string, IEnumerable<string>>> AssignedUsersAsync(
+    public Task<IReadOnlyDictionary<string, IEnumerable<string>>> AssignedUsersAsync(
         IEnumerable<string> entityIds,
         CancellationToken cancellationToken);
     

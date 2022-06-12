@@ -60,6 +60,9 @@ internal class EntityService : IEntityService
         return entityUsersDictionary;
     }
 
+    public async Task<IEntity?> GetAsync(string entityId, CancellationToken cancellationToken = default) => 
+        await this.storageDao.GetAsync(entityId, cancellationToken);
+
     public async Task<string> UpsertAsync(string userId, string? entityId, Func<string, IEntity> entityFunc, CancellationToken cancellationToken)
     {
         // Check if existing entity was requested but not assigned
@@ -87,10 +90,11 @@ internal class EntityService : IEntityService
         return id;
     }
 
-    public Task<IDictionary<string, IContact>> ContactsAsync(IEnumerable<string> entityIds, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<IEnumerable<IContact>> ContactsAsync(string entityId, CancellationToken cancellationToken) => 
+        await this.storageDao.ContactsAsync(entityId, cancellationToken);
+
+    public async Task<IEnumerable<IContact>> ContactsAsync(IEnumerable<string> entityIds, CancellationToken cancellationToken) => 
+        await this.storageDao.ContactsAsync(entityIds, cancellationToken);
 
     private async Task<string> GenerateEntityIdAsync(CancellationToken cancellationToken = default)
     {
