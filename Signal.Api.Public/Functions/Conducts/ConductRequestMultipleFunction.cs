@@ -46,7 +46,7 @@ public class ConductRequestMultipleFunction
     [FunctionName("Conducts-RequestMultiple")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ConductRequestMultipleFunction), "Conducts", Description = "Requests multiple conducts to be executed.")]
-    [OpenApiRequestBody("application/json", typeof(List<ConductRequestMultipleDto>), Description = "Collection of conducts to execute.")]
+    [OpenApiRequestBody("application/json", typeof(List<ConductRequestDto>), Description = "Collection of conducts to execute.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
@@ -54,10 +54,10 @@ public class ConductRequestMultipleFunction
         HttpRequest req,
         [SignalR(HubName = "conducts")] IAsyncCollector<SignalRMessage> signalRMessages,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<List<ConductRequestMultipleDto>>(cancellationToken, this.functionAuthenticator, async context =>
+        await req.UserRequest<List<ConductRequestDto>>(cancellationToken, this.functionAuthenticator, async context =>
         {
             var payload = context.Payload;
-            var usersConducts = new Dictionary<string, ICollection<ConductRequestMultipleDto>>();
+            var usersConducts = new Dictionary<string, ICollection<ConductRequestDto>>();
             foreach (var conduct in payload)
             {
                 if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
@@ -93,20 +93,15 @@ public class ConductRequestMultipleFunction
                     using var client = new HttpClient();
                     client.DefaultRequestHeaders.Add("Authorization", req.Headers.Authorization[0]);
                     await client.PostAsync("https://slack.channel.api.signalco.io/api/conducts/request-multiple",
-                        new StringContent(JsonSerializer.Serialize(new List<ConductRequestMultipleDto> {conduct}),
+                        new StringContent(JsonSerializer.Serialize(new List<ConductRequestDto> {conduct}),
                             Encoding.UTF8, "application/json"), cancellationToken);
                 }
                 else
                 {
-                    var entityType = conduct.ChannelName == "station"
-                        ? TableEntityType.Station
-                        : TableEntityType.Device;
-
-                    await context.ValidateUserAssignedAsync(this.entityService, entityType, conduct.DeviceId);
+                    await context.ValidateUserAssignedAsync(this.entityService, conduct.DeviceId);
 
                     // Retrieve all device assigned devices
                     var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                        entityType,
                         new[] {conduct.DeviceId},
                         cancellationToken)).FirstOrDefault();
 

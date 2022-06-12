@@ -9,29 +9,25 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Sharing;
-using Signal.Core.Storage;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
 public class BeaconsRegisterFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
-    private readonly IAzureStorage storage;
-    private readonly IAzureStorageDao storageDao;
+    private readonly IEntityService entityService;
     private readonly ISharingService sharingService;
 
     public BeaconsRegisterFunction(
         IFunctionAuthenticator functionAuthenticator,
-        IAzureStorage storage,
-        IAzureStorageDao storageDao,
+        IEntityService entityService,
         ISharingService sharingService)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
-        this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
-        this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
     }
 
@@ -46,30 +42,22 @@ public class BeaconsRegisterFunction
             var user = context.User;
             if (payload.BeaconId == null)
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "BeaconId is required.");
-
-            // Check if beacons exists
-            var existingBeacons = await this.storageDao.EntitiesByRowKeysAsync(
-                ItemTableNames.Beacons,
-                new[] { payload.BeaconId }, 
-                cancellationToken);
-            if (existingBeacons.Any())
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Beacon already registered.");
-
+            
             // Create or update existing item
-            await this.storage.UpsertAsync(ItemTableNames.Beacons,
-                new BeaconItem(user.UserId, payload.BeaconId)
-                {
-                    RegisteredTimeStamp = DateTime.UtcNow
-                }, cancellationToken);
+            await this.entityService.UpsertAsync(
+                user.UserId,
+                payload.BeaconId,
+                id => new Core.Entities.Entity(EntityType.Station, id, "Station"), 
+                cancellationToken);
 
             // Assign to current user
             await this.sharingService.AssignToUserAsync(
                 user.UserId,
-                TableEntityType.Station,
                 payload.BeaconId,
                 cancellationToken);
         });
 
+    [Serializable]
     private class BeaconRegisterRequestDto
     {
         [Required]

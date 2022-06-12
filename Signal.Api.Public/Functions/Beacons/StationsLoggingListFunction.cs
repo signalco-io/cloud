@@ -55,7 +55,6 @@ public class StationsLoggingListFunction
 
             await context.ValidateUserAssignedAsync(
                 this.entityService,
-                TableEntityType.Station,
                 stationId);
 
             var items = new List<BlobInfoDto>();

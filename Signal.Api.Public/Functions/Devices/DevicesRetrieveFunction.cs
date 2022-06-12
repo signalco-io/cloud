@@ -38,25 +38,24 @@ public class DevicesRetrieveFunction
         CancellationToken cancellationToken) =>
         await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
         {
-            var devices = (await this.storage.DevicesAsync(context.User.UserId, cancellationToken)).ToList();
-            var states = await this.storage.GetDeviceStatesAsync(devices.Select(d => d.RowKey).ToList(), cancellationToken);
+            var devices = (await this.storage.UserEntitiesAsync(context.User.UserId, cancellationToken)).ToList();
+            var states = await this.storage.ContactsAsync(devices.Select(d => d.Id).ToList(), cancellationToken);
             var entityUsers = await this.entityService.EntityUsersAsync(
-                TableEntityType.Device,
-                devices.Select(d => d.RowKey),
+                devices.Select(d => d.Id),
                 cancellationToken);
 
             return devices.Select(d =>
             {
-                var users = entityUsers[d.RowKey].Select(u => new UserDto
+                var users = entityUsers[d.Id].Select(u => new UserDto
                 {
                     Email = u.Email,
                     FullName = u.FullName,
-                    Id = u.RowKey
+                    Id = u.UserId
                 });
 
-                return new DeviceDto(d.RowKey, d.DeviceIdentifier, d.Alias)
+                return new EntityDto(d.Id, d.Alias)
                 {
-                    States = states.Where(s => s.PartitionKey == d.RowKey).Select(s => new DeviceContactStateDto
+                    States = states.Where(s => s.EntityId == d.Id).Select(s => new DeviceContactStateDto
                     (
                         s.ContactName,
                         s.ChannelName,
@@ -68,26 +67,25 @@ public class DevicesRetrieveFunction
             });
         });
 
-    private class DeviceDto
+    [Serializable]
+    private class EntityDto
     {
-        public DeviceDto(string id, string deviceIdentifier, string alias)
+        public EntityDto(string id, string alias)
         {
             this.Id = id;
-            this.DeviceIdentifier = deviceIdentifier;
             this.Alias = alias;
         }
 
         public string Id { get; }
 
-        public string DeviceIdentifier { get; }
-
         public string Alias { get; }
 
         public IEnumerable<DeviceContactStateDto>? States { get; set; }
 
-        public IEnumerable<UserDto> SharedWith { get; set; }
+        public IEnumerable<UserDto>? SharedWith { get; set; }
     }
 
+    [Serializable]
     private class DeviceContactStateDto
     {
         public DeviceContactStateDto(string name, string channel, string? valueSerialized, DateTime timeStamp)

@@ -13,8 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Signal.Api.Common;
 using Signal.Api.Common.HCaptcha;
+using Signal.Core.Newsletter;
 using Signal.Core.Storage;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Website;
 
@@ -62,33 +62,17 @@ public class NewsletterFunction
         try
         {
             await storage.UpsertAsync(
-                ItemTableNames.Website.Newsletter,
-                new NewsletterTableEntity(data.Email.ToUpperInvariant()),
+                new NewsletterSubscription(data.Email.ToUpperInvariant()),
                 cancellationToken);
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to subscribe to newsletter");
+            this.logger.LogError(ex, "Failed to subscribe to newsletter with email: {Email}", data.Email);
         }
 
         return new OkResult();
     }
-
-    [Serializable]
-    private class NewsletterTableEntity : ITableEntity
-    {
-        public string PartitionKey => "cover";
-
-        public string RowKey { get; } = Guid.NewGuid().ToString();
-
-        public string Email { get; }
-
-        public NewsletterTableEntity(string email)
-        {
-            this.Email = email;
-        }
-    }
-
+    
     [Serializable]
     private class NewsletterSubscribeDto
     {

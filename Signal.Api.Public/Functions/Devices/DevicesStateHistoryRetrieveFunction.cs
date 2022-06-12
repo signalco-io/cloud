@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
+using Signal.Core.Contacts;
 using Signal.Core.Entities;
 using Signal.Core.Storage;
 
@@ -42,12 +44,10 @@ public class DevicesStateHistoryRetrieveFunction
             var contactName = req.Query["contactName"];
             var duration = req.Query["duration"];
 
-            await context.ValidateUserAssignedAsync(this.entityService, TableEntityType.Device, deviceId);
+            await context.ValidateUserAssignedAsync(this.entityService, deviceId);
 
-            var data = await this.storage.GetDeviceStateHistoryAsync(
-                deviceId,
-                channelName,
-                contactName,
+            var data = await this.storage.ContactHistoryAsync(
+                new ContactPointer(deviceId, channelName, contactName),
                 TimeSpan.TryParse(duration, out var durationValue) ? durationValue : TimeSpan.FromDays(1),
                 cancellationToken);
 
@@ -55,23 +55,13 @@ public class DevicesStateHistoryRetrieveFunction
             {
                 Values = data.Select(d => new DeviceStateHistoryResponseDto.TimeStampValuePair
                 {
-                    TimeStamp = d.Timestamp?.UtcDateTime ?? DateTime.MinValue,
+                    TimeStamp = d.Timestamp,
                     ValueSerialized = d.ValueSerialized
                 }).ToList()
             };
         });
 
-    private class DeviceStateHistoryRequestDto
-    {
-        public string? DeviceId { get; set; }
-
-        public string? ChannelName { get; set; }
-
-        public string? ContactName { get; set; }
-
-        public TimeSpan? Duration { get; set; }
-    }
-
+    [Serializable]
     private class DeviceStateHistoryResponseDto
     {
         public List<TimeStampValuePair> Values { get; set; } = new();

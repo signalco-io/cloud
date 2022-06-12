@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Signal.Core.Contacts;
 using Signal.Core.Entities;
+using Signal.Core.Newsletter;
 using Signal.Core.Sharing;
 using Signal.Core.Storage;
 using Signal.Core.Storage.Blobs;
@@ -38,7 +39,7 @@ internal class AzureStorage : IAzureStorage
     public async Task UpsertAsync(IContactPointer contact, CancellationToken cancellationToken = default)
     {
         await this.WithClientAsync(
-            ItemTableNames.Entities,
+            ItemTableNames.Contacts,
             c => c.UpsertEntityAsync(AzureContact.FromContactPointer(contact), cancellationToken: cancellationToken),
             cancellationToken);
     }
@@ -46,15 +47,23 @@ internal class AzureStorage : IAzureStorage
     public async Task UpsertAsync(IContact contact, CancellationToken cancellationToken = default)
     {
         await this.WithClientAsync(
-            ItemTableNames.Entities,
+            ItemTableNames.Contacts,
             c => c.UpsertEntityAsync(AzureContact.FromContact(contact), cancellationToken: cancellationToken),
+            cancellationToken);
+    }
+
+    public async Task UpsertAsync(IContactHistoryItem item, CancellationToken cancellationToken = default)
+    {
+        await this.WithClientAsync(
+            ItemTableNames.ContactsHistory,
+            c => c.UpsertEntityAsync(AzureContactHistoryItem.FromContactHistoryItem(item), cancellationToken: cancellationToken),
             cancellationToken);
     }
 
     public async Task UpsertAsync(IUserAssignedEntity userAssignment, CancellationToken cancellationToken = default)
     {
         await this.WithClientAsync(
-            ItemTableNames.Entities,
+            ItemTableNames.UserAssignedEntity,
             c => c.UpsertEntityAsync(AzureUserAssignedEntitiesTableEntry.From(userAssignment), cancellationToken: cancellationToken),
             cancellationToken);
     }
@@ -62,8 +71,17 @@ internal class AzureStorage : IAzureStorage
     public async Task UpsertAsync(IUser user, CancellationToken cancellationToken = default)
     {
         await this.WithClientAsync(
-            ItemTableNames.Entities,
+            ItemTableNames.Users,
             c => c.UpsertEntityAsync(AzureUser.FromUser(user), cancellationToken: cancellationToken),
+            cancellationToken);
+    }
+
+    public async Task UpsertAsync(INewsletterSubscription subscription, CancellationToken cancellationToken = default)
+    {
+        await this.WithClientAsync(
+            ItemTableNames.Website.Newsletter,
+            client => client.UpsertEntityAsync(new AzureNewsletterSubscription(subscription.Email),
+                cancellationToken: cancellationToken),
             cancellationToken);
     }
 

@@ -66,7 +66,6 @@ public class StationsLoggingDownloadFunction
 
                 await context.ValidateUserAssignedAsync(
                     this.entityService,
-                    TableEntityType.Station,
                     stationId);
 
                 var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Signal.Core.Contacts;
 using Signal.Core.Entities;
+using Signal.Core.Newsletter;
 using Signal.Core.Sharing;
 using Signal.Core.Users;
 
@@ -16,9 +17,13 @@ public interface IAzureStorage
 
     Task UpsertAsync(IContact contact, CancellationToken cancellationToken = default);
 
+    Task UpsertAsync(IContactHistoryItem item, CancellationToken cancellationToken = default);
+
     Task UpsertAsync(IUserAssignedEntity userAssignment, CancellationToken cancellationToken = default);
 
     Task UpsertAsync(IUser user, CancellationToken cancellationToken = default);
+
+    Task UpsertAsync(INewsletterSubscription subscription, CancellationToken cancellationToken = default);
 
     Task RemoveEntityAsync(string id, CancellationToken cancellationToken = default);
 

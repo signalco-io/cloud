@@ -51,7 +51,7 @@ public class ConductRequestMultipleFunction
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ConductRequestMultipleFunction), "Conducts",
         Description = "Requests multiple conducts to be executed.")]
-    [OpenApiRequestBody("application/json", typeof(List<ConductRequestMultipleDto>),
+    [OpenApiRequestBody("application/json", typeof(List<ConductRequestDto>),
         Description = "Collection of conducts to execute.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
@@ -59,7 +59,7 @@ public class ConductRequestMultipleFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request-multiple")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<List<ConductRequestMultipleDto>>(cancellationToken, this.authenticator,
+        await req.UserRequest<List<ConductRequestDto>>(cancellationToken, this.authenticator,
             async context =>
             {
                 var payload = context.Payload;

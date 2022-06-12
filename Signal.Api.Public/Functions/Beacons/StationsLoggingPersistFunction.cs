@@ -58,7 +58,6 @@ public class StationsLoggingPersistFunction
 
                 await context.ValidateUserAssignedAsync(
                     this.entityService,
-                    TableEntityType.Station,
                     payload.StationId);
 
                 var entriesByDate = (payload.Entries ?? Enumerable.Empty<StationsLoggingPersistRequestDto.Entry>())

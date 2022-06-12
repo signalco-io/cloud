@@ -52,14 +52,12 @@ public class ShareEntityFunction
         await req.UserRequest<ShareRequestDto>(cancellationToken, this.functionAuthenticator,
             async context =>
             {
-                if (context.Payload.Type == null)
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Type is required");
                 if (string.IsNullOrWhiteSpace(context.Payload.EntityId))
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "EntityId is required");
                 if (context.Payload.UserEmails == null || !context.Payload.UserEmails.Any())
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "UserEmails is required - at least one user email is required");
 
-                await context.ValidateUserAssignedAsync(this.entityService, context.Payload.Type.Value, context.Payload.EntityId);
+                await context.ValidateUserAssignedAsync(this.entityService, context.Payload.EntityId);
                 
                 foreach (var userEmail in context.Payload.UserEmails.Where(userEmail => !string.IsNullOrWhiteSpace(userEmail)))
                 {
@@ -67,7 +65,7 @@ public class ShareEntityFunction
                     {
                         await this.sharingService.AssignToUserEmailAsync(
                             userEmail,
-                            context.Payload.Type.Value, context.Payload.EntityId,
+                            context.Payload.EntityId,
                             cancellationToken);
                     }
                     catch (Exception ex)
@@ -79,9 +77,6 @@ public class ShareEntityFunction
 
     private class ShareRequestDto
     {
-        [Required]
-        public TableEntityType? Type { get; set; }
-
         [Required]
         public string? EntityId { get; set; }
 

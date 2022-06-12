@@ -13,7 +13,6 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Processes;
 
@@ -42,19 +41,26 @@ public class ProcessesSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<ProcessSetDto, ProcessSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new ProcessSetResponseDto(await this.entityService.UpsertAsync(
-                context.User.UserId,
-                context.Payload.Id,
-                TableEntityType.Process,
-                ItemTableNames.Processes,
-                id => new ProcessTableEntity(
-                    ProcessType.StateTriggered.ToString().ToLowerInvariant(),
-                    id,
-                    context.Payload.Alias ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Alias is required"),
-                    context.Payload.IsDisabled ?? false,
-                    context.Payload.ConfigurationSerialized),
-                cancellationToken)));
+            async context =>
+            {
+                var processId = await this.entityService.UpsertAsync(
+                    context.User.UserId,
+                    context.Payload.Id,
+                    id => new Core.Entities.Entity(
+                        EntityType.Process,
+                        id,
+                        context.Payload.Alias ??
+                        throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Alias is required")),
+                    cancellationToken);
 
+                // TODO: Assign contacts
+                //context.Payload.IsDisabled ?? false,
+                //context.Payload.ConfigurationSerialized
+
+                return new ProcessSetResponseDto(processId);
+            });
+
+    [Serializable]
     private class ProcessSetDto
     {
         public string? Id { get; set;  }
@@ -67,6 +73,7 @@ public class ProcessesSetFunction
         public string? ConfigurationSerialized { get; set; }
     }
 
+    [Serializable]
     private class ProcessSetResponseDto
     {
         public string Id { get; }

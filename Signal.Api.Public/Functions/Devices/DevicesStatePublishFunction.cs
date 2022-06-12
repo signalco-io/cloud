@@ -11,10 +11,10 @@ using Microsoft.Extensions.Logging;
 using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
+using Signal.Core.Contacts;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Devices;
 
@@ -52,7 +52,7 @@ public class DevicesStatePublishFunction
                     HttpStatusCode.BadRequest,
                     "DeviceId, ChannelName and ContactName properties are required.");
 
-            await context.ValidateUserAssignedAsync(this.entityService, TableEntityType.Device, payload.DeviceId);
+            await context.ValidateUserAssignedAsync(this.entityService, payload.DeviceId);
             
             // TODO: Retrieve device configuration
             // TODO: Validate device has contact for state
@@ -60,7 +60,6 @@ public class DevicesStatePublishFunction
 
             // Persist as current state
             var updateCurrentStateTask = this.storage.UpsertAsync(
-                ItemTableNames.DeviceStates,
                 new Contact(
                     payload.DeviceId,
                     payload.ChannelName,
@@ -79,11 +78,11 @@ public class DevicesStatePublishFunction
                 // Persist to history 
                 // TODO: persist only if given contact is marked for history tracking
                 persistHistoryTask = this.storage.UpsertAsync(
-                    ItemTableNames.DevicesStatesHistory,
                     new ContactHistoryItem(
+                        new ContactPointer(
                         payload.DeviceId,
                         payload.ChannelName,
-                        payload.ContactName,
+                        payload.ContactName),
                         payload.ValueSerialized,
                         payload.TimeStamp ?? DateTime.UtcNow),
                     cancellationToken);

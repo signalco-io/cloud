@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -13,6 +12,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Signal.Api.Common;
 using Signal.Api.Common.Auth;
+using Signal.Api.Common.Conducts;
 using Signal.Api.Common.Exceptions;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
@@ -57,15 +57,12 @@ public class ConductRequestFunction
                     HttpStatusCode.BadRequest,
                     "DeviceId, ChannelName and ContactName properties are required.");
 
-            var entityType = payload.ChannelName == "station" ? TableEntityType.Station : TableEntityType.Device;
-
-            await context.ValidateUserAssignedAsync(this.entityService, entityType, payload.DeviceId);
+            await context.ValidateUserAssignedAsync(this.entityService, payload.DeviceId);
 
             // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
             // Retrieve all entity assigned users
             var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                entityType,
                 new[] {payload.DeviceId},
                 cancellationToken)).FirstOrDefault();
 
@@ -81,21 +78,4 @@ public class ConductRequestFunction
                     }, cancellationToken);
             }
         });
-
-    [Serializable]
-    private class ConductRequestDto
-    {
-        [Required]
-        public string? DeviceId { get; set; }
-
-        [Required]
-        public string? ChannelName { get; set; }
-
-        [Required]
-        public string? ContactName { get; set; }
-
-        public string? ValueSerialized { get; set; }
-
-        public double? Delay { get; set; }
-    }
 }

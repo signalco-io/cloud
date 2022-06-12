@@ -11,7 +11,6 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core.Entities;
 using Signal.Core.Exceptions;
-using Signal.Infrastructure.AzureStorage.Tables;
 
 namespace Signal.Api.Public.Functions.Dashboards;
 
@@ -34,17 +33,23 @@ public class DashboardsSetFunction
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<DashboardsSetRequestDto, DashboardSetResponseDto>(cancellationToken, this.functionAuthenticator,
-            async context => new DashboardSetResponseDto(await this.entityService.UpsertAsync(
-                context.User.UserId,
-                context.Payload.Id,
-                TableEntityType.Dashboard,
-                ItemTableNames.Dashboards,
-                id => new DashboardTableEntity(
-                    id,
-                    context.Payload.Name ?? throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required"),
-                    context.Payload.ConfigurationSerialized,
-                    DateTime.UtcNow),
-                cancellationToken)));
+            async context =>
+            {
+                var dashboardId = await this.entityService.UpsertAsync(
+                    context.User.UserId,
+                    context.Payload.Id,
+                    id => new Core.Entities.Entity(
+                        EntityType.Dashboard,
+                        id,
+                        context.Payload.Name ??
+                        throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Name is required")),
+                    cancellationToken);
+
+                // TODO: Assign configuration
+                //context.Payload.ConfigurationSerialized
+
+                return new DashboardSetResponseDto(dashboardId);
+            });
 
     [Serializable]
     private class DashboardSetResponseDto

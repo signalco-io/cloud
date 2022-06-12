@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Signal.Api.Common.Conducts;
 
 [Serializable]
-public class ConductRequestMultipleDto
+public class ConductRequestDto
 {
     [JsonPropertyName("deviceId")]
     [Required]
