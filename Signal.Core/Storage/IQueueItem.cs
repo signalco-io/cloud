@@ -1,6 +1,5 @@
-﻿namespace Signal.Core.Storage
+﻿namespace Signal.Core.Storage;
+
+public interface IQueueItem
 {
-    public interface IQueueItem
-    {
-    }
 }

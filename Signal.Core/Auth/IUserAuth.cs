@@ -1,7 +1,6 @@
-﻿namespace Signal.Core.Auth
+﻿namespace Signal.Core.Auth;
+
+public interface IUserAuth
 {
-    public interface IUserAuth
-    {
-        public string UserId { get; }
-    }
+    public string UserId { get; }
 }

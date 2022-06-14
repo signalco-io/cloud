@@ -1,7 +1,6 @@
-﻿namespace Signal.Core.Users
+﻿namespace Signal.Core.Users;
+
+public static class UserSources
 {
-    public static class UserSources
-    {
-        public const string GoogleOauth = "googleoauth";
-    }
+    public const string GoogleOauth = "googleoauth";
 }
