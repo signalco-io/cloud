@@ -5,6 +5,7 @@
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
     <UserSecretsId>4cf77441-9fec-4ebc-8a60-918e7e2ed7aa</UserSecretsId>
     <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.6.0" />

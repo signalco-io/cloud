@@ -60,6 +60,9 @@ internal class EntityService : IEntityService
         return entityUsersDictionary;
     }
 
+    public async Task<IEnumerable<IEntity>> AllAsync(string userId, CancellationToken cancellationToken = default) => 
+        await this.storageDao.UserEntitiesAsync(userId, cancellationToken);
+
     public async Task<IEntity?> GetAsync(string entityId, CancellationToken cancellationToken = default) => 
         await this.storageDao.GetAsync(entityId, cancellationToken);
 

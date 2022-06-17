@@ -4,9 +4,16 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 
 namespace Signal.Api.Common;
 
-public class OpenApiOkJsonResponse : OpenApiResponseWithBodyAttribute
+public class OpenApiOkJsonResponseAttribute : OpenApiResponseWithBodyAttribute
 {
-    public OpenApiOkJsonResponse(Type bodyType) : base(HttpStatusCode.OK, "application/json", bodyType)
+    public OpenApiOkJsonResponseAttribute(Type bodyType) : base(HttpStatusCode.OK, "application/json", bodyType)
+    {
+    }
+}
+
+public class OpenApiOkJsonResponseAttribute<T> : OpenApiResponseWithBodyAttribute
+{
+    public OpenApiOkJsonResponseAttribute() : base(HttpStatusCode.OK, "application/json", typeof(T))
     {
     }
 }

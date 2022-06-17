@@ -31,12 +31,12 @@ public class EntityDeleteFunction
 
     [FunctionName("Entity-Delete")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(EntityDeleteFunction), "Entity", Description = "Deletes the entity.")]
-    [OpenApiRequestBody("application/json", typeof(EntityDeleteDto), Description = "Information about entity to delete.")]
+    [OpenApiOperation<EntityDeleteFunction>("Entity", Description = "Deletes the entity.")]
+    [OpenApiJsonRequestBody<EntityDeleteDto>(Description = "Information about entity to delete.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "entity/delete")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "entity")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<EntityDeleteDto>(cancellationToken, this.functionAuthenticator, async context =>
