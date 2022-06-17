@@ -30,7 +30,7 @@ public class EntityUpsertFunction
     }
 
     [FunctionName("Entities-Upsert")]
-    [OpenApiOperation<EntityUpsertFunction>(Description = "Creates or updated entity. Will create entity if Id is not provided.")]
+    [OpenApiOperation<EntityUpsertFunction>("Entity", Description = "Creates or updated entity. Will create entity if Id is not provided.")]
     [OpenApiJsonRequestBody<EntityUpsertDto>]
     [OpenApiOkJsonResponse<EntityUpsertResponseDto>]
     public async Task<IActionResult> Run(

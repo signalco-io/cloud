@@ -31,7 +31,7 @@ public class EntitiesRetrieveFunction
 
     [FunctionName("Entities-Retrieve")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation<EntityDeleteFunction>("Entity", Description = "Retrieves all available entities.")]
+    [OpenApiOperation<EntitiesRetrieveFunction>("Entity", Description = "Retrieves all available entities.")]
     [OpenApiOkJsonResponse<IEnumerable<EntityDetailsDto>>]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "entity")]
