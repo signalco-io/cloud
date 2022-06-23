@@ -10,6 +10,7 @@ public sealed class OpenApiSecurityAuth0TokenAttribute : OpenApiSecurityAttribut
         "bearer", SecuritySchemeType.Http)
     {
         BearerFormat = "JWT";
+        In = OpenApiSecurityLocationType.Header;
         Scheme = OpenApiSecuritySchemeType.Bearer;
         Description = "Auth0 token.";
     }
