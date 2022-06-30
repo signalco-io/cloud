@@ -69,22 +69,22 @@ public class ConductRequestMultipleFunction
                 {
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(conductRequest.DeviceId))
+                        if (string.IsNullOrWhiteSpace(conductRequest.EntityId))
                         {
                             this.logger.LogWarning("Entity not specified.");
                             continue;
                         }
                         if (conductRequest.ChannelName != KnownChannels.Slack)
                         {
-                            this.logger.LogWarning("Not supported channel name {channelName}", conductRequest.ChannelName);
+                            this.logger.LogWarning("Not supported channel name {ChannelName}", conductRequest.ChannelName);
                             continue;
                         }
 
                         // Retrieve user channel with matching id
-                        var matchingChannel = await this.entityService.GetAsync(conductRequest.DeviceId, cancellationToken);
+                        var matchingChannel = await this.entityService.GetAsync(conductRequest.EntityId, cancellationToken);
                         if (matchingChannel == null)
                         {
-                            this.logger.LogWarning("Channel with id {channelId} not found", conductRequest.DeviceId);
+                            this.logger.LogWarning("Entity with id {EntityId} not found", conductRequest.EntityId);
                             continue;
                         }
 
@@ -94,7 +94,7 @@ public class ConductRequestMultipleFunction
                         if (accessTokenContact == null || string.IsNullOrWhiteSpace(accessTokenContact.ValueSerialized))
                         {
                             this.logger.LogWarning(
-                                "Channel {channelId} doesn't have assigned access token contact or access token value.",
+                                "Entity {EntityId} doesn't have assigned access token contact or access token value.",
                                 matchingChannel.Id);
                             continue;
                         }
@@ -102,7 +102,7 @@ public class ConductRequestMultipleFunction
                         if (string.IsNullOrWhiteSpace(accessToken))
                         {
                             this.logger.LogWarning(
-                                "Channel {channelId} assigned access token is invalid.",
+                                "Entity {EntityId} assigned access token is invalid.",
                                 matchingChannel.Id);
                             continue;
                         }

@@ -22,7 +22,7 @@ public class UserRequestContext
 
     public async Task ValidateUserAssignedAsync(IEntityService entityService, string id)
     {
-        if (!await entityService.IsUserAssignedAsync(this.User.UserId,id, this.CancellationToken))
+        if (!await entityService.IsUserAssignedAsync(this.User.UserId, id, this.CancellationToken))
             throw new ExpectedHttpException(HttpStatusCode.NotFound);
     }
 }

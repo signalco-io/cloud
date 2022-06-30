@@ -1,30 +1,38 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core.Exceptions;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
-public class BeaconsRefreshTokenFunction
+public class StationRefreshTokenFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
 
-    public BeaconsRefreshTokenFunction(
+    public StationRefreshTokenFunction(
         IFunctionAuthenticator functionAuthenticator)
     {
         this.functionAuthenticator = functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
     }
 
-    [FunctionName("Beacons-RefreshToken")]
+    [FunctionName("Station-RefreshToken")]
+    [OpenApiOperation(nameof(StationRefreshTokenFunction), "Station", Description = "Refreshes the access token.")]
+    [OpenApiJsonRequestBody<BeaconRefreshTokenRequestDto>]
+    [OpenApiOkJsonResponse<BeaconRefreshTokenResponseDto>]
+    [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "beacons/refresh-token")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "station/refresh-token")]
         HttpRequest req,
         CancellationToken cancellationToken)
     {
@@ -47,11 +55,15 @@ public class BeaconsRefreshTokenFunction
         }
     }
 
+    [Serializable]
     private class BeaconRefreshTokenRequestDto
     {
+        [Required]
+        [JsonPropertyName("refreshToken")]
         public string? RefreshToken { get; set; }
     }
 
+    [Serializable]
     private class BeaconRefreshTokenResponseDto
     {
         public BeaconRefreshTokenResponseDto(string accessToken, DateTime expire)
@@ -60,8 +72,10 @@ public class BeaconsRefreshTokenFunction
             this.Expire = expire;
         }
 
+        [JsonPropertyName("accessToken")]
         public string AccessToken { get; }
 
+        [JsonPropertyName("expire")]
         public DateTime Expire { get; }
     }
 }

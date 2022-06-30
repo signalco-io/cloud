@@ -14,13 +14,16 @@ namespace Signal.Core.Entities;
 
 internal class EntityService : IEntityService
 {
+    private readonly ISharingService sharingService;
     private readonly IAzureStorageDao storageDao;
     private readonly IAzureStorage storage;
 
     public EntityService(
+        ISharingService sharingService,
         IAzureStorageDao storageDao,
         IAzureStorage storage)
     {
+        this.sharingService = sharingService ?? throw new ArgumentNullException(nameof(sharingService));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
@@ -86,9 +89,14 @@ internal class EntityService : IEntityService
             entityFunc(id),
             cancellationToken);
 
-        // Assign if creating entity
-        if (!exists) 
-            await storage.UpsertAsync(new UserAssignedEntity(userId, id), cancellationToken);
+        // Assign to user if creating entity
+        if (!exists)
+        {
+            await this.sharingService.AssignToUserAsync(
+                userId,
+                id,
+                cancellationToken);
+        }
 
         return id;
     }

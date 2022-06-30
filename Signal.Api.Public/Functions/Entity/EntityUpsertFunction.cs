@@ -29,7 +29,7 @@ public class EntityUpsertFunction
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
     }
 
-    [FunctionName("Entities-Upsert")]
+    [FunctionName("Entity-Upsert")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation<EntityUpsertFunction>("Entity", Description = "Creates or updates entity. Will create entity if Id is not provided.")]
     [OpenApiJsonRequestBody<EntityUpsertDto>]
@@ -55,8 +55,6 @@ public class EntityUpsertFunction
                     id,
                     payload.Alias),
                 cancellationToken);
-
-            // TODO: Assign contact for device identifier
 
             return new EntityUpsertResponseDto(deviceId);
         });

@@ -1,27 +1,23 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace Signal.Api.Common.Conducts;
+namespace Signal.Api.Common;
 
 [Serializable]
-public class ConductRequestDto
+public class ContactSetDto
 {
     [JsonPropertyName("entityId")]
-    [Required]
     public string? EntityId { get; set; }
 
     [JsonPropertyName("channelName")]
-    [Required]
     public string? ChannelName { get; set; }
 
     [JsonPropertyName("contactName")]
-    [Required]
     public string? ContactName { get; set; }
 
     [JsonPropertyName("valueSerialized")]
     public string? ValueSerialized { get; set; }
 
-    [JsonPropertyName("delay")]
-    public double? Delay { get; set; }
+    [JsonPropertyName("timeStamp")]
+    public DateTime? TimeStamp { get; set; }
 }

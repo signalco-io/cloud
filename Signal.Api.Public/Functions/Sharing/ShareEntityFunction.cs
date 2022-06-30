@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +43,7 @@ public class ShareEntityFunction
     [FunctionName("Share-Entity")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ShareEntityFunction), "Sharing", Description = "Shared the entity with other users.")]
-    [OpenApiRequestBody("application/json", typeof(ShareRequestDto), Description = "Share one entity with one or more users.")]
+    [OpenApiJsonRequestBody<ShareRequestDto>(Description = "Share one entity with one or more users.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
@@ -75,12 +76,15 @@ public class ShareEntityFunction
                 }
             });
 
+    [Serializable]
     private class ShareRequestDto
     {
         [Required]
+        [JsonPropertyName("entityId")]
         public string? EntityId { get; set; }
 
         [Required]
+        [JsonPropertyName("userEmails")]
         public List<string>? UserEmails { get; set; }
     }
 }

@@ -16,12 +16,12 @@ using Signal.Core.Entities;
 
 namespace Signal.Api.Public.Functions.Entity;
 
-public class EntitiesRetrieveFunction
+public class EntityRetrieveFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
 
-    public EntitiesRetrieveFunction(
+    public EntityRetrieveFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService)
     {
@@ -29,9 +29,9 @@ public class EntitiesRetrieveFunction
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
     }
 
-    [FunctionName("Entities-Retrieve")]
+    [FunctionName("Entity-Retrieve")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation<EntitiesRetrieveFunction>("Entity", Description = "Retrieves all available entities.")]
+    [OpenApiOperation<EntityRetrieveFunction>("Entity", Description = "Retrieves all available entities.")]
     [OpenApiOkJsonResponse<IEnumerable<EntityDetailsDto>>]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "entity")]
@@ -54,6 +54,7 @@ public class EntitiesRetrieveFunction
                     .Where(s => s.EntityId == d.Id)
                     .Select(s => new ContactDto
                     (
+                        s.EntityId,
                         s.ContactName,
                         s.ChannelName,
                         s.ValueSerialized,

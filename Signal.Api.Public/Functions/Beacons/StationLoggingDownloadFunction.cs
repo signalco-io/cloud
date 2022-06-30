@@ -20,18 +20,18 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
-public class StationsLoggingDownloadFunction
+public class StationLoggingDownloadFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorageDao azureStorageDao;
-    private readonly ILogger<StationsLoggingDownloadFunction> logger;
+    private readonly ILogger<StationLoggingDownloadFunction> logger;
 
-    public StationsLoggingDownloadFunction(
+    public StationLoggingDownloadFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
         IAzureStorageDao azureStorageDao,
-        ILogger<StationsLoggingDownloadFunction> logger)
+        ILogger<StationLoggingDownloadFunction> logger)
     {
         this.functionAuthenticator =
             functionAuthenticator ?? throw new ArgumentNullException(nameof(functionAuthenticator));
@@ -40,9 +40,9 @@ public class StationsLoggingDownloadFunction
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    [FunctionName("Stations-Logging-Download")]
+    [FunctionName("Station-Logging-Download")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(StationsLoggingDownloadFunction), "Stations")]
+    [OpenApiOperation(nameof(StationLoggingDownloadFunction), "Station")]
     [OpenApiParameter("stationId", In = ParameterLocation.Query, Required = true, Type = typeof(string),
         Description = "The **stationId** parameter")]
     [OpenApiParameter("blobName", In = ParameterLocation.Query, Required = true, Type = typeof(string),

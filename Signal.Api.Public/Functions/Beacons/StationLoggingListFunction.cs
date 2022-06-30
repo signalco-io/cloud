@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -18,13 +19,13 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
-public class StationsLoggingListFunction
+public class StationLoggingListFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorageDao storageDao;
 
-    public StationsLoggingListFunction(
+    public StationLoggingListFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
         IAzureStorageDao storageDao)
@@ -35,15 +36,15 @@ public class StationsLoggingListFunction
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
     }
 
-    [FunctionName("Stations-Logging-List")]
+    [FunctionName("Station-Logging-List")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(StationsLoggingListFunction), "Stations")]
+    [OpenApiOperation(nameof(StationLoggingListFunction), "Station")]
     [OpenApiParameter("stationId", In = ParameterLocation.Query, Required = true, Type = typeof(string),
         Description = "The **StationID** parameter")]
-    [OpenApiOkJsonResponse(typeof(List<BlobInfoDto>), Description = "List of blob infos.")]
+    [OpenApiOkJsonResponse<List<BlobInfoDto>>(Description = "List of blob infos.")]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stations/logging/list")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "station/logging/list")]
         HttpRequest req,
         CancellationToken cancellationToken)
     {
@@ -65,9 +66,10 @@ public class StationsLoggingListFunction
         });
     }
 
+    [Serializable]
     private record BlobInfoDto(
-        string Name,
-        DateTimeOffset? CreatedTimeStamp,
-        DateTimeOffset? ModifiedTimeStamp,
-        long? Size);
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("createdTimeStamp")] DateTimeOffset? CreatedTimeStamp,
+        [property: JsonPropertyName("modifiedTimeStamp")] DateTimeOffset? ModifiedTimeStamp,
+        [property: JsonPropertyName("size")] long? Size);
 }

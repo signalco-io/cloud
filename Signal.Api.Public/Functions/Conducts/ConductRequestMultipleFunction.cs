@@ -60,14 +60,14 @@ public class ConductRequestMultipleFunction
             var usersConducts = new Dictionary<string, ICollection<ConductRequestDto>>();
             foreach (var conduct in payload)
             {
-                if (string.IsNullOrWhiteSpace(conduct.DeviceId) ||
+                if (string.IsNullOrWhiteSpace(conduct.EntityId) ||
                     string.IsNullOrWhiteSpace(conduct.ChannelName) ||
                     string.IsNullOrWhiteSpace(conduct.ContactName))
                     throw new ExpectedHttpException(
                         HttpStatusCode.BadRequest,
                         "DeviceId, ChannelName and ContactName properties are required.");
 
-                if (conduct.DeviceId == "cloud") // TODO: Use channel discovery/router
+                if (conduct.EntityId == "cloud") // TODO: Use channel discovery/router
                 {
                     // Handle notification create conduct
                     if (conduct.ChannelName == "notification" && 
@@ -98,11 +98,11 @@ public class ConductRequestMultipleFunction
                 }
                 else
                 {
-                    await context.ValidateUserAssignedAsync(this.entityService, conduct.DeviceId);
+                    await context.ValidateUserAssignedAsync(this.entityService, conduct.EntityId);
 
                     // Retrieve all device assigned devices
                     var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                        new[] {conduct.DeviceId},
+                        new[] {conduct.EntityId },
                         cancellationToken)).FirstOrDefault();
 
                     foreach (var userId in deviceUsers.Value)

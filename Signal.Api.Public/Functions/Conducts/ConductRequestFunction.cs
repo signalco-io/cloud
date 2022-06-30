@@ -50,20 +50,20 @@ public class ConductRequestFunction
         await req.UserRequest<ConductRequestDto>(cancellationToken, this.functionAuthenticator, async context =>
         {
             var payload = context.Payload;
-            if (string.IsNullOrWhiteSpace(payload.DeviceId) ||
+            if (string.IsNullOrWhiteSpace(payload.EntityId) ||
                 string.IsNullOrWhiteSpace(payload.ChannelName) ||
                 string.IsNullOrWhiteSpace(payload.ContactName))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
                     "DeviceId, ChannelName and ContactName properties are required.");
 
-            await context.ValidateUserAssignedAsync(this.entityService, payload.DeviceId);
+            await context.ValidateUserAssignedAsync(this.entityService, payload.EntityId);
 
             // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
             // Retrieve all entity assigned users
             var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                new[] {payload.DeviceId},
+                new[] {payload.EntityId },
                 cancellationToken)).FirstOrDefault();
 
             // Send to all users of the device

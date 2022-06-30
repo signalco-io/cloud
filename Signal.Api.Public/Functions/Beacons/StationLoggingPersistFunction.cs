@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,13 +23,13 @@ using Signal.Core.Storage;
 
 namespace Signal.Api.Public.Functions.Beacons;
 
-public class StationsLoggingPersistFunction
+public class StationLoggingPersistFunction
 {
     private readonly IFunctionAuthenticator functionAuthenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorage storage;
 
-    public StationsLoggingPersistFunction(
+    public StationLoggingPersistFunction(
         IFunctionAuthenticator functionAuthenticator,
         IEntityService entityService,
         IAzureStorage storage)
@@ -39,14 +40,14 @@ public class StationsLoggingPersistFunction
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
-    [FunctionName("Stations-Logging-Persist")]
+    [FunctionName("Station-Logging-Persist")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(nameof(StationsLoggingPersistFunction), "Stations", Description = "Appends logging entries.")]
-    [OpenApiRequestBody("application/json", typeof(StationsLoggingPersistRequestDto), Description = "The logging entries to persist per station.")]
+    [OpenApiOperation(nameof(StationLoggingPersistFunction), "Station", Description = "Appends logging entries.")]
+    [OpenApiJsonRequestBody<StationsLoggingPersistRequestDto>(Description = "The logging entries to persist per station.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "stations/logging/persist")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "station/logging/persist")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
         await req.UserRequest<StationsLoggingPersistRequestDto>(
@@ -82,12 +83,18 @@ public class StationsLoggingPersistFunction
                 }
             });
 
+    [Serializable]
     private class StationsLoggingPersistRequestDto
     {
+        [Required]
+        [JsonPropertyName("stationId")]
         public string? StationId { get; set; }
 
+        [Required]
+        [JsonPropertyName("entries")]
         public List<Entry>? Entries { get; set; }
 
+        [Serializable]
         public class Entry
         {
             [JsonPropertyName("T")] public DateTimeOffset? TimeStamp { get; set; }
