@@ -31,10 +31,10 @@ internal class EntityService : IEntityService
     public async Task<Dictionary<string, IEnumerable<IUser>>> EntityUsersAsync(IEnumerable<string> entityIds, CancellationToken cancellationToken)
     {
         var entityIdsList = entityIds.ToList();
-        var assignedDevicesUsers = await storageDao.AssignedUsersAsync(
+        var assignedEntityUsers = await storageDao.AssignedUsersAsync(
             entityIdsList,
             cancellationToken);
-        var assignedUserIds = assignedDevicesUsers.Values.SelectMany(i => i).Distinct().ToList();
+        var assignedUserIds = assignedEntityUsers.Values.SelectMany(i => i).Distinct().ToList();
         var assignedUsers = new Dictionary<string, IUser>();
         foreach (var userId in assignedUserIds)
         {
@@ -47,13 +47,13 @@ internal class EntityService : IEntityService
         foreach (var entityId in entityIdsList)
         {
             var users = new List<IUser>();
-            if (assignedDevicesUsers.TryGetValue(entityId, out var assignedDeviceUserIds))
+            if (assignedEntityUsers.TryGetValue(entityId, out var assignedEntityUserIds))
             {
-                foreach (var assignedDeviceUserId in assignedDeviceUserIds)
+                foreach (var assignedEntityUserId in assignedEntityUserIds)
                 {
-                    if (assignedUsers.TryGetValue(assignedDeviceUserId, out var assignedDeviceUser))
+                    if (assignedUsers.TryGetValue(assignedEntityUserId, out var assignedEntityUser))
                     {
-                        users.Add(assignedDeviceUser);
+                        users.Add(assignedEntityUser);
                     }
                 }
             }

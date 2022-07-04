@@ -17,7 +17,7 @@ using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Beacons;
+namespace Signal.Api.Public.Functions.Station;
 
 public class StationLoggingListFunction
 {
@@ -46,9 +46,8 @@ public class StationLoggingListFunction
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "station/logging/list")]
         HttpRequest req,
-        CancellationToken cancellationToken)
-    {
-        return await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
+        CancellationToken cancellationToken) =>
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
         {
             string stationId = req.Query["stationId"];
             if (string.IsNullOrWhiteSpace(stationId))
@@ -64,7 +63,6 @@ public class StationLoggingListFunction
 
             return items;
         });
-    }
 
     [Serializable]
     private record BlobInfoDto(

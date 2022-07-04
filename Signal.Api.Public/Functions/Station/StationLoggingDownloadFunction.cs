@@ -18,7 +18,7 @@ using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
 
-namespace Signal.Api.Public.Functions.Beacons;
+namespace Signal.Api.Public.Functions.Station;
 
 public class StationLoggingDownloadFunction
 {
@@ -51,33 +51,23 @@ public class StationLoggingDownloadFunction
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stations/logging/download")]
         HttpRequest req,
-        CancellationToken cancellationToken)
-    {
-        try
+        CancellationToken cancellationToken) =>
+        await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
         {
-            return await req.UserRequest(cancellationToken, this.functionAuthenticator, async context =>
-            {
-                string stationId = req.Query["stationId"];
-                if (string.IsNullOrWhiteSpace(stationId))
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "stationId is required");
-                string blobName = req.Query["blobName"];
-                if (string.IsNullOrWhiteSpace(blobName))
-                    throw new ExpectedHttpException(HttpStatusCode.BadRequest, "blobName is required");
+            string stationId = req.Query["stationId"];
+            if (string.IsNullOrWhiteSpace(stationId))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "stationId is required");
+            string blobName = req.Query["blobName"];
+            if (string.IsNullOrWhiteSpace(blobName))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "blobName is required");
 
-                await context.ValidateUserAssignedAsync(
-                    this.entityService,
-                    stationId);
+            await context.ValidateUserAssignedAsync(
+                this.entityService,
+                stationId);
 
-                var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
-                var content = Encoding.UTF8.GetBytes(await new StreamReader(stream).ReadToEndAsync());
+            var stream = await this.azureStorageDao.LoggingDownloadAsync(blobName, cancellationToken);
+            var content = Encoding.UTF8.GetBytes(await new StreamReader(stream).ReadToEndAsync());
 
-                return new FileContentResult(content, "text/plain");
-            });
-        }
-        catch (Exception ex)
-        {
-            this.logger.LogError(ex, "Failed");
-            throw;
-        }
-    }
+            return new FileContentResult(content, "text/plain");
+        });
 }

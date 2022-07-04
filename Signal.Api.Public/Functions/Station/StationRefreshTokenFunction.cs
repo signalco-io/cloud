@@ -14,7 +14,7 @@ using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
 using Signal.Core.Exceptions;
 
-namespace Signal.Api.Public.Functions.Beacons;
+namespace Signal.Api.Public.Functions.Station;
 
 public class StationRefreshTokenFunction
 {
@@ -28,35 +28,27 @@ public class StationRefreshTokenFunction
 
     [FunctionName("Station-RefreshToken")]
     [OpenApiOperation(nameof(StationRefreshTokenFunction), "Station", Description = "Refreshes the access token.")]
-    [OpenApiJsonRequestBody<BeaconRefreshTokenRequestDto>]
-    [OpenApiOkJsonResponse<BeaconRefreshTokenResponseDto>]
+    [OpenApiJsonRequestBody<StationRefreshTokenRequestDto>]
+    [OpenApiOkJsonResponse<StationRefreshTokenResponseDto>]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "station/refresh-token")]
         HttpRequest req,
         CancellationToken cancellationToken)
     {
-        try
+        return await req.AnonymousRequest<StationRefreshTokenRequestDto, StationRefreshTokenResponseDto>(cancellationToken, async (context) =>
         {
-            var request = await req.ReadAsJsonAsync<BeaconRefreshTokenRequestDto>();
-            if (request == null || 
-                string.IsNullOrWhiteSpace(request.RefreshToken))
-                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "\"RefreshToken\" property is required.");
+            if (string.IsNullOrWhiteSpace(context.Payload.RefreshToken))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Refresh token is required.");
 
-            var token = await this.functionAuthenticator.RefreshTokenAsync(req, request.RefreshToken, cancellationToken);
-            return new OkObjectResult(new BeaconRefreshTokenResponseDto(token.AccessToken, token.Expire));
-        }
-        catch (ExpectedHttpException ex)
-        {
-            return new ObjectResult(new ApiErrorDto(ex.Code.ToString(), ex.Message))
-            {
-                StatusCode = (int)ex.Code
-            };
-        }
+            var token = await this.functionAuthenticator.RefreshTokenAsync(req, context.Payload.RefreshToken,
+                cancellationToken);
+            return new StationRefreshTokenResponseDto(token.AccessToken, token.Expire);
+        });
     }
 
     [Serializable]
-    private class BeaconRefreshTokenRequestDto
+    private class StationRefreshTokenRequestDto
     {
         [Required]
         [JsonPropertyName("refreshToken")]
@@ -64,9 +56,9 @@ public class StationRefreshTokenFunction
     }
 
     [Serializable]
-    private class BeaconRefreshTokenResponseDto
+    private class StationRefreshTokenResponseDto
     {
-        public BeaconRefreshTokenResponseDto(string accessToken, DateTime expire)
+        public StationRefreshTokenResponseDto(string accessToken, DateTime expire)
         {
             this.AccessToken = accessToken;
             this.Expire = expire;

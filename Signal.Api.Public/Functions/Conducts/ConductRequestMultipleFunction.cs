@@ -65,7 +65,7 @@ public class ConductRequestMultipleFunction
                     string.IsNullOrWhiteSpace(conduct.ContactName))
                     throw new ExpectedHttpException(
                         HttpStatusCode.BadRequest,
-                        "DeviceId, ChannelName and ContactName properties are required.");
+                        "EntityId, ChannelName and ContactName properties are required.");
 
                 if (conduct.EntityId == "cloud") // TODO: Use channel discovery/router
                 {
@@ -100,19 +100,19 @@ public class ConductRequestMultipleFunction
                 {
                     await context.ValidateUserAssignedAsync(this.entityService, conduct.EntityId);
 
-                    // Retrieve all device assigned devices
-                    var deviceUsers = (await this.storageDao.AssignedUsersAsync(
-                        new[] {conduct.EntityId },
+                    // Retrieve all entity assigned entities
+                    var entityUsers = (await this.storageDao.AssignedUsersAsync(
+                        new[] { conduct.EntityId },
                         cancellationToken)).FirstOrDefault();
 
-                    foreach (var userId in deviceUsers.Value)
+                    foreach (var userId in entityUsers.Value)
                         usersConducts.Append(userId, conduct);
                 }
             }
 
             // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
-            // Send to all users of the device
+            // Send to all users of the entity
             foreach (var userId in usersConducts.Keys)
             {
                 var conducts = usersConducts[userId];

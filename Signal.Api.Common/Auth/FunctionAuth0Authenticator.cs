@@ -61,8 +61,8 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
 
         // Request new token
         var domainTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
-        var clientSecretTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientSecretBeacon, cancellationToken);
-        var clientIdTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientIdBeacon, cancellationToken);
+        var clientSecretTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientSecretStation, cancellationToken);
+        var clientIdTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientIdStation, cancellationToken);
         await Task.WhenAll(domainTask, clientSecretTask, clientIdTask);
 
         var refreshTokenUrl = $"https://{domainTask.Result}{RefreshTokenUrlPath}";

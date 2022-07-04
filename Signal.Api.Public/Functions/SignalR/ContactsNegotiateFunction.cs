@@ -13,23 +13,23 @@ using Signal.Api.Common.Exceptions;
 
 namespace Signal.Api.Public.Functions.SignalR;
 
-public class DevicesNegotiateFunction
+public class ContactsNegotiateFunction
 {
     private readonly IFunctionAuthenticator authenticator;
 
-    public DevicesNegotiateFunction(
+    public ContactsNegotiateFunction(
         IFunctionAuthenticator authenticator)
     {
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
     }
 
-    [FunctionName("SignalR-Devices-Negotiate")]
+    [FunctionName("SignalR-Contacts-Negotiate")]
     [OpenApiSecurityAuth0Token]
-    [OpenApiOperation(operationId: nameof(DevicesNegotiateFunction), tags: new[] { "SignalR" },
-        Description = "Negotiates SignalR connection for devices hub.")]
+    [OpenApiOperation(operationId: nameof(ContactsNegotiateFunction), tags: new[] { "SignalR" },
+        Description = "Negotiates SignalR connection for entities hub.")]
     [OpenApiOkJsonResponse(typeof(SignalRConnectionInfo), Description = "SignalR connection info.")]
     public async Task<IActionResult> Negotiate(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/devices/negotiate")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "signalr/contacts/negotiate")]
         HttpRequest req,
         IBinder binder, CancellationToken cancellationToken) =>
         // This style is an example of imperative attribute binding; the mechanism for declarative binding described below does not work
@@ -38,7 +38,7 @@ public class DevicesNegotiateFunction
         await req.UserRequest(cancellationToken, this.authenticator, async context =>
             await binder.BindAsync<SignalRConnectionInfo>(new SignalRConnectionInfoAttribute
             {
-                HubName = "devices",
+                HubName = "contacts",
                 UserId = context.User.UserId
             }, cancellationToken));
 }

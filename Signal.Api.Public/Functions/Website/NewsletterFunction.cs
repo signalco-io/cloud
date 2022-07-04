@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using Signal.Api.Common;
+using Signal.Api.Common.Exceptions;
 using Signal.Api.Common.HCaptcha;
+using Signal.Core.Exceptions;
 using Signal.Core.Newsletter;
 using Signal.Core.Storage;
 
@@ -36,43 +36,35 @@ public class NewsletterFunction
 
     [FunctionName("Website-Newsletter")]
     [OpenApiOperation(nameof(NewsletterFunction), "Website", Description = "Subscribe to a newsletter.")]
-    [OpenApiParameter(HCaptchaHttpRequestExtensions.HCaptchaHeaderKey, In = ParameterLocation.Header, Description = "hCaptcha response.")]
-    [OpenApiRequestBody("application/json", typeof(NewsletterSubscribeDto), Description = "Subscribe with email address.")]
+    [OpenApiHeader(HCaptchaHttpRequestExtensions.HCaptchaHeaderKey, Description = "hCaptcha response.")]
+    [OpenApiJsonRequestBody<NewsletterSubscribeDto>(Description = "Subscribe with email address.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "website/newsletter-subscribe")] HttpRequest req,
-        CancellationToken cancellationToken)
-    {
-        try
+        CancellationToken cancellationToken) =>
+        await req.AnonymousRequest(async () =>
         {
             await req.VerifyCaptchaAsync(this.hCaptchaService, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            return new BadRequestErrorMessageResult(ex.Message);
-        }
 
-        var data = await req.ReadFromJsonAsync<NewsletterSubscribeDto>(cancellationToken);
-        if (string.IsNullOrWhiteSpace(data?.Email))
-            return new BadRequestResult();
+            var data = await req.ReadFromJsonAsync<NewsletterSubscribeDto>(cancellationToken);
+            if (string.IsNullOrWhiteSpace(data?.Email))
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Email not provided.");
 
-        // Persist email
-        // Don't report errors so bots can't guess-attack
-        try
-        {
-            await storage.UpsertAsync(
-                new NewsletterSubscription(data.Email.ToUpperInvariant()),
-                cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            this.logger.LogError(ex, "Failed to subscribe to newsletter with email: {Email}", data.Email);
-        }
+            // Persist email
+            // Don't report errors so bots can't guess-attack
+            try
+            {
+                await storage.UpsertAsync(
+                    new NewsletterSubscription(data.Email.ToUpperInvariant()),
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Failed to subscribe to newsletter with email: {Email}", data.Email);
+            }
+        });
 
-        return new OkResult();
-    }
-    
     [Serializable]
     private class NewsletterSubscribeDto
     {

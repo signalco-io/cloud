@@ -14,12 +14,4 @@ public class Entity : IEntity
     public string Id { get; }
     
     public string Alias { get; }
-
-    public static IEntity Device(string id, string? alias) => new Entity(EntityType.Device, id, alias);
-
-    public static IEntity Dashboard(string id, string? alias) => new Entity(EntityType.Dashboard, id, alias);
-
-    public static IEntity Station(string id, string? alias) => new Entity(EntityType.Station, id, alias);
-
-    public static IEntity Process(string id, string? alias) => new Entity(EntityType.Process, id, alias);
 }

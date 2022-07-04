@@ -10,9 +10,9 @@ public static class SecretKeys
 
         public const string Domain = "Auth0--Domain";
 
-        public const string ClientSecretBeacon = "Auth0--ClientSecret--Station";
+        public const string ClientSecretStation = "Auth0--ClientSecret--Station";
 
-        public const string ClientIdBeacon = "Auth0--ClientId--Station";
+        public const string ClientIdStation = "Auth0--ClientId--Station";
     }
 
     public static class HCaptcha

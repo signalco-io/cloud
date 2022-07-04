@@ -55,26 +55,26 @@ public class ConductRequestFunction
                 string.IsNullOrWhiteSpace(payload.ContactName))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
-                    "DeviceId, ChannelName and ContactName properties are required.");
+                    "EntityId, ChannelName and ContactName properties are required.");
 
             await context.ValidateUserAssignedAsync(this.entityService, payload.EntityId);
 
             // TODO: Queue conduct on remote in case client doesn't receive signalR message
 
             // Retrieve all entity assigned users
-            var deviceUsers = (await this.storageDao.AssignedUsersAsync(
+            var entityUsers = (await this.storageDao.AssignedUsersAsync(
                 new[] {payload.EntityId },
                 cancellationToken)).FirstOrDefault();
 
-            // Send to all users of the device
-            foreach (var deviceUserId in deviceUsers.Value)
+            // Send to all users of the entity
+            foreach (var entityUserId in entityUsers.Value)
             {
                 await signalRMessages.AddAsync(
                     new SignalRMessage
                     {
                         Target = "requested",
                         Arguments = new object[] {JsonSerializer.Serialize(payload)},
-                        UserId = deviceUserId
+                        UserId = entityUserId
                     }, cancellationToken);
             }
         });

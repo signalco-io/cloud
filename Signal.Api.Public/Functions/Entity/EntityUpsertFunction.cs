@@ -47,7 +47,7 @@ public class EntityUpsertFunction
             if (payload.Type is null or EntityType.Unknown)
                 throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Type property is required and can't be Unknown.");
 
-            var deviceId = await entityService.UpsertAsync(
+            var entityId = await entityService.UpsertAsync(
                 user.UserId,
                 payload.Id,
                 id => new Core.Entities.Entity(
@@ -56,7 +56,7 @@ public class EntityUpsertFunction
                     payload.Alias),
                 cancellationToken);
 
-            return new EntityUpsertResponseDto(deviceId);
+            return new EntityUpsertResponseDto(entityId);
         });
 
     [Serializable]
