@@ -6,7 +6,7 @@
     "Auth0--ApiIdentifier": "https://api.signal.dfnoise.com",
     "Auth0--Domain": "dfnoise.eu.auth0.com",
     "OpenApi__Version": "v3",
-    "OpenApi__DocTitle": "Signalco Public Cloud API documentation" 
+    "OpenApi__DocTitle": "Signalco Cloud Public API" 
   },
   "Host": {
     "CORS": "http://localhost:3000",

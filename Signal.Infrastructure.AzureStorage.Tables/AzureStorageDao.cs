@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
-using Signal.Core;
-using Signal.Core.Beacon;
-using Signal.Core.Dashboards;
-using Signal.Core.Devices;
-using Signal.Core.Processes;
+using Signal.Core.Contacts;
+using Signal.Core.Entities;
+using Signal.Core.Sharing;
 using Signal.Core.Storage;
+using Signal.Core.Storage.Blobs;
 using Signal.Core.Users;
-using BlobInfo = Signal.Core.Storage.BlobInfo;
-using ITableEntity = Azure.Data.Tables.ITableEntity;
+using BlobInfo = Signal.Core.Storage.Blobs.BlobInfo;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
@@ -30,19 +27,17 @@ internal class AzureStorageDao : IAzureStorageDao
     }
 
 
-    public async Task<IEnumerable<IDeviceStateHistoryTableEntity>> GetDeviceStateHistoryAsync(
-        string deviceId,
-        string channelName,
-        string contactName,
+    public async Task<IEnumerable<IContactHistoryItem>> ContactHistoryAsync(
+        IContactPointer contactPointer,
         TimeSpan duration,
         CancellationToken cancellationToken)
     {
         try
         {
             var client =
-                await this.clientFactory.GetTableClientAsync(ItemTableNames.DevicesStatesHistory, cancellationToken);
-            var history = client.QueryAsync<AzureDeviceStateHistoryTableEntity>(entry =>
-                entry.PartitionKey == $"{deviceId}-{channelName}-{contactName}");
+                await this.clientFactory.GetTableClientAsync(ItemTableNames.ContactsHistory, cancellationToken);
+            var history = client.QueryAsync<AzureContactHistoryItem>(entry =>
+                entry.PartitionKey == $"{contactPointer.EntityId}-{contactPointer.ChannelName}-{contactPointer.ContactName}");
 
             // Limit to 30 days
             // TODO: Move this check to BLL
@@ -51,21 +46,22 @@ internal class AzureStorageDao : IAzureStorageDao
                 correctedDuration = TimeSpan.FromDays(30);
 
             // Fetch all until reaching requested duration
-            var items = new List<IDeviceStateHistoryTableEntity>();
+            var items = new List<IContactHistoryItem>();
             var startDateTime = DateTime.UtcNow - correctedDuration;
             await foreach (var data in history)
             {
-                if (data.Timestamp < startDateTime)
+                var item = AzureContactHistoryItem.ToContactHistoryItem(data);
+                if (item.Timestamp < startDateTime)
                     break;
 
-                items.Add(data);
+                items.Add(item);
             }
 
             return items;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return Enumerable.Empty<IDeviceStateHistoryTableEntity>();
+            return Enumerable.Empty<IContactHistoryItem>();
         }
     }
 
@@ -74,7 +70,7 @@ internal class AzureStorageDao : IAzureStorageDao
         try
         {
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
-            var query = client.QueryAsync<AzureUserTableEntity>(u => u.Email == userEmail);
+            var query = client.QueryAsync<AzureUser>(u => u.Email == userEmail);
             await foreach (var match in query)
                 return match.RowKey;
             return null;
@@ -84,16 +80,16 @@ internal class AzureStorageDao : IAzureStorageDao
             return null;
         }
     }
-
-    public async Task<IUserTableEntity?> UserAsync(string userId, CancellationToken cancellationToken = default)
+    
+    public async Task<IUser?> UserAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
             var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Users, cancellationToken);
-            return (await client.GetEntityAsync<AzureUserTableEntity>(
+            return AzureUser.ToUser((await client.GetEntityAsync<AzureUser>(
                 UserSources.GoogleOauth,
                 userId,
-                cancellationToken: cancellationToken)).Value;
+                cancellationToken: cancellationToken)).Value);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
@@ -101,102 +97,97 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IEnumerable<IDashboardTableEntity>> DashboardsAsync(
-        string userId,
-        CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IDashboardTableEntity, AzureDashboardTableEntity>(
-            userId,
-            TableEntityType.Dashboard,
-            ItemTableNames.Dashboards,
-            null,
-            dashboard => new DashboardTableEntity(
-                dashboard.RowKey,
-                dashboard.Name,
-                dashboard.ConfigurationSerialized,
-                dashboard.Timestamp?.DateTime),
-            cancellationToken);
-        
+    public async Task<IEnumerable<IEntity>> UserEntitiesAsync(string userId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var userAssignedEntities = await this.UserAssignedAsync(userId, cancellationToken);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Entities, cancellationToken);
+            var entitiesQuery = client.QueryAsync<AzureEntity>(
+                RowsWithKeysAnyFilter(userAssignedEntities.Select(uae => uae.EntityId)),
+                cancellationToken: cancellationToken);
+            var entities = new List<IEntity>();
+            await foreach (var entity in entitiesQuery)
+                if (entity != null)
+                    entities.Add(AzureEntity.ToEntity(entity));
+            return entities;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return Enumerable.Empty<IEntity>();
+        }
+    }
 
-    public async Task<IEnumerable<IDeviceStateTableEntity>> GetDeviceStatesAsync(
-        IEnumerable<string> deviceIds,
+    public async Task<IEntity?> GetAsync(string entityId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Entities, cancellationToken);
+            var entitiesQuery = client.QueryAsync<AzureEntity>(e => e.RowKey == entityId);
+            await foreach (var entity in entitiesQuery)
+                if (entity != null)
+                    return AzureEntity.ToEntity(entity);
+            return null;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<IContact>> ContactsAsync(
+        string entityId,
         CancellationToken cancellationToken)
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.DeviceStates, cancellationToken);
-            var statesAsync = client.QueryAsync<AzureDeviceStateTableEntity>(PartitionsAnyFilter(deviceIds));
-            var states = new List<IDeviceStateTableEntity>();
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Contacts, cancellationToken);
+            var statesAsync = client.QueryAsync<AzureContact>(q => q.PartitionKey == entityId, cancellationToken: cancellationToken);
+            var states = new List<IContact>();
             await foreach (var state in statesAsync)
                 if (state != null)
-                    states.Add(state);
+                    states.Add(AzureContact.ToContact(state));
             return states;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return Enumerable.Empty<IDeviceStateTableEntity>();
+            return Enumerable.Empty<IContact>();
         }
     }
-        
-    private static string PartitionsAnyFilter(IEnumerable<string> partitionKeys) => 
-        $"({string.Join(" or", partitionKeys.Select(tl => $"(PartitionKey eq '{tl}')"))})";
 
-    private static string PartitionWithKeysAnyFilter(string partitionKey, IEnumerable<string> rowKeys) =>
-        $"(PartitionKey eq '{partitionKey}') and" +
-        $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
+    public async Task<IEnumerable<IContact>> ContactsAsync(
+        IEnumerable<string> entityIds, 
+        CancellationToken cancellationToken)
+    {
+        var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Contacts, cancellationToken);
+        var contactsQuery = client.QueryAsync<AzureContact>(PartitionsAnyFilter(entityIds), cancellationToken: cancellationToken);
+        var states = new List<IContact>();
+        await foreach (var state in contactsQuery)
+            if (state != null)
+                states.Add(AzureContact.ToContact(state));
+        return states;
+    }
+
+    private static string PartitionsAnyFilter(IEnumerable<string> partitionKeys) =>
+        $"({string.Join(" or", partitionKeys.Select(tl => $"(PartitionKey eq '{tl}')"))})";
 
     private static string RowsWithKeysAnyFilter(IEnumerable<string> rowKeys) => 
         $"({string.Join(" or", rowKeys.Select(tl => $"(RowKey eq '{tl}')"))})";
-
-    private async Task<IEnumerable<TEntity>> GetUserAssignedAsync<TEntity, TAzureTableEntity>(
-        string userId, 
-        TableEntityType type,
-        string tableName,
-        string? partitionFilter,
-        Func<TAzureTableEntity, TEntity> entityMap,
-        CancellationToken cancellationToken) 
-        where TAzureTableEntity : class, ITableEntity, new()
-    {
-        // Retrieve user assigned entities
-        var userAssignedEntities = await this.UserAssignedAsync(userId, type, cancellationToken);
-
-        // Select entity id's
-        var assignedEntityIds = userAssignedEntities.Select(d => d.RowKey).ToList();
-        if (!assignedEntityIds.Any())
-            return Enumerable.Empty<TEntity>();
-
-        // Query user assigned entities
-        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
-        var entityQuery = client.QueryAsync<TAzureTableEntity>(
-            string.IsNullOrWhiteSpace(partitionFilter)
-                ? RowsWithKeysAnyFilter(assignedEntityIds)
-                : PartitionWithKeysAnyFilter(partitionFilter, assignedEntityIds),
-            cancellationToken: cancellationToken);
-
-        // Retrieve and map entities
-        var entities = new List<TEntity>();
-        await foreach (var entity in entityQuery)
-            entities.Add(entityMap(entity));
-        return entities;
-    }
-
-    public async Task<IEnumerable<ITableEntityKey>> EntitiesByRowKeysAsync(
-        string tableName,
-        IEnumerable<string> rowKeys,
-        CancellationToken cancellationToken)
-    {
-        var client = await this.clientFactory.GetTableClientAsync(tableName, cancellationToken);
-        var entityQuery = client.QueryAsync<TableEntity>(RowsWithKeysAnyFilter(rowKeys), cancellationToken: cancellationToken);
-
-        var entities = new List<ITableEntityKey>();
-        await foreach (var entity in entityQuery)
-            entities.Add(new TableEntityKey(entity.PartitionKey, entity.RowKey));
-        return entities;
-    }
 
     public async Task<Stream> LoggingDownloadAsync(string blobName, CancellationToken cancellationToken)
     {
         var client = await this.clientFactory.GetAppendBlobClientAsync(BlobContainerNames.StationLogs, blobName, cancellationToken);
         return await client.OpenReadAsync(false, cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> EntityExistsAsync(string id, CancellationToken cancellationToken)
+    {
+        var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.Entities, cancellationToken);
+        var entityQuery = client.QueryAsync<AzureEntity>(e => e.RowKey == id, cancellationToken: cancellationToken);
+        await foreach (var _ in entityQuery)
+            return true;
+        return false;
     }
 
     public async IAsyncEnumerable<IBlobInfo> LoggingListAsync(string stationId, CancellationToken cancellationToken)
@@ -213,9 +204,8 @@ internal class AzureStorageDao : IAzureStorageDao
                 continue;
 
             // Retrieve interesting data
-            var info = new BlobInfo
+            var info = new BlobInfo(blobHierarchyItem.Blob.Name)
             {
-                Name = blobHierarchyItem.Blob.Name,
                 CreatedTimeStamp = blobHierarchyItem.Blob.Properties.CreatedOn,
                 LastModifiedTimeStamp = blobHierarchyItem.Blob.Properties.LastModified,
                 Size = blobHierarchyItem.Blob.Properties.ContentLength
@@ -225,39 +215,11 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<IEnumerable<IProcessTableEntity>> ProcessesAsync(
-        string userId,
-        CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IProcessTableEntity, AzureProcessTableEntity>(
-            userId,
-            TableEntityType.Process,
-            ItemTableNames.Processes,
-            null,
-            process => new ProcessTableEntity(
-                process.PartitionKey, 
-                process.RowKey,
-                process.Alias, 
-                process.IsDisabled, 
-                process.ConfigurationSerialized),
-            cancellationToken);
-
-    public async Task<IEnumerable<IDeviceTableEntity>> DevicesAsync(string userId,
-        CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IDeviceTableEntity, AzureDeviceTableEntity>(
-            userId,
-            TableEntityType.Device,
-            ItemTableNames.Devices,
-            "device",
-            device => new DeviceTableEntity(
-                device.RowKey, device.DeviceIdentifier, device.Alias,
-                device.Manufacturer, device.Model, device.Endpoints),
-            cancellationToken);
-
-    public async Task<bool> IsUserAssignedAsync(string userId, TableEntityType data, string entityId, CancellationToken cancellationToken)
+    public async Task<bool> IsUserAssignedAsync(string userId, string entityId, CancellationToken cancellationToken)
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity, cancellationToken);
             var assignment = await client.GetEntityAsync<AzureUserAssignedEntitiesTableEntry>(
                 userId, entityId, cancellationToken: cancellationToken);
             return assignment.Value != null;
@@ -268,68 +230,53 @@ internal class AzureStorageDao : IAzureStorageDao
         }
     }
 
-    public async Task<Dictionary<string, ICollection<string>>> AssignedUsersAsync(
-        TableEntityType type, 
+    public async Task<IReadOnlyDictionary<string, IEnumerable<string>>> AssignedUsersAsync(
         IEnumerable<string> entityIds,
         CancellationToken cancellationToken)
     {
         try
         {
-            var assignedUsers = new Dictionary<string, ICollection<string>>();
+            var assignedUsers = new Dictionary<string, IEnumerable<string>>();
             var entityIdsList = entityIds.ToList();
             if (!entityIdsList.Any()) 
                 return assignedUsers;
 
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(type), cancellationToken);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity, cancellationToken);
             var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
                 RowsWithKeysAnyFilter(entityIdsList), cancellationToken: cancellationToken);
 
             await foreach (var entity in assigned)
+            {
                 if (assignedUsers.ContainsKey(entity.RowKey))
-                    assignedUsers[entity.RowKey].Add(entity.PartitionKey);
+                    (assignedUsers[entity.RowKey] as List<string>)?.Add(entity.PartitionKey);
                 else assignedUsers[entity.RowKey] = new List<string> {entity.PartitionKey};
+            }
 
             return assignedUsers;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return new Dictionary<string, ICollection<string>>();
+            return ImmutableDictionary<string, IEnumerable<string>>.Empty;
         }
     }
 
-    public async Task<IEnumerable<IBeaconTableEntity>> BeaconsAsync(string userId, CancellationToken cancellationToken) =>
-        await this.GetUserAssignedAsync<IBeaconTableEntity, AzureBeaconTableEntity>(
-            userId,
-            TableEntityType.Station,
-            ItemTableNames.Beacons,
-            null,
-            beacon => new BeaconTableEntity(beacon.PartitionKey, beacon.RowKey)
-            {
-                RegisteredTimeStamp = beacon.RegisteredTimeStamp,
-                Version = beacon.Version,
-                StateTimeStamp = beacon.StateTimeStamp,
-                AvailableWorkerServices = beacon.AvailableWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.AvailableWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>(),
-                RunningWorkerServices = beacon.RunningWorkerServices != null ? JsonSerializer.Deserialize<IEnumerable<string>>(beacon.RunningWorkerServices) ?? Enumerable.Empty<string>() : Enumerable.Empty<string>()
-            },
-            cancellationToken);
-
-    private async Task<IEnumerable<IUserAssignedEntityTableEntry>> UserAssignedAsync(string userId, TableEntityType data, CancellationToken cancellationToken)
+    private async Task<IEnumerable<IUserAssignedEntity>> UserAssignedAsync(string userId, CancellationToken cancellationToken)
     {
         try
         {
-            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity(data), cancellationToken);
+            var client = await this.clientFactory.GetTableClientAsync(ItemTableNames.UserAssignedEntity, cancellationToken);
             var assigned = client.QueryAsync<AzureUserAssignedEntitiesTableEntry>(
                 entry => entry.PartitionKey == userId,
                 cancellationToken: cancellationToken);
 
-            var assignedItems = new List<IUserAssignedEntityTableEntry>();
+            var assignedItems = new List<IUserAssignedEntity>();
             await foreach (var entity in assigned)
-                assignedItems.Add(new UserAssignedEntityTableEntry(userId, entity.RowKey));
+                assignedItems.Add(new UserAssignedEntity(userId, entity.RowKey));
             return assignedItems;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            return Enumerable.Empty<IUserAssignedEntityTableEntry>();
+            return Enumerable.Empty<IUserAssignedEntity>();
         }
     }
 }

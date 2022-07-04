@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
-using Signal.Core;
+using Signal.Core.Secrets;
 
 namespace Signal.Infrastructure.Secrets;
 
@@ -15,11 +15,10 @@ public class SecretsProvider : ISecretsProvider
 
     private readonly Lazy<IConfiguration> configuration;
 
-    // TODO: Use in-memory cache instead of static
-    // TODO: Expire cached items
     private static SecretClient? client;
-    private static readonly Dictionary<string, string> Cache = new();
-        
+    private static readonly Dictionary<string, (DateTime expiry, string data)> Cache = new();
+    private static readonly TimeSpan VaultCachePersistDurationMs = TimeSpan.FromHours(1);
+
     public SecretsProvider(Lazy<IConfiguration> configuration)
     {
         this.configuration = configuration;
@@ -36,20 +35,26 @@ public class SecretsProvider : ISecretsProvider
     {
         // Check cache
         if (Cache.ContainsKey(key))
-            return Cache[key];
+        {
+            var item = Cache[key];
+            if (item.expiry > DateTime.UtcNow)
+            {
+                return Cache[key].data;
+            }
+        }
 
-        // Check configuration
+        // Check configuration (never expires - required redeployment)
         try
         {
             return this.configuration.Value[key] ?? throw new Exception("Not a local secret.");
         }
         catch
         {
-            // Shit, try in vault
+            // Try in vault next
         }
 
         // Instantiate secrets client if not already
         var secret = await this.Client().GetSecretAsync(key, cancellationToken: cancellationToken);
-        return Cache[key] = secret.Value.Value;
+        return (Cache[key] = (DateTime.UtcNow.Add(VaultCachePersistDurationMs), secret.Value.Value)).data;
     }
 }

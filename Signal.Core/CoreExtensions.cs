@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Signal.Core.Entities;
 using Signal.Core.Notifications;
 using Signal.Core.Sharing;
 

@@ -2,28 +2,24 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Signal.Core;
 using Signal.Core.Auth;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
-using Signal.Core.Storage;
 
 namespace Signal.Api.Common.Exceptions;
 
-public class UserRequestContext
+public class UserRequestContext : AnonymousRequestContext
 {
-    public UserRequestContext(IUserAuth user, CancellationToken cancellationToken)
+    public UserRequestContext(IUserAuth user, CancellationToken cancellationToken) : base(cancellationToken)
     {
         User = user ?? throw new ArgumentNullException(nameof(user));
-        CancellationToken = cancellationToken;
     }
 
     public IUserAuth User { get; }
 
-    public CancellationToken CancellationToken { get; }
-
-    public async Task ValidateUserAssignedAsync(IEntityService entityService, TableEntityType entityType, string id)
+    public async Task ValidateUserAssignedAsync(IEntityService entityService, string id)
     {
-        if (!await entityService.IsUserAssignedAsync(this.User.UserId, entityType, id, this.CancellationToken))
+        if (!await entityService.IsUserAssignedAsync(this.User.UserId, id, this.CancellationToken))
             throw new ExpectedHttpException(HttpStatusCode.NotFound);
     }
 }

@@ -43,6 +43,54 @@ public static class HttpRequestExtensions
             })!;
     }
 
+    public static async Task<IActionResult> AnonymousRequest(
+        this HttpRequest _,
+        Func<Task> executionBody)
+    {
+        try
+        {
+            await executionBody();
+            return new OkResult();
+        }
+        catch (ExpectedHttpException ex)
+        {
+            return new ObjectResult(new ApiErrorDto(ex.Code.ToString(), ex.Message))
+            {
+                StatusCode = (int)ex.Code
+            };
+        }
+    }
+
+    public static Task<IActionResult> AnonymousRequest<TPayload, TResponse>(
+        this HttpRequest req,
+        CancellationToken cancellationToken,
+        Func<AnonymousRequestContextWithPayload<TPayload>, Task<TResponse>> executionBody) =>
+        AnonymousRequest<TPayload>(req, async context =>
+            new OkObjectResult(await executionBody(context)), cancellationToken);
+
+    private static async Task<IActionResult> AnonymousRequest<TPayload>(
+        this HttpRequest req,
+        Func<AnonymousRequestContextWithPayload<TPayload>, Task<IActionResult>> executionBody,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Deserialize and validate
+            var payload = await req.ReadAsJsonAsync<TPayload>();
+            if (payload == null)
+                throw new ExpectedHttpException(HttpStatusCode.BadRequest, "Failed to read request data.");
+
+            return await executionBody(new AnonymousRequestContextWithPayload<TPayload>(payload, cancellationToken));
+        }
+        catch (ExpectedHttpException ex)
+        {
+            return new ObjectResult(new ApiErrorDto(ex.Code.ToString(), ex.Message))
+            {
+                StatusCode = (int)ex.Code
+            };
+        }
+    }
+
     public static async Task<IActionResult> UserRequest<TResponse>(
         this HttpRequest req,
         CancellationToken cancellationToken,

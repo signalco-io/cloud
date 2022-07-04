@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
-using Signal.Core;
+using Signal.Core.Secrets;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
