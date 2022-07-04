@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Signal.Api.Common;
+namespace Signal.Core.Extensions;
 
 public static class DictionaryExtensions
 {
@@ -30,7 +30,7 @@ public static class DictionaryExtensions
     public static void Append<TKey, TValue>(
         this IDictionary<TKey, ICollection<TValue>> @this,
         TKey key,
-        TValue value) 
+        TValue value)
         where TKey : notnull
     {
         if (!@this.ContainsKey(key))

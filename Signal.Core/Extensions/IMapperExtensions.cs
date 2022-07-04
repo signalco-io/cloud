@@ -1,6 +1,6 @@
 using AutoMapper;
 
-namespace Signal.Core;
+namespace Signal.Core.Extensions;
 
 public static class IMapperExtensions
 {

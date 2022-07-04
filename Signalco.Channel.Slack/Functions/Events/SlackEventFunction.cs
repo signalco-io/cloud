@@ -8,8 +8,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
-using Signal.Api.Common;
 using Signal.Api.Common.Exceptions;
+using Signal.Api.Common.OpenApi;
 
 namespace Signalco.Channel.Slack.Functions.Events;
 

@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Entities;
 using Signal.Api.Common.Exceptions;
+using Signal.Api.Common.OpenApi;
 using Signal.Api.Common.Users;
 using Signal.Core.Entities;
 

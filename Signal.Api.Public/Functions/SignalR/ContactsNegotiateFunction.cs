@@ -7,9 +7,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
+using Signal.Api.Common.OpenApi;
 
 namespace Signal.Api.Public.Functions.SignalR;
 

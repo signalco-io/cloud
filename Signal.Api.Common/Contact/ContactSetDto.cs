@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Signal.Api.Common;
+namespace Signal.Api.Common.Contact;
 
 [Serializable]
 public class ContactSetDto
