@@ -64,7 +64,6 @@ jobs:
           pushd './infrastructure'
           curl -fsSL https://get.pulumi.com | sh
           yarn install
-          /home/runner/.pulumi/bin/pulumi plugin install resource checkly v0.0.1-alpha.10 --server https://github.com/checkly/pulumi-checkly/releases/download/v0.0.1-alpha.10
           /home/runner/.pulumi/bin/pulumi up --stack signalco/${{ steps.extract_branch.outputs.branch }} --yes
           popd
         env:
