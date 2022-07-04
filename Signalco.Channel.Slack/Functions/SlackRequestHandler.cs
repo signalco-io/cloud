@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Signal.Core;
 using Signal.Core.Exceptions;
+using Signal.Core.Secrets;
 using Signalco.Channel.Slack.Secrets;
 
 namespace Signalco.Channel.Slack.Functions;

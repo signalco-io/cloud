@@ -1,15 +1,14 @@
-﻿using Signal.Core.Storage;
+﻿namespace Signal.Core.Sharing;
 
-namespace Signal.Core.Sharing;
-
-public class UserAssignedEntity : ITableEntity
+public class UserAssignedEntity : IUserAssignedEntity
 {
     public UserAssignedEntity(string userId, string entityId)
     {
-        this.PartitionKey = userId;
-        this.RowKey = entityId;
+        this.UserId = userId;
+        this.EntityId = entityId;
     }
 
-    public string PartitionKey { get; }
-    public string RowKey { get; }
+    public string UserId { get; }
+
+    public string EntityId { get; }
 }

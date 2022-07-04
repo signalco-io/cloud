@@ -14,13 +14,14 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
-using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Conducts;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
+using Signal.Api.Common.OpenApi;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
 using Signal.Core.Storage;
+using Signal.Core.Secrets;
 
 namespace Signalco.Channel.Slack.Functions.Conducts;
 
@@ -29,17 +30,20 @@ public class ConductRequestMultipleFunction
     private readonly IFunctionAuthenticator authenticator;
     private readonly IAzureStorageDao storageDao;
     private readonly ISecretsProvider secrets;
+    private readonly IEntityService entityService;
     private readonly ILogger<ConductRequestMultipleFunction> logger;
 
     public ConductRequestMultipleFunction(
         IFunctionAuthenticator authenticator,
         IAzureStorageDao storageDao,
         ISecretsProvider secrets,
+        IEntityService entityService,
         ILogger<ConductRequestMultipleFunction> logger)
     {
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         this.storageDao = storageDao ?? throw new ArgumentNullException(nameof(storageDao));
         this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
+        this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -47,7 +51,7 @@ public class ConductRequestMultipleFunction
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation(nameof(ConductRequestMultipleFunction), "Conducts",
         Description = "Requests multiple conducts to be executed.")]
-    [OpenApiRequestBody("application/json", typeof(List<ConductRequestMultipleDto>),
+    [OpenApiRequestBody("application/json", typeof(List<ConductRequestDto>),
         Description = "Collection of conducts to execute.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     [OpenApiResponseBadRequestValidation]
@@ -55,7 +59,7 @@ public class ConductRequestMultipleFunction
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "conducts/request-multiple")]
         HttpRequest req,
         CancellationToken cancellationToken) =>
-        await req.UserRequest<List<ConductRequestMultipleDto>>(cancellationToken, this.authenticator,
+        await req.UserRequest<List<ConductRequestDto>>(cancellationToken, this.authenticator,
             async context =>
             {
                 var payload = context.Payload;
@@ -65,38 +69,41 @@ public class ConductRequestMultipleFunction
                 {
                     try
                     {
+                        if (string.IsNullOrWhiteSpace(conductRequest.EntityId))
+                        {
+                            this.logger.LogWarning("Entity not specified.");
+                            continue;
+                        }
                         if (conductRequest.ChannelName != KnownChannels.Slack)
                         {
-                            this.logger.LogWarning("Not supported channel name {channelName}", conductRequest.ChannelName);
+                            this.logger.LogWarning("Not supported channel name {ChannelName}", conductRequest.ChannelName);
                             continue;
                         }
 
                         // Retrieve user channel with matching id
-                        var userDevices = await this.storageDao.DevicesAsync(context.User.UserId, cancellationToken);
-                        var matchingChannel = userDevices.FirstOrDefault(d => d.RowKey == conductRequest.DeviceId);
+                        var matchingChannel = await this.entityService.GetAsync(conductRequest.EntityId, cancellationToken);
                         if (matchingChannel == null)
                         {
-                            this.logger.LogWarning("Channel with id {channelId} not found", conductRequest.DeviceId);
+                            this.logger.LogWarning("Entity with id {EntityId} not found", conductRequest.EntityId);
                             continue;
                         }
 
                         // Resolve accessToken from channel contact via SecretsProvider                    
-                        var contacts = await storageDao.GetDeviceStatesAsync(new[] { matchingChannel.RowKey }, cancellationToken);
-                        var accessTokenContact =
-                            contacts.FirstOrDefault(c => c.ContactName == KnownContacts.AccessToken);
+                        var contacts = await this.entityService.ContactsAsync(matchingChannel.Id, cancellationToken);
+                        var accessTokenContact = contacts.FirstOrDefault(c => c.ContactName == KnownContacts.AccessToken);
                         if (accessTokenContact == null || string.IsNullOrWhiteSpace(accessTokenContact.ValueSerialized))
                         {
                             this.logger.LogWarning(
-                                "Channel {channelId} doesn't have assigned access token contact or access token value.",
-                                matchingChannel.RowKey);
+                                "Entity {EntityId} doesn't have assigned access token contact or access token value.",
+                                matchingChannel.Id);
                             continue;
                         }
                         var accessToken = await this.secrets.GetSecretAsync(accessTokenContact.ValueSerialized, cancellationToken);
                         if (string.IsNullOrWhiteSpace(accessToken))
                         {
                             this.logger.LogWarning(
-                                "Channel {channelId} assigned access token is invalid.",
-                                matchingChannel.RowKey);
+                                "Entity {EntityId} assigned access token is invalid.",
+                                matchingChannel.Id);
                             continue;
                         }
 

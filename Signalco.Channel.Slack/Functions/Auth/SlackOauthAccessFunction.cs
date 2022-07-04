@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Signal.Api.Common;
 using Signal.Api.Common.Auth;
 using Signal.Api.Common.Exceptions;
-using Signal.Core;
-using Signal.Core.Devices;
+using Signal.Api.Common.OpenApi;
+using Signal.Core.Contacts;
+using Signal.Core.Entities;
 using Signal.Core.Exceptions;
+using Signal.Core.Secrets;
 using Signal.Core.Storage;
 using Signalco.Channel.Slack.Secrets;
 
@@ -30,20 +28,17 @@ namespace Signalco.Channel.Slack.Functions.Auth;
 public class SlackOauthAccessFunction
 {
     private readonly ISecretsManager secrets;
-    private readonly ISlackRequestHandler slackRequestHandler;
     private readonly IFunctionAuthenticator authenticator;
     private readonly IEntityService entityService;
     private readonly IAzureStorage storage;
 
     public SlackOauthAccessFunction(
         ISecretsManager secrets,
-        ISlackRequestHandler slackRequestHandler,
         IFunctionAuthenticator authenticator,
         IEntityService entityService,
         IAzureStorage storage)
     {
         this.secrets = secrets ?? throw new ArgumentNullException(nameof(secrets));
-        this.slackRequestHandler = slackRequestHandler ?? throw new ArgumentNullException(nameof(slackRequestHandler));
         this.authenticator = authenticator ?? throw new ArgumentNullException(nameof(authenticator));
         this.entityService = entityService ?? throw new ArgumentNullException(nameof(entityService));
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
@@ -96,17 +91,14 @@ public class SlackOauthAccessFunction
             var channelId = await this.entityService.UpsertAsync(
                 context.User.UserId,
                 null,
-                TableEntityType.Device,
-                ItemTableNames.Devices,
-                id => new DeviceTableEntity(id, "slack", alias, null, null, null),
+                id => new Entity(EntityType.Channel, id, alias),
                 cancellationToken);
 
             // Create channel contact - auth token with ID
             // TODO: Use entity service
             // TODO: Update existing slack channel if having matching already (match by team and bot user id)
-            await this.storage.CreateOrUpdateItemAsync(
-                ItemTableNames.DeviceStates,
-                new DeviceStateTableEntity(
+            await this.storage.UpsertAsync(
+                new Contact(
                     channelId,
                     KnownChannels.Slack,
                     KnownContacts.AccessToken,
@@ -114,9 +106,8 @@ public class SlackOauthAccessFunction
                     DateTime.UtcNow),
                 cancellationToken);
 
-            await this.storage.CreateOrUpdateItemAsync(
-                ItemTableNames.DeviceStates,
-                new DeviceStateTableEntity(
+            await this.storage.UpsertAsync(
+                new Contact(
                     channelId,
                     KnownChannels.Slack,
                     KnownContacts.BotUserId,
@@ -126,9 +117,8 @@ public class SlackOauthAccessFunction
 
             if (access.Team != null)
             {
-                await this.storage.CreateOrUpdateItemAsync(
-                    ItemTableNames.DeviceStates,
-                    new DeviceStateTableEntity(
+                await this.storage.UpsertAsync(
+                    new Contact(
                         channelId,
                         KnownChannels.Slack,
                         KnownContacts.Team,

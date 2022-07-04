@@ -4,8 +4,14 @@ using Azure.Data.Tables;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 
-internal class AzureTableEntityBase : ITableEntity
+internal abstract class AzureTableEntityBase : ITableEntity
 {
+    protected AzureTableEntityBase(string partitionKey, string rowKey)
+    {
+        PartitionKey = partitionKey;
+        RowKey = rowKey;
+    }
+
     public string PartitionKey { get; set; }
         
     public string RowKey { get; set; }

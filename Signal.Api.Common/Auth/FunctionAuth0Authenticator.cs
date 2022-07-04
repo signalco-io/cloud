@@ -10,9 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Signal.Core;
 using Signal.Core.Auth;
 using Signal.Core.Exceptions;
+using Signal.Core.Secrets;
 using Signal.Core.Storage;
 using Signal.Core.Users;
 
@@ -61,8 +61,8 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
 
         // Request new token
         var domainTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.Domain, cancellationToken);
-        var clientSecretTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientSecretBeacon, cancellationToken);
-        var clientIdTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientIdBeacon, cancellationToken);
+        var clientSecretTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientSecretStation, cancellationToken);
+        var clientIdTask = this.secretsProvider.GetSecretAsync(SecretKeys.Auth0.ClientIdStation, cancellationToken);
         await Task.WhenAll(domainTask, clientSecretTask, clientIdTask);
 
         var refreshTokenUrl = $"https://{domainTask.Result}{RefreshTokenUrlPath}";
@@ -119,9 +119,8 @@ public class FunctionAuth0Authenticator : IFunctionAuthenticator
                     throw new ExpectedHttpException(HttpStatusCode.BadRequest, "User info doesn't contain email.");
 
                 // Create user entity
-                await this.azureStorage.CreateOrUpdateItemAsync(
-                    ItemTableNames.Users,
-                    new UserEntity(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
+                await this.azureStorage.UpsertAsync(
+                    new User(UserSources.GoogleOauth, nameIdentifier, userInfo.Email, userInfo.Name),
                     cancellationToken);
             }
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Signal.Core;
+using Signal.Core.Secrets;
 
 namespace Signal.Infrastructure.Secrets;
 

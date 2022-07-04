@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Azure.Data.Tables;
-using Signal.Core;
 
 namespace Signal.Infrastructure.AzureStorage.Tables;
 

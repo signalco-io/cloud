@@ -84,18 +84,32 @@ for (let i = 0; i < channelNames.length; i++) {
 
 // Create general storage and prepare tables
 const storage = createStorageAccount(resourceGroup, storagePrefix, shouldProtect);
+
+// TODO: Remove v1 tables that are not used after we migrate protection to v2
 const tableNames = [
     'userassigneddevices', 'userassignedprocesses', 'userassigneddashboards', 'userassignedbeacons',
     'beacons', 'devices', 'devicestates', 'devicesstateshistory', 'processes', 'dashboards', 'users',
     'webnewsletter'
 ];
-tableNames.forEach(tableName => {
+
+// TODO: Move new tables to global tables array after we remove protection for V1 tables
+const tableNamesV2 = [
+    'entities', 'contacts', 'contactshistory', 'userassignedentity'
+];
+
+// TODO: Remove after migration to v2
+const migrationUnprotectTables = [
+    'userassigneddevices', 'userassignedprocesses', 'userassigneddashboards', 'userassignedbeacons', 'beacons',
+    'devices', 'devicestates', 'devicesstateshistory', 'processes', 'dashboards'
+];
+
+[...tableNames, ...tableNamesV2].forEach(tableName => {
     new Table(`sa${storagePrefix}-table-${tableName}`, {
         resourceGroupName: resourceGroup.name,
         accountName: storage.storageAccount.name,
         tableName
     }, {
-        protect: shouldProtect
+        protect: migrationUnprotectTables.includes(tableName) ? false : shouldProtect
     });
 });
 
