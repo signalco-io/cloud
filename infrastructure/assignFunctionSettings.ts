@@ -13,6 +13,7 @@ export function assignFunctionSettings (resourceGroup: ResourceGroup, app: WebAp
             FUNCTIONS_WORKER_RUNTIME: 'dotnet',
             OpenApi__DocTitle: 'Signalco Cloud API',
             OpenApi__Version: 'v3',
+            OpenApi__HideSwaggerUI: 'true',
             ...appSettings
         }
     }, {
