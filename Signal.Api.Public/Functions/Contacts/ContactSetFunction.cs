@@ -36,13 +36,13 @@ public class ContactSetFunction
         this.storage = storage ?? throw new ArgumentNullException(nameof(storage));
     }
 
-    [FunctionName("Contacts-Set")]
+    [FunctionName("Contact-Set")]
     [OpenApiSecurityAuth0Token]
     [OpenApiOperation<ContactSetFunction>("Contact", Description = "Sets contact value.")]
     [OpenApiJsonRequestBody<ContactSetDto>]
     [OpenApiResponseWithoutBody(HttpStatusCode.OK)]
     public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "contacts/set")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "contact")]
         HttpRequest req,
         [SignalR(HubName = "contacts")] 
         IAsyncCollector<SignalRMessage> signalRMessages,
@@ -52,11 +52,11 @@ public class ContactSetFunction
         {
             var payload = context.Payload;
             if (string.IsNullOrWhiteSpace(payload.ChannelName) ||
-                string.IsNullOrWhiteSpace(payload.ContactName) ||
+                string.IsNullOrWhiteSpace(payload.Name) ||
                 string.IsNullOrWhiteSpace(payload.EntityId))
                 throw new ExpectedHttpException(
                     HttpStatusCode.BadRequest,
-                    "EntityId, ChannelName and ContactName properties are required.");
+                    "EntityId, ChannelName and Name properties are required.");
 
             await context.ValidateUserAssignedAsync(this.entityService, payload.EntityId);
 
@@ -67,7 +67,7 @@ public class ContactSetFunction
                 new Contact(
                     payload.EntityId,
                     payload.ChannelName,
-                    payload.ContactName,
+                    payload.Name,
                     payload.ValueSerialized,
                     payload.TimeStamp ?? DateTime.UtcNow),
                 cancellationToken);
@@ -87,7 +87,7 @@ public class ContactSetFunction
                         new ContactPointer(
                         payload.EntityId,
                         payload.ChannelName,
-                        payload.ContactName),
+                        payload.Name),
                         payload.ValueSerialized,
                         payload.TimeStamp ?? DateTime.UtcNow),
                     cancellationToken);

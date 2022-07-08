@@ -12,8 +12,8 @@ public class ContactSetDto
     [JsonPropertyName("channelName")]
     public string? ChannelName { get; set; }
 
-    [JsonPropertyName("contactName")]
-    public string? ContactName { get; set; }
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
     [JsonPropertyName("valueSerialized")]
     public string? ValueSerialized { get; set; }
