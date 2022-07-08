@@ -150,10 +150,10 @@
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
-"@pulumi/command@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@pulumi/command/-/command-0.3.2.tgz#2e03816e840662345d7add10b09e2fd7766984bd"
-  integrity sha512-jLvfYQHdp0Cos4SqzZkR68YilcJpP0o8sGTz2BV3H4EnQgs9cEOJDrCSMezo62MbJX9MEhwKfACGzq2hb7Eo+A==
+"@pulumi/command@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@pulumi/command/-/command-0.4.0.tgz#e3d0fe7c48550b6ce18bc07cb93ecdce39b5a668"
+  integrity sha512-nAAkdHWgTwFsFdNdYyZY1VAqpTNy+OaQbUYas59/XA7Eh9MFRXf6CFG+jSlLphJo90JudVhkoowwSklt2NmpjA==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
