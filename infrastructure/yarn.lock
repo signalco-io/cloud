@@ -136,10 +136,10 @@
     read-package-tree "^5.2.1"
     resolve "^1.7.1"
 
-"@pulumi/azure-native@1.66.0":
-  version "1.66.0"
-  resolved "https://registry.yarnpkg.com/@pulumi/azure-native/-/azure-native-1.66.0.tgz#7750f294681bb7bbc5b65d7a4253c8ba5671e663"
-  integrity sha512-T+dbRgqPDdMoX+KaLqACSXJIw0eu4Ssb7LAClU2bdsrVHfixIMaCK0H0KkeDKT8dxykRWqNM6VUnmKkSl7ofGg==
+"@pulumi/azure-native@1.67.0":
+  version "1.67.0"
+  resolved "https://registry.yarnpkg.com/@pulumi/azure-native/-/azure-native-1.67.0.tgz#ade3f6513818bd68c03b0b82f2416ed7ec9d4270"
+  integrity sha512-OV7UjwBamoI14yxYHOJ3xQ061hJeTSBwKqwvG0r1bkIglWNxdigv/pIWq42G36YzPI0GI+2MpBHhHap4HRa9Bg==
   dependencies:
     "@pulumi/pulumi" "^3.0.0"
 
