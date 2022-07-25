@@ -7,22 +7,22 @@
     },
     "devDependencies": {
         "@types/node": "17.0.41",
-        "@typescript-eslint/eslint-plugin": "5.30.3",
-        "@typescript-eslint/parser": "5.30.3",
-        "eslint": "8.19.0",
+        "@typescript-eslint/eslint-plugin": "5.31.0",
+        "@typescript-eslint/parser": "5.31.0",
+        "eslint": "8.20.0",
         "eslint-config-standard": "17.0.0",
         "eslint-plugin-import": "2.26.0",
-        "eslint-plugin-n": "15.2.3",
+        "eslint-plugin-n": "15.2.4",
         "eslint-plugin-node": "11.1.0",
         "eslint-plugin-promise": "6.0.0",
         "typescript": "4.7.4"
     },
     "dependencies": {
-        "@checkly/pulumi": "1.1.0",
-        "@pulumi/aws": "5.9.2",
-        "@pulumi/azure-native": "1.66.0",
-        "@pulumi/cloudflare": "4.8.0",
-        "@pulumi/command": "0.3.2",
-        "@pulumi/pulumi": "3.35.3"
+        "@checkly/pulumi": "1.1.1",
+        "@pulumi/aws": "5.10.0",
+        "@pulumi/azure-native": "1.67.0",
+        "@pulumi/cloudflare": "4.9.0",
+        "@pulumi/command": "0.4.1",
+        "@pulumi/pulumi": "3.36.0"
     }
 }
